@@ -33,9 +33,12 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
         // Initialize secondary configs
         MagicLootConfig.setupConfigs(this);
 
+        // Copy NBT structure resources for future vanilla fallback
+        StructurePlacer.copyNbtResources(this);
+
         // Load ruins
         try {
-            RuinBuilder.loadRuins();
+            RuinBuilder.loadRuins(this);
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to load ruins", e);
         }

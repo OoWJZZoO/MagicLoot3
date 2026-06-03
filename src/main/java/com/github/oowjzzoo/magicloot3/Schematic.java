@@ -195,6 +195,42 @@ public class Schematic {
     }
 
     /**
+     * After a building is pasted via WorldEdit, replace emerald blocks with Lost Librarian NPCs.
+     * This only runs on the WorldEdit path; the legacy manual paste handles this inline.
+     */
+    public static void postProcessBuilding(Location loc, String name) {
+        Schematic s = RuinBuilder.getBuilding(name);
+        if (s == null) return;
+
+        short[] blocks = s.getBlocks();
+        short width = s.getWidth();
+        short height = s.getHeight();
+        short length = s.getLenght();
+
+        for (int x = 0; x < width; ++x) {
+            for (int y = 0; y < height; ++y) {
+                for (int z = 0; z < length; ++z) {
+                    int index = y * width * length + z * width + x;
+                    Material mat = getMaterialById(blocks[index]);
+                    if (mat != Material.EMERALD_BLOCK) continue;
+
+                    Block block = new Location(loc.getWorld(), x + loc.getX(), y + loc.getY(), z + loc.getZ()).getBlock();
+                    if (block.getType() == Material.EMERALD_BLOCK) {
+                        block.setType(Material.AIR);
+                        Villager v = (Villager) block.getWorld().spawnEntity(block.getLocation(), EntityType.VILLAGER);
+                        v.setProfession(Profession.LIBRARIAN);
+                        v.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, Integer.MAX_VALUE, 255));
+                        v.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, Integer.MAX_VALUE, -255));
+                        v.setCustomName("§5§lLost Librarian");
+                        v.setCustomNameVisible(true);
+                        v.setAdult();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Converts legacy numeric block IDs (from .schematic files) to modern Materials.
      * Uses CraftBukkit's internal mapping, which is always available at runtime on Paper.
      */

@@ -9,25 +9,30 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Location;
+import org.bukkit.plugin.Plugin;
 
 public class RuinBuilder {
 
     public static List<Schematic> schematics = new ArrayList<>();
     public static Map<String, ConfigManager> configs = new HashMap<>();
     public static List<Schematic> buildings = new ArrayList<>();
+    private static final Map<String, Schematic> schemMap = new HashMap<>();
+    private static final Map<String, Schematic> buildingMap = new HashMap<>();
+    private static Plugin plugin;
 
-    public static void loadRuins() throws IOException {
-        File dataFolder = MagicLootConfig.getDataFolder();
+    public static void loadRuins(Plugin pl) throws IOException {
+        plugin = pl;
+        File dataFolder = plugin.getDataFolder();
         File schematicsDir = new File(dataFolder, "schematics");
-        if (!schematicsDir.exists()) {
-            schematicsDir.mkdirs();
-        }
+        if (!schematicsDir.exists()) schematicsDir.mkdirs();
+
         for (File file : schematicsDir.listFiles()) {
             if (file.getName().endsWith(".schematic")) {
-                schematics.add(Schematic.loadSchematic(file));
-                String name = file.getName().replace(".schematic", "");
-                ConfigManager cfg = new ConfigManager(
-                        new File(dataFolder, "ruin_settings/" + name + ".yml"));
+                Schematic s = Schematic.loadSchematic(file);
+                schematics.add(s);
+                schemMap.put(s.getName(), s);
+                String name = s.getName();
+                ConfigManager cfg = new ConfigManager(new File(dataFolder, "ruin_settings/" + name + ".yml"));
                 cfg.setDefaultValue("y-offset", 0);
                 cfg.setDefaultValue("underwater", false);
                 cfg.save();
@@ -36,37 +41,39 @@ public class RuinBuilder {
         }
 
         File buildingsDir = new File(dataFolder, "buildings");
-        if (!buildingsDir.exists()) {
-            buildingsDir.mkdirs();
-        }
+        if (!buildingsDir.exists()) buildingsDir.mkdirs();
+
         for (File file : buildingsDir.listFiles()) {
             if (file.getName().endsWith(".schematic")) {
-                buildings.add(Schematic.loadSchematic(file));
+                Schematic s = Schematic.loadSchematic(file);
+                buildings.add(s);
+                buildingMap.put(s.getName(), s);
             }
         }
     }
 
+    public static Schematic getSchematic(String name) {
+        return schemMap.get(name);
+    }
+
+    public static Schematic getBuilding(String name) {
+        return buildingMap.get(name);
+    }
+
     public static void buildRuin(Location l) {
         if (schematics.isEmpty()) return;
-
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        Schematic s = schematics.get(random.nextInt(schematics.size()));
 
         if (random.nextInt(100) < 4 && !buildings.isEmpty()) {
-            // 4% chance: spawn a building (Lost Library)
-            s = buildings.get(random.nextInt(buildings.size()));
+            Schematic s = buildings.get(random.nextInt(buildings.size()));
             if (l.getBlock().isLiquid()) return;
-            Schematic.pasteSchematic(l, s, false);
+            StructurePlacer.pasteBuilding(plugin, l, s.getName());
         } else {
-            // 96% chance: spawn a regular ruin
+            Schematic s = schematics.get(random.nextInt(schematics.size()));
             ConfigManager cfg = configs.get(s.getName());
-            if (cfg != null && l.getBlock().isLiquid() && !cfg.getBoolean("underwater")) {
-                return;
-            }
-            if (cfg != null) {
-                l.setY(l.getY() + cfg.getInt("y-offset"));
-            }
-            Schematic.pasteSchematic(l, s, true);
+            if (cfg != null && l.getBlock().isLiquid() && !cfg.getBoolean("underwater")) return;
+            if (cfg != null) l.setY(l.getY() + cfg.getInt("y-offset"));
+            StructurePlacer.pasteRuin(plugin, l, s.getName());
         }
     }
 }
