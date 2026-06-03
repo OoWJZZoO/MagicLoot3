@@ -25,6 +25,7 @@ import org.bukkit.event.world.ChunkPopulateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class LootListener implements Listener {
 
@@ -106,10 +107,8 @@ public class LootListener implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEntityEvent e) {
         Entity entity = e.getRightClicked();
-        if (entity instanceof Villager villager
-                && villager.getCustomName() != null
-                && villager.getCustomName() != null
-                && villager.getCustomName().equals(Messages.get("npc.name"))) {
+        if (entity instanceof Villager
+                && entity.getPersistentDataContainer().has(ItemKeys.LIBRARIAN)) {
             e.setCancelled(true);
             try {
                 LostLibrarian.openMenu(e.getPlayer());
@@ -129,8 +128,7 @@ public class LootListener implements Listener {
 
         // Protect Lost Librarian villagers
         if (victim instanceof Villager
-                && victim.getCustomName() != null
-                && victim.getCustomName().equals(Messages.get("npc.name"))) {
+                && victim.getPersistentDataContainer().has(ItemKeys.LIBRARIAN)) {
             e.setCancelled(true);
             return;
         }
@@ -169,73 +167,38 @@ public class LootListener implements Listener {
 
     private void applyWeaponEffects(LivingEntity attacker, LivingEntity victim) {
         ItemStack weapon = getItemInMainHand(attacker);
-        if (weapon == null || !weapon.hasItemMeta() || !weapon.getItemMeta().hasLore()) return;
-
-        for (String line : weapon.getItemMeta().getLore()) {
-            processEffectLine(line, attacker, victim);
-        }
+        applyEffectsFromItem(weapon, attacker, victim);
     }
 
     private void applyArmorEffects(LivingEntity wearer, ItemStack armor, EntityDamageEvent event) {
-        if (armor == null || !armor.hasItemMeta() || !armor.getItemMeta().hasLore()) return;
-
-        for (String line : armor.getItemMeta().getLore()) {
-            line = ChatColor.stripColor(line);
-            if (line.startsWith("+ ")) {
-                // Positive effect on the wearer
-                String attribute = line.substring(2);
-                int spaceIdx = attribute.lastIndexOf(' ');
-                if (spaceIdx > 0) {
-                    String effectName = attribute.substring(0, spaceIdx);
-                    int level = Integer.parseInt(attribute.substring(spaceIdx + 1));
-                    if (ItemManager.potion.containsKey(effectName)) {
-                        wearer.addPotionEffect(new PotionEffect(
-                                ItemManager.potion.get(effectName), level * 3 * 20, level - 1));
-                    }
-                }
-            } else if (line.startsWith("- ") && event instanceof EntityDamageByEntityEvent damageEvent) {
-                // Negative effect on the attacker
-                if (damageEvent.getDamager() instanceof LivingEntity attacker) {
-                    String attribute = line.substring(2);
-                    int spaceIdx = attribute.lastIndexOf(' ');
-                    if (spaceIdx > 0) {
-                        String effectName = attribute.substring(0, spaceIdx);
-                        int level = Integer.parseInt(attribute.substring(spaceIdx + 1));
-                        if (ItemManager.potion.containsKey(effectName)) {
-                            attacker.addPotionEffect(new PotionEffect(
-                                    ItemManager.potion.get(effectName), level * 3 * 20, level - 1));
-                        }
-                    }
-                }
-            }
-        }
+        applyEffectsFromItem(armor, wearer,
+                event instanceof EntityDamageByEntityEvent dmg ? (LivingEntity) dmg.getDamager() : null);
     }
 
-    private void processEffectLine(String line, LivingEntity attacker, LivingEntity victim) {
-        line = ChatColor.stripColor(line);
-        if (line.startsWith("+ ")) {
-            // Self-buff for attacker
-            String attribute = line.substring(2);
-            int spaceIdx = attribute.lastIndexOf(' ');
-            if (spaceIdx > 0) {
-                String effectName = attribute.substring(0, spaceIdx);
-                int level = Integer.parseInt(attribute.substring(spaceIdx + 1));
-                if (ItemManager.potion.containsKey(effectName)) {
-                    attacker.addPotionEffect(new PotionEffect(
-                            ItemManager.potion.get(effectName), level * 3 * 20, level - 1));
-                }
-            }
-        } else if (line.startsWith("- ")) {
-            // Debuff for victim
-            String attribute = line.substring(2);
-            int spaceIdx = attribute.lastIndexOf(' ');
-            if (spaceIdx > 0) {
-                String effectName = attribute.substring(0, spaceIdx);
-                int level = Integer.parseInt(attribute.substring(spaceIdx + 1));
-                if (ItemManager.potion.containsKey(effectName)) {
-                    victim.addPotionEffect(new PotionEffect(
-                            ItemManager.potion.get(effectName), level * 3 * 20, level - 1));
-                }
+    /** Reads effects from PDC and applies them. Language-independent. */
+    private void applyEffectsFromItem(ItemStack item, LivingEntity wearer, LivingEntity attacker) {
+        if (item == null || !item.hasItemMeta()) return;
+        var meta = item.getItemMeta();
+        if (meta == null) return;
+        String data = meta.getPersistentDataContainer().get(ItemKeys.EFFECTS,
+                org.bukkit.persistence.PersistentDataType.STRING);
+        if (data == null || data.isEmpty()) return;
+
+        for (String entry : data.split(",")) {
+            String[] parts = entry.split(":");
+            if (parts.length < 3) continue;
+            String enKey = parts[0];
+            boolean isPositive = "+".equals(parts[1]);
+            int level;
+            try { level = Integer.parseInt(parts[2]); } catch (NumberFormatException e) { continue; }
+
+            PotionEffectType type = ItemManager.potion.get(enKey);
+            if (type == null) continue;
+
+            if (isPositive) {
+                wearer.addPotionEffect(new PotionEffect(type, level * 3 * 20, level - 1));
+            } else if (attacker != null) {
+                attacker.addPotionEffect(new PotionEffect(type, level * 3 * 20, level - 1));
             }
         }
     }

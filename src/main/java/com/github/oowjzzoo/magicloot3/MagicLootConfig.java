@@ -125,9 +125,20 @@ public class MagicLootConfig {
             if (e != null) {
                 if (getMaxLevel(e) > 0) {
                     ItemManager.POTIONEFFECTS.add(e);
-                    String trName = Messages.get("effects." + e.getKey().getKey(),
-                            formatEffectName(e.getKey().getKey()));
-                    ItemManager.potion.put(trName, e);
+                    ItemManager.potion.put(e.getKey().getKey(), e);
+                }
+            }
+        }
+
+        // Rebuild EFFNAME map from language file for display
+        ItemManager.effectNames.clear();
+        for (org.bukkit.potion.PotionEffectType e : org.bukkit.potion.PotionEffectType.values()) {
+            if (e != null) {
+                String enKey = e.getKey().getKey();
+                String enName = formatEffectName(enKey);
+                if (getMaxLevel(enName) > 0) {
+                    ItemManager.effectNames.put(enKey,
+                            Messages.get("effects." + enKey, enName));
                 }
             }
         }
@@ -136,14 +147,8 @@ public class MagicLootConfig {
         ItemManager.SUFFIX = suffixes;
         ItemManager.COLOR = colors;
 
-        for (org.bukkit.potion.PotionEffectType e : org.bukkit.potion.PotionEffectType.values()) {
-            if (e != null) {
-                String enName = formatEffectName(e.getKey().getKey());
-                if (getMaxLevel(enName) > 0) {
-                    ItemManager.EFFECTS.add(Messages.get("effects." + e.getKey().getKey(), enName));
-                }
-            }
-        }
+        ItemManager.EFFECTS.clear();
+        ItemManager.EFFECTS.addAll(ItemManager.effectNames.values());
 
         for (Material m : Material.values()) {
             if (getConfig(ConfigType.ITEMS).contains("treasure." + m.toString())) {
@@ -157,7 +162,6 @@ public class MagicLootConfig {
                 }
             }
         }
-
         if (Slimefun.instance() != null) {
             for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
                 String key = "Slimefun-Item." + item.getId();
@@ -173,6 +177,13 @@ public class MagicLootConfig {
             if (cfg.contains("enable." + type.toString())) {
                 if (cfg.getBoolean("enable." + type.toString())) ItemManager.types.add(type);
             }
+        }
+
+        // Remove blacklisted materials from tool pool
+        for (String name : cfg.getStringList("tool-blacklist")) {
+            try {
+                ItemManager.TOOLS.remove(Material.valueOf(name));
+            } catch (IllegalArgumentException ignored) {}
         }
     }
 

@@ -50,6 +50,24 @@ enable:
   POTION: true
   UNANALIZED: true
 
+# ====== 装备材料黑名单（不会生成为随机装备的材料） ======
+tool-blacklist:
+- FLINT_AND_STEEL
+- SHEARS
+- FISHING_ROD
+- CARROT_ON_A_STICK
+- WARPED_FUNGUS_ON_A_STICK
+- COMPASS
+- CLOCK
+- NAME_TAG
+- LEAD
+- SADDLE
+- SHIELD
+- BOW
+- CROSSBOW
+- TRIDENT
+- ELYTRA
+
 # ====== 世界白名单（仅这些世界会生成遗迹） ======
 world-whitelist:
 - world

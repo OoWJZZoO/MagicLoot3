@@ -45,6 +45,7 @@ public class ItemManager {
     public static List<ItemStack> SLIMEFUN = new ArrayList<>();
     public static List<LootType> types = new ArrayList<>();
     public static Map<String, PotionEffectType> potion = new HashMap<>();
+    public static Map<String, String> effectNames = new HashMap<>();
 
     public static ItemStack createItem(LootType type) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
@@ -149,27 +150,38 @@ public class ItemManager {
 
         im.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
         List<String> lore = new ArrayList<>();
+        List<String> effectData = new ArrayList<>();
 
         int effectsMax = MagicLootConfig.getConfig(ConfigType.LOOT_TIER).getInt(tier.toString() + ".effects.max");
         int effectsMin = MagicLootConfig.getConfig(ConfigType.LOOT_TIER).getInt(tier.toString() + ".effects.min");
 
-        if (effectsMax > 0 && !EFFECTS.isEmpty()) {
+        if (effectsMax > 0 && !POTIONEFFECTS.isEmpty()) {
             int range = Math.max(effectsMax - effectsMin, 1);
             for (int i = 0; i < random.nextInt(range) + effectsMin; i++) {
-                String effect = EFFECTS.get(random.nextInt(EFFECTS.size()));
+                PotionEffectType e = POTIONEFFECTS.get(random.nextInt(POTIONEFFECTS.size()));
+                String enKey = e.getKey().getKey();
+                int maxLvl = MagicLootConfig.getMaxLevel(e);
+                if (maxLvl <= 0) continue;
+                int level = maxLvl > 1 ? (random.nextInt(maxLvl - 1) + 1) : 1;
                 String apply = random.nextInt(10) > 5 ? "+" : "-";
-                if (MagicLootConfig.getMaxLevel(effect) > 0) {
-                    int maxLvl = MagicLootConfig.getMaxLevel(effect);
-                    int level = maxLvl > 1 ? (random.nextInt(maxLvl - 1) + 1) : 1;
-                    lore.add(ChatColor.translateAlternateColorCodes('&',
-                            COLOR.get(random.nextInt(COLOR.size())) + apply + " " + effect + " " + level));
-                }
+                effectData.add(enKey + ":" + apply + ":" + level);
+                String displayName = ItemManager.effectNames.getOrDefault(enKey, enKey);
+                lore.add(ChatColor.translateAlternateColorCodes('&',
+                        COLOR.get(random.nextInt(COLOR.size())) + apply + " " + displayName + " " + level));
             }
         }
 
         lore.add("");
         lore.add(Messages.get("tier_lore_prefix") + tier.getTag());
         im.setLore(lore);
+
+        // Write tier and effects to PDC (language-independent)
+        im.getPersistentDataContainer().set(ItemKeys.TIER,
+                org.bukkit.persistence.PersistentDataType.STRING, tier.name());
+        if (!effectData.isEmpty()) {
+            im.getPersistentDataContainer().set(ItemKeys.EFFECTS,
+                    org.bukkit.persistence.PersistentDataType.STRING, String.join(",", effectData));
+        }
 
         // Leather armor color
         if (im instanceof LeatherArmorMeta leatherMeta) {

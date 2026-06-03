@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 public enum LootTier {
 
@@ -29,7 +30,6 @@ public enum LootTier {
 
     public int getLevel() { return level; }
 
-    /** Returns localized display name (e.g. "§a普通", "§aCommon"). */
     public String getTag() {
         return Messages.get("tiers." + this.name());
     }
@@ -59,23 +59,19 @@ public enum LootTier {
     }
 
     /**
-     * Reverse-lookup a LootTier from the lore line. Matches against
-     * the stripped display name (works with both Chinese and English).
+     * Reads tier from PersistentDataContainer. Language-independent.
      */
     public static LootTier get(ItemStack item) {
-        if (item == null) return LootTier.NONE;
-        if (!item.hasItemMeta() || !item.getItemMeta().hasLore()) return LootTier.NONE;
-        for (String line : item.getItemMeta().getLore()) {
-            String stripped = ChatColor.stripColor(line);
-            for (LootTier tier : LootTier.values()) {
-                if (tier == NONE) continue;
-                String tierStripped = ChatColor.stripColor(tier.getTag());
-                if (!tierStripped.isEmpty() && stripped.contains(tierStripped)) {
-                    return tier;
-                }
-            }
+        if (item == null || !item.hasItemMeta()) return LootTier.NONE;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return LootTier.NONE;
+        String tag = meta.getPersistentDataContainer().get(ItemKeys.TIER, PersistentDataType.STRING);
+        if (tag == null) return LootTier.NONE;
+        try {
+            return LootTier.valueOf(tag);
+        } catch (IllegalArgumentException e) {
+            return LootTier.NONE;
         }
-        return LootTier.NONE;
     }
 
     public static LootTier getRandomApplicable() {

@@ -29,6 +29,8 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
     public void onEnable() {
         instance = this;
 
+        ItemKeys.init(this);
+
         MagicLootCommand cmd = new MagicLootCommand(this);
         getCommand("magicloot").setExecutor(cmd);
         getCommand("magicloot").setTabCompleter(cmd);

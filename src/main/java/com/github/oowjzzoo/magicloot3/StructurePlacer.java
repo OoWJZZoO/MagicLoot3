@@ -155,6 +155,8 @@ public final class StructurePlacer {
                                 PotionEffectType.SLOWNESS, Integer.MAX_VALUE, 255));
                         v.addPotionEffect(new PotionEffect(
                                 PotionEffectType.JUMP_BOOST, Integer.MAX_VALUE, -255));
+                        v.getPersistentDataContainer().set(ItemKeys.LIBRARIAN,
+                                org.bukkit.persistence.PersistentDataType.BOOLEAN, true);
                         v.setCustomName(Messages.get("npc.name"));
                         v.setCustomNameVisible(true);
                         v.setAdult();
