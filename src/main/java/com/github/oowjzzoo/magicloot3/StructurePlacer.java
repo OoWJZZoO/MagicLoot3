@@ -116,22 +116,22 @@ public final class StructurePlacer {
                                       BlockVector3 dims, BlockVector3 origin,
                                       boolean isBuilding, String name) {
         int dx = dims.x(), dy = dims.y(), dz = dims.z();
-        // Calculate the true minimum corner of the pasted region.
-        // origin is the offset from clipboard-min to the paste handle point.
-        // The paste handle lands at (bx, by, bz), so the actual blocks start at:
-        int minX = loc.getBlockX() - origin.x();
-        int minY = loc.getBlockY() - origin.y();
-        int minZ = loc.getBlockZ() - origin.z();
+        // ClipboardHolder.createPaste().to() places the schematic with its
+        // minimum corner at the paste location. We don't apply the clipboard
+        // origin because the holder already handles it internally.
+        int minX = loc.getBlockX();
+        int minY = loc.getBlockY();
+        int minZ = loc.getBlockZ();
 
         var world = loc.getWorld();
         boolean[][] chestDone = new boolean[dx + 1][dz + 1];
         int chestCount = 0, doubleCount = 0;
 
-        debug(plugin, "postProcess " + name + ": pasteLoc=("
-                + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ() + ")"
+        debug(plugin, "postProcess " + name + ": corner=("
+                + minX + "," + minY + "," + minZ + ")"
                 + " dims=(" + dx + "," + dy + "," + dz + ")"
-                + " origin=(" + origin.x() + "," + origin.y() + "," + origin.z() + ")"
-                + " → scan from (" + minX + "," + minY + "," + minZ + ")");
+                + " from WE clipboard"
+                + " (raw-origin=" + origin.x() + "," + origin.y() + "," + origin.z() + ")");
 
         for (int x = 0; x < dx; ++x) {
             for (int y = 0; y < dy; ++y) {
