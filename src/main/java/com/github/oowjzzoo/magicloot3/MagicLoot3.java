@@ -105,7 +105,7 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
 
         ItemStack[] bookshelfRecipe = {
                 new ItemStack(Material.BOOKSHELF), null, new ItemStack(Material.BOOKSHELF),
-                SlimefunItems.MAGIC_LUMP_3.item(), SlimefunItems.MAGICAL_BOOK_COVER.item(), SlimefunItems.MAGIC_LUMP_3.item(),
+                SlimefunItems.MAGIC_LUMP_3, SlimefunItems.MAGICAL_BOOK_COVER, SlimefunItems.MAGIC_LUMP_3,
                 new ItemStack(Material.BOOKSHELF), null, new ItemStack(Material.BOOKSHELF)
         };
 
@@ -114,7 +114,7 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
                 lostBookshelfStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE,
                 bookshelfRecipe,
-                lostBookshelfStack.asQuantity(2)
+                new SlimefunItemStack(lostBookshelfStack, 2)
         );
         lostBookshelf.register(this);
 
@@ -128,9 +128,9 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
         );
 
         ItemStack[] deskRecipe = {
-                lostBookshelfStack.item(), null, lostBookshelfStack.item(),
-                null, SlimefunItems.COMMON_TALISMAN.item(), null,
-                lostBookshelfStack.item(), null, lostBookshelfStack.item()
+                lostBookshelfStack, null, lostBookshelfStack,
+                null, SlimefunItems.COMMON_TALISMAN, null,
+                lostBookshelfStack, null, lostBookshelfStack
         };
 
         SlimefunItem lostDesk = new SlimefunItem(
