@@ -12,21 +12,41 @@ import org.bukkit.plugin.Plugin;
 
 public class RuinBuilder {
 
+    /** All .nbt file names (without extension) found in the structures folder. */
     public static final List<String> ruinNames = new ArrayList<>();
     public static final List<String> buildingNames = new ArrayList<>();
     public static final Map<String, ConfigManager> configs = new HashMap<>();
     private static Plugin plugin;
 
+    /**
+     * Scans the structures/ folder for .nbt files.
+     * Files listed in StructurePlacer.BUILDING_SET are treated as buildings,
+     * everything else as ruins.
+     */
     public static void loadRuins(Plugin pl) {
         plugin = pl;
-        File dataFolder = plugin.getDataFolder();
+        ruinNames.clear();
+        buildingNames.clear();
+        configs.clear();
 
-        File ruinSettingsDir = new File(dataFolder, "ruin_settings");
+        File structuresDir = new File(plugin.getDataFolder(), "structures");
+        if (!structuresDir.exists()) structuresDir.mkdirs();
+
+        File ruinSettingsDir = new File(plugin.getDataFolder(), "ruin_settings");
         if (!ruinSettingsDir.exists()) ruinSettingsDir.mkdirs();
 
-        String[] ruins = {"Farm", "GasStation", "House", "Outpost", "Railstation", "Shop"};
-        for (String name : ruins) {
-            ruinNames.add(name);
+        File[] files = structuresDir.listFiles((dir, name) -> name.endsWith(".nbt"));
+        if (files == null) return;
+
+        for (File file : files) {
+            String name = file.getName().replace(".nbt", "");
+
+            if (StructurePlacer.BUILDING_SET.contains(name)) {
+                buildingNames.add(name);
+            } else {
+                ruinNames.add(name);
+            }
+
             ConfigManager cfg = new ConfigManager(
                     new File(ruinSettingsDir, name + ".yml"));
             cfg.setDefaultValue("y-offset", 0);
@@ -34,27 +54,17 @@ public class RuinBuilder {
             cfg.save();
             configs.put(name, cfg);
         }
-
-        buildingNames.add("Lost_Library");
-        ConfigManager libCfg = new ConfigManager(
-                new File(ruinSettingsDir, "Lost_Library.yml"));
-        libCfg.setDefaultValue("y-offset", 0);
-        libCfg.setDefaultValue("underwater", false);
-        libCfg.save();
-        configs.put("Lost_Library", libCfg);
     }
 
     public static void buildRuin(Location l) {
-        if (ruinNames.isEmpty()) return;
+        if (ruinNames.isEmpty() && buildingNames.isEmpty()) return;
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
         if (random.nextInt(100) < 4 && !buildingNames.isEmpty()) {
-            // 4% chance: spawn a building (Lost Library)
             String name = buildingNames.get(random.nextInt(buildingNames.size()));
             if (l.getBlock().isLiquid()) return;
             StructurePlacer.place(plugin, l, name, true);
-        } else {
-            // 96% chance: spawn a regular ruin
+        } else if (!ruinNames.isEmpty()) {
             String name = ruinNames.get(random.nextInt(ruinNames.size()));
             ConfigManager cfg = configs.get(name);
             if (cfg != null && l.getBlock().isLiquid() && !cfg.getBoolean("underwater")) return;

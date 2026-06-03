@@ -25,31 +25,40 @@ import org.bukkit.util.BlockVector;
 
 public final class StructurePlacer {
 
-    private static final String[] RUIN_NAMES = {
-        "Farm", "GasStation", "House", "Outpost", "Railstation", "Shop"
+    /** Default structures bundled in the jar — extracted only once, never overwrite user files. */
+    private static final String[] DEFAULT_STRUCTURES = {
+        "Farm", "GasStation", "House", "Outpost", "Railstation", "Shop", "Lost_Library"
     };
-    private static final String[] BUILDING_NAMES = { "Lost_Library" };
+
+    /** Buildings (has emerald block → librarian villager). Users can add to this via config. */
+    public static final java.util.Set<String> BUILDING_SET = new java.util.HashSet<>();
+
+    static {
+        BUILDING_SET.add("Lost_Library");
+    }
 
     private StructurePlacer() {}
 
+    /**
+     * Saves default .nbt files from the jar — only if they don't already exist.
+     * Never overwrites user files.
+     */
     public static void extractStructures(Plugin plugin) {
         File structuresDir = new File(plugin.getDataFolder(), "structures");
         structuresDir.mkdirs();
 
-        String[] allNames = new String[RUIN_NAMES.length + BUILDING_NAMES.length];
-        System.arraycopy(RUIN_NAMES, 0, allNames, 0, RUIN_NAMES.length);
-        System.arraycopy(BUILDING_NAMES, 0, allNames, RUIN_NAMES.length, BUILDING_NAMES.length);
-
-        for (String name : allNames) {
+        for (String name : DEFAULT_STRUCTURES) {
             File dest = new File(structuresDir, name + ".nbt");
+            if (dest.exists()) continue;
+
             try (InputStream in = StructurePlacer.class.getResourceAsStream("/" + name + ".nbt")) {
                 if (in == null) {
-                    plugin.getLogger().warning("Structure resource not found: " + name + ".nbt");
+                    plugin.getLogger().warning("Default structure resource not found: " + name + ".nbt");
                     continue;
                 }
-                Files.copy(in, dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(in, dest.toPath());
             } catch (IOException e) {
-                plugin.getLogger().warning("Failed to extract structure " + name + ": " + e.getMessage());
+                plugin.getLogger().warning("Failed to extract default structure " + name + ": " + e.getMessage());
             }
         }
     }
@@ -72,8 +81,7 @@ public final class StructurePlacer {
             debug(plugin, "Placed structure: " + name);
 
             BlockVector size = structure.getSize();
-            postProcess(plugin, location, size.getBlockX(), size.getBlockY(), size.getBlockZ(),
-                    isBuilding);
+            postProcess(plugin, location, size.getBlockX(), size.getBlockY(), size.getBlockZ(), isBuilding);
             return true;
         } catch (Exception e) {
             plugin.getLogger().warning("Failed to place structure " + name + ": " + e.getMessage());
