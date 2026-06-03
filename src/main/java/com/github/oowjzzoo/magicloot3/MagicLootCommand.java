@@ -1,15 +1,20 @@
 package com.github.oowjzzoo.magicloot3;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.plugin.Plugin;
 
-public class MagicLootCommand implements CommandExecutor {
+public class MagicLootCommand implements CommandExecutor, TabCompleter {
+
+    private static final List<String> SUBCOMMANDS = List.of("version", "debug", "reload");
 
     private final Plugin plugin;
     private String buildNumber;
@@ -24,7 +29,7 @@ public class MagicLootCommand implements CommandExecutor {
         if (args.length == 0) {
             sender.sendMessage(ChatColor.GOLD + "MagicLoot3 " + ChatColor.GRAY + "v"
                     + plugin.getDescription().getVersion() + " (build #" + buildNumber + ")");
-            sender.sendMessage(ChatColor.GRAY + "Usage: /magicloot <version|debug>");
+            sender.sendMessage(ChatColor.GRAY + "Usage: /magicloot <version|debug|reload>");
             return true;
         }
 
@@ -44,9 +49,26 @@ public class MagicLootCommand implements CommandExecutor {
                 sender.sendMessage(ChatColor.GOLD + "MagicLoot3 debug mode: "
                         + (newState ? ChatColor.GREEN + "ON" : ChatColor.RED + "OFF"));
             }
-            default -> sender.sendMessage(ChatColor.RED + "Unknown subcommand. Use: /magicloot <version|debug>");
+            case "reload" -> {
+                MagicLoot3.reload(plugin);
+                sender.sendMessage(ChatColor.GOLD + "MagicLoot3 config reloaded!");
+            }
+            default -> sender.sendMessage(ChatColor.RED + "Unknown subcommand. Use: /magicloot <version|debug|reload>");
         }
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
+        if (args.length == 1) {
+            String prefix = args[0].toLowerCase();
+            List<String> matches = new ArrayList<>();
+            for (String sub : SUBCOMMANDS) {
+                if (sub.startsWith(prefix)) matches.add(sub);
+            }
+            return matches;
+        }
+        return List.of();
     }
 
     private String loadBuildNumber() {

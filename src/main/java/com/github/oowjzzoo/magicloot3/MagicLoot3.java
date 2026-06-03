@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
@@ -28,7 +29,9 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
     public void onEnable() {
         instance = this;
 
-        getCommand("magicloot").setExecutor(new MagicLootCommand(this));
+        MagicLootCommand cmd = new MagicLootCommand(this);
+        getCommand("magicloot").setExecutor(cmd);
+        getCommand("magicloot").setTabCompleter(cmd);
         saveDefaultConfig();
         MagicLootConfig.setupConfigs(this);
 
@@ -142,4 +145,17 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
     public static MagicLoot3 getInstance() { return instance; }
     public static boolean isDebug() { return debug; }
     public static void setDebug(boolean value) { debug = value; }
+
+    public static void reload(Plugin plugin) {
+        instance.reloadConfig();
+        MagicLootConfig.setupConfigs(instance);
+        MagicLootConfig.loadSettings();
+        RuinBuilder.loadRuins(instance);
+        for (org.bukkit.World world : Bukkit.getWorlds()) {
+            StructurePlacer.deployToWorld(instance, world);
+        }
+        instance.getLogger().info("Config reloaded — "
+                + RuinBuilder.ruinNames.size() + " ruins, "
+                + RuinBuilder.buildingNames.size() + " buildings");
+    }
 }

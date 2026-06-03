@@ -11,4 +11,4 @@ website: https://github.com/OoWJZZoO/MagicLoot3
 commands:
   magicloot:
     description: MagicLoot3 commands
-    usage: /magicloot <version|debug>
+    usage: /magicloot <version|debug|reload>
