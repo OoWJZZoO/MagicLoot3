@@ -132,9 +132,9 @@ public class MagicLootConfig {
             }
         }
 
-        ItemManager.PREFIX = getConfig(ConfigType.NAMES).getStringList("prefixes");
-        ItemManager.SUFFIX = getConfig(ConfigType.NAMES).getStringList("suffixes");
-        ItemManager.COLOR = getConfig(ConfigType.NAMES).getStringList("colors");
+        ItemManager.PREFIX = prefixes;
+        ItemManager.SUFFIX = suffixes;
+        ItemManager.COLOR = colors;
 
         for (org.bukkit.potion.PotionEffectType e : org.bukkit.potion.PotionEffectType.values()) {
             if (e != null) {
