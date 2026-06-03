@@ -38,9 +38,9 @@ public final class StructurePlacer {
             File file = new File(plugin.getDataFolder(), "schematics/" + name + ".schematic");
             if (file.exists()) {
                 debug(plugin, "pasteRuin: WE for " + name);
-                BlockVector3[] bbox = pasteWithWorldEdit(plugin, location, file);
-                if (bbox != null) {
-                    postProcess(plugin, bbox[0], bbox[1], location, false, name);
+                BlockVector3 dims = pasteWithWorldEdit(plugin, location, file);
+                if (dims != null) {
+                    postProcess(plugin, location, dims, false, name);
                     return;
                 }
             }
@@ -55,9 +55,9 @@ public final class StructurePlacer {
             File file = new File(plugin.getDataFolder(), "buildings/" + name + ".schematic");
             if (file.exists()) {
                 debug(plugin, "pasteBuilding: WE for " + name);
-                BlockVector3[] bbox = pasteWithWorldEdit(plugin, location, file);
-                if (bbox != null) {
-                    postProcess(plugin, bbox[0], bbox[1], location, true, name);
+                BlockVector3 dims = pasteWithWorldEdit(plugin, location, file);
+                if (dims != null) {
+                    postProcess(plugin, location, dims, true, name);
                     return;
                 }
             }
@@ -70,10 +70,10 @@ public final class StructurePlacer {
     // --- WorldEdit backend ---
 
     /**
-     * Pastes via WorldEdit. Returns [minCorner, maxCorner] from the EditSession's
-     * own block-change tracking — the authoritative bounding box of the paste.
+     * Pastes via WorldEdit. Returns the clipboard dimensions (WorldEdit's own
+     * parsing of the .schematic), or null on failure.
      */
-    private static BlockVector3[] pasteWithWorldEdit(Plugin plugin, Location loc, File file) {
+    private static BlockVector3 pasteWithWorldEdit(Plugin plugin, Location loc, File file) {
         try (FileInputStream fis = new FileInputStream(file)) {
             var format = com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats.findByFile(file);
             if (format == null) {
@@ -82,6 +82,7 @@ public final class StructurePlacer {
             }
             var reader = format.getReader(fis);
             var clipboard = reader.read();
+            BlockVector3 dims = clipboard.getDimensions();
 
             var weWorld = com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(loc.getWorld());
             try (var session = com.sk89q.worldedit.WorldEdit.getInstance().newEditSession(weWorld)) {
@@ -91,47 +92,38 @@ public final class StructurePlacer {
                         .ignoreAirBlocks(false)
                         .build();
                 com.sk89q.worldedit.function.operation.Operations.complete(pasteOp);
-
-                // EditSession tracks the bounding box of all changes
-                return new BlockVector3[] {
-                        session.getMinimumPoint(),
-                        session.getMaximumPoint()
-                };
             }
+            return dims;
         } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING,
-                    "WE paste failed: " + e.getMessage());
+            plugin.getLogger().log(Level.WARNING, "WE paste failed: " + e.getMessage());
             return null;
         }
     }
 
     // --- Post-processing ---
 
-    /**
-     * Scan the exact region that WorldEdit modified, as reported by the
-     * EditSession's own block-change tracking. No guessing, no calculating.
-     */
-    private static void postProcess(Plugin plugin,
-                                      BlockVector3 min, BlockVector3 max,
-                                      Location loc, boolean isBuilding, String name) {
-        int minX = min.x(), minY = min.y(), minZ = min.z();
-        int maxX = max.x(), maxY = max.y(), maxZ = max.z();
-        int dx = maxX - minX + 1;
-        int dz = maxZ - minZ + 1;
-
+    private static void postProcess(Plugin plugin, Location loc,
+                                      BlockVector3 dims,
+                                      boolean isBuilding, String name) {
+        int dx = dims.x(), dy = dims.y(), dz = dims.z();
+        // Safety: schematic dimensions should be small; something is wrong if not
+        if (dx <= 0 || dy <= 0 || dz <= 0 || dx > 256 || dy > 256 || dz > 256) {
+            plugin.getLogger().warning("Suspicious schematic dims: " + dx + "x" + dy + "x" + dz + ", skipping");
+            return;
+        }
+        int bx = loc.getBlockX(), by = loc.getBlockY(), bz = loc.getBlockZ();
         var world = loc.getWorld();
         boolean[][] chestDone = new boolean[dx + 1][dz + 1];
         int chestCount = 0, doubleCount = 0;
 
         debug(plugin, "postProcess " + name
-                + ": min=(" + minX + "," + minY + "," + minZ + ")"
-                + " max=(" + maxX + "," + maxY + "," + maxZ + ")"
-                + " size=" + dx + "×" + (maxY - minY + 1) + "×" + dz);
+                + ": corner=(" + bx + "," + by + "," + bz + ")"
+                + " dims=(" + dx + "," + dy + "," + dz + ") from WE");
 
         for (int x = 0; x < dx; ++x) {
-            for (int y = 0; y <= maxY - minY; ++y) {
+            for (int y = 0; y < dy; ++y) {
                 for (int z = 0; z < dz; ++z) {
-                    Block block = world.getBlockAt(minX + x, minY + y, minZ + z);
+                    Block block = world.getBlockAt(bx + x, by + y, bz + z);
                     Material type = block.getType();
 
                     if (type == Material.CHEST || type == Material.TRAPPED_CHEST) {
@@ -146,7 +138,7 @@ public final class StructurePlacer {
 
                         // +X neighbor
                         if (x + 1 < dx) {
-                            Block nx = world.getBlockAt(minX + x + 1, minY + y, minZ + z);
+                            Block nx = world.getBlockAt(bx + x + 1, by + y, bz + z);
                             if (nx.getType() == type && !chestDone[x + 1][z]) {
                                 chestDone[x + 1][z] = true;
                                 nx.getState(true);
@@ -156,7 +148,7 @@ public final class StructurePlacer {
                         }
                         // +Z neighbor
                         if (z + 1 < dz) {
-                            Block nz = world.getBlockAt(minX + x, minY + y, minZ + z + 1);
+                            Block nz = world.getBlockAt(bx + x, by + y, bz + z + 1);
                             if (nz.getType() == type && !chestDone[x][z + 1]) {
                                 chestDone[x][z + 1] = true;
                                 nz.getState(true);
