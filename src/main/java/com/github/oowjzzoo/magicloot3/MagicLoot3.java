@@ -90,14 +90,7 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
         // Create ItemGroup
         ItemGroup itemGroup = new ItemGroup(
                 new NamespacedKey(this, "magicloot"),
-                new SlimefunItemStack(
-                        "MAGICLOOT_BOOKSHELF",
-                        Material.BOOKSHELF,
-                        "§5MagicLoot",
-                        "",
-                        "§rScrambled Parts of an",
-                        "§rancient Library..."
-                )
+                new ItemStack(Material.BOOKSHELF)
         );
 
         // Register Lost Bookshelf
@@ -112,7 +105,7 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
 
         ItemStack[] bookshelfRecipe = {
                 new ItemStack(Material.BOOKSHELF), null, new ItemStack(Material.BOOKSHELF),
-                SlimefunItems.MAGIC_LUMP_3, SlimefunItems.MAGICAL_BOOK_COVER, SlimefunItems.MAGIC_LUMP_3,
+                SlimefunItems.MAGIC_LUMP_3.item(), SlimefunItems.MAGICAL_BOOK_COVER.item(), SlimefunItems.MAGIC_LUMP_3.item(),
                 new ItemStack(Material.BOOKSHELF), null, new ItemStack(Material.BOOKSHELF)
         };
 
@@ -121,7 +114,7 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
                 lostBookshelfStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE,
                 bookshelfRecipe,
-                new SlimefunItemStack(lostBookshelfStack, 2)
+                lostBookshelfStack.asQuantity(2)
         );
         lostBookshelf.register(this);
 
@@ -135,9 +128,9 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
         );
 
         ItemStack[] deskRecipe = {
-                lostBookshelfStack, null, lostBookshelfStack,
-                null, SlimefunItems.TALISMAN, null,
-                lostBookshelfStack, null, lostBookshelfStack
+                lostBookshelfStack.item(), null, lostBookshelfStack.item(),
+                null, SlimefunItems.COMMON_TALISMAN.item(), null,
+                lostBookshelfStack.item(), null, lostBookshelfStack.item()
         };
 
         SlimefunItem lostDesk = new SlimefunItem(

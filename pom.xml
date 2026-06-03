@@ -24,10 +24,6 @@
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -39,9 +35,10 @@
         </dependency>
         <dependency>
             <groupId>com.github.slimefun</groupId>
-            <artifactId>Slimefun4</artifactId>
-            <version>RC-52</version>
-            <scope>provided</scope>
+            <artifactId>Slimefun</artifactId>
+            <version>RC-37</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/Slimefun.jar</systemPath>
         </dependency>
     </dependencies>
 
@@ -63,6 +60,11 @@
                 <configuration>
                     <propertiesEncoding>UTF-8</propertiesEncoding>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
             </plugin>
         </plugins>
         <resources>

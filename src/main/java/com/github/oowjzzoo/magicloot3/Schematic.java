@@ -89,7 +89,7 @@ public class Schematic {
                 for (int z = 0; z < length; ++z) {
                     int index = y * width * length + z * width + x;
                     Block block = new Location(loc.getWorld(), x + loc.getX(), y + loc.getY(), z + loc.getZ()).getBlock();
-                    Material material = Material.getMaterial(blocks[index]);
+                    Material material = getMaterialById(blocks[index]);
                     if (material == null) continue;
 
                     // Skip placing air over water/lava (preserve terrain liquids)
@@ -192,5 +192,14 @@ public class Schematic {
             throw new IllegalArgumentException(key + " tag is not of tag type " + expected.getName());
         }
         return expected.cast(tag);
+    }
+
+    private static Material getMaterialById(short id) {
+        Material[] values = Material.values();
+        int index = id & 0xFFFF;
+        if (index >= 0 && index < values.length) {
+            return values[index];
+        }
+        return null;
     }
 }
