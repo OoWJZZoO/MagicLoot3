@@ -11,4 +11,9 @@ website: https://github.com/OoWJZZoO/MagicLoot3
 commands:
   magicloot:
     description: MagicLoot3 commands
-    usage: /magicloot <version|debug|reload>
+    usage: /magicloot <version|debug|reload|generate <name>>
+
+permissions:
+  magicloot3.admin:
+    description: Allows admin commands (debug, reload, generate)
+    default: op
