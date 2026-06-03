@@ -125,7 +125,9 @@ public class MagicLootConfig {
             if (e != null) {
                 if (getMaxLevel(e) > 0) {
                     ItemManager.POTIONEFFECTS.add(e);
-                    ItemManager.potion.put(formatEffectName(e.getKey().getKey()), e);
+                    String trName = Messages.get("effects." + e.getKey().getKey(),
+                            formatEffectName(e.getKey().getKey()));
+                    ItemManager.potion.put(trName, e);
                 }
             }
         }
@@ -136,8 +138,9 @@ public class MagicLootConfig {
 
         for (org.bukkit.potion.PotionEffectType e : org.bukkit.potion.PotionEffectType.values()) {
             if (e != null) {
-                if (getMaxLevel(formatEffectName(e.getKey().getKey())) > 0) {
-                    ItemManager.EFFECTS.add(formatEffectName(e.getKey().getKey()));
+                String enName = formatEffectName(e.getKey().getKey());
+                if (getMaxLevel(enName) > 0) {
+                    ItemManager.EFFECTS.add(Messages.get("effects." + e.getKey().getKey(), enName));
                 }
             }
         }

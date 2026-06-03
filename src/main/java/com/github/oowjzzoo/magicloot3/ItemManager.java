@@ -74,7 +74,7 @@ public class ItemManager {
                     item.setType(isSplash ? Material.SPLASH_POTION : Material.LINGERING_POTION);
                     String name = COLOR.get(random.nextInt(COLOR.size()))
                             + PREFIX.get(random.nextInt(PREFIX.size()))
-                            + " " + SUFFIX.get(random.nextInt(SUFFIX.size()));
+                            + SUFFIX.get(random.nextInt(SUFFIX.size()));
                     PotionMeta meta = (PotionMeta) item.getItemMeta();
                     meta.setBasePotionType(isSplash ? PotionType.AWKWARD : PotionType.AWKWARD);
                     meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
@@ -114,7 +114,7 @@ public class ItemManager {
                     if (TOOLS.isEmpty()) break;
                     item.setType(TOOLS.get(random.nextInt(TOOLS.size())));
                     ItemMeta im = item.getItemMeta();
-                    im.setDisplayName(Messages.get("unanalyzed_name"));
+                    im.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&7&kMEH WANNA BE EXAMINED"));
                     List<String> lore = new ArrayList<>();
                     lore.add("");
                     lore.add(Messages.get("tier_lore_prefix") + Messages.get("tiers.UNKNOWN"));
@@ -137,7 +137,7 @@ public class ItemManager {
 
         String name = COLOR.get(random.nextInt(COLOR.size()))
                 + PREFIX.get(random.nextInt(PREFIX.size()))
-                + " " + SUFFIX.get(random.nextInt(SUFFIX.size()));
+                + SUFFIX.get(random.nextInt(SUFFIX.size()));
 
         // Clear existing enchantments
         for (Enchantment e : item.getEnchantments().keySet()) {

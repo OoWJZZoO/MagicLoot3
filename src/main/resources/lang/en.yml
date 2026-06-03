@@ -1,5 +1,5 @@
 npc:
-  name: "Lost Librarian"
+  name: "§5§lLost Librarian"
   cannot_examine: "§5§lLost Librarian §8> §7Sorry, but I cannot seem to be able to examine this Item"
   success: "§5§lLost Librarian §8> §7There you go! Thanks for visiting me."
   no_xp: "§5§lLost Librarian §8> §7Sorry, but it seems like you have insufficient Experience Levels."
@@ -76,41 +76,76 @@ prefixes:
   - Great
   - Crying
 
+effects:
+  speed: "Speed"
+  slow: "Slowness"
+  fast_digging: "Haste"
+  slow_digging: "Mining Fatigue"
+  increase_damage: "Strength"
+  heal: "Instant Health"
+  harm: "Instant Damage"
+  jump: "Jump Boost"
+  confusion: "Nausea"
+  regeneration: "Regeneration"
+  damage_resistance: "Resistance"
+  fire_resistance: "Fire Resistance"
+  water_breathing: "Water Breathing"
+  invisibility: "Invisibility"
+  blindness: "Blindness"
+  night_vision: "Night Vision"
+  hunger: "Hunger"
+  weakness: "Weakness"
+  poison: "Poison"
+  wither: "Wither"
+  health_boost: "Health Boost"
+  absorption: "Absorption"
+  saturation: "Saturation"
+  glowing: "Glowing"
+  levitation: "Levitation"
+  luck: "Luck"
+  bad_luck: "Bad Luck"
+  slow_falling: "Slow Falling"
+  conduit_power: "Conduit Power"
+  dolphins_grace: "Dolphin's Grace"
+  bad_omen: "Bad Omen"
+  hero_of_the_village: "Hero of the Village"
+  darkness: "Darkness"
+
 suffixes:
-  - Tool
-  - Wizard
-  - Magician
-  - Kindness
-  - Spirit
-  - Darkness
-  - Lion
-  - King
-  - Dragon
-  - Heaven
-  - Swiftness
-  - Absorption
-  - Spell
-  - Lump
-  - Glory
-  - Demon
-  - Fury
-  - Challenge
-  - Wolf
-  - Ghost
-  - Fire
-  - Night
-  - Day
-  - Rose
-  - Crime
-  - Cry
-  - Screwdriver
-  - Intelligence
-  - Madness
-  - Skill
-  - Skull
-  - Sun
-  - Monster
-  - Treasure
+  -  Tool
+  -  Wizard
+  -  Magician
+  -  Kindness
+  -  Spirit
+  -  Darkness
+  -  Lion
+  -  King
+  -  Dragon
+  -  Heaven
+  -  Swiftness
+  -  Absorption
+  -  Spell
+  -  Lump
+  -  Glory
+  -  Demon
+  -  Fury
+  -  Challenge
+  -  Wolf
+  -  Ghost
+  -  Fire
+  -  Night
+  -  Day
+  -  Rose
+  -  Crime
+  -  Cry
+  -  Screwdriver
+  -  Intelligence
+  -  Madness
+  -  Skill
+  -  Skull
+  -  Sun
+  -  Monster
+  -  Treasure
 
 colors:
   - "&9"
