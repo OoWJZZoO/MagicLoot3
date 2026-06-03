@@ -194,12 +194,65 @@ public class Schematic {
         return expected.cast(tag);
     }
 
+    /**
+     * Converts legacy numeric block IDs (from .schematic files) to modern Materials.
+     * Uses CraftBukkit's internal mapping, which is always available at runtime on Paper.
+     */
     private static Material getMaterialById(short id) {
-        Material[] values = Material.values();
-        int index = id & 0xFFFF;
-        if (index >= 0 && index < values.length) {
-            return values[index];
+        try {
+            Class<?> magicNumbers = Class.forName("org.bukkit.craftbukkit.util.CraftMagicNumbers");
+            java.lang.reflect.Method getBlock = magicNumbers.getMethod("getBlock", int.class);
+            return (Material) getBlock.invoke(null, (int) id);
+        } catch (Exception e) {
+            return getMaterialByIdFallback(id);
         }
-        return null;
+    }
+
+    private static Material getMaterialByIdFallback(short id) {
+        // Common legacy block IDs for schematic importing
+        return switch (id) {
+            case 0   -> Material.AIR;
+            case 1   -> Material.STONE;
+            case 2   -> Material.GRASS_BLOCK;
+            case 3   -> Material.DIRT;
+            case 4   -> Material.COBBLESTONE;
+            case 5   -> Material.OAK_PLANKS;
+            case 12  -> Material.SAND;
+            case 13  -> Material.GRAVEL;
+            case 17  -> Material.OAK_LOG;
+            case 18  -> Material.OAK_LEAVES;
+            case 20  -> Material.GLASS;
+            case 24  -> Material.SANDSTONE;
+            case 35  -> Material.WHITE_WOOL;
+            case 44  -> Material.STONE_SLAB;
+            case 45  -> Material.BRICKS;
+            case 48  -> Material.MOSSY_COBBLESTONE;
+            case 49  -> Material.OBSIDIAN;
+            case 50  -> Material.TORCH;
+            case 53  -> Material.OAK_STAIRS;
+            case 54  -> Material.CHEST;
+            case 58  -> Material.CRAFTING_TABLE;
+            case 61  -> Material.FURNACE;
+            case 65  -> Material.LADDER;
+            case 67  -> Material.COBBLESTONE_STAIRS;
+            case 79  -> Material.ICE;
+            case 82  -> Material.CLAY;
+            case 85  -> Material.OAK_FENCE;
+            case 89  -> Material.GLOWSTONE;
+            case 98  -> Material.STONE_BRICKS;
+            case 101 -> Material.IRON_BARS;
+            case 102 -> Material.GLASS_PANE;
+            case 107 -> Material.OAK_FENCE_GATE;
+            case 108 -> Material.BRICK_STAIRS;
+            case 109 -> Material.STONE_BRICK_STAIRS;
+            case 126 -> Material.OAK_SLAB;
+            case 128 -> Material.SANDSTONE_STAIRS;
+            case 133 -> Material.EMERALD_BLOCK;
+            case 134 -> Material.SPRUCE_STAIRS;
+            case 139 -> Material.COBBLESTONE_WALL;
+            case 144 -> Material.SKELETON_SKULL;
+            case 146 -> Material.TRAPPED_CHEST;
+            default  -> null;
+        };
     }
 }
