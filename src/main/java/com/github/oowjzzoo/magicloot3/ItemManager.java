@@ -120,6 +120,8 @@ public class ItemManager {
                     lore.add("");
                     lore.add(Messages.get("tier_lore_prefix") + Messages.get("tiers.UNKNOWN"));
                     im.setLore(lore);
+                    im.getPersistentDataContainer().set(ItemKeys.TIER,
+                            org.bukkit.persistence.PersistentDataType.STRING, "UNKNOWN");
                     item.setItemMeta(im);
                     if (item.getType().getMaxDurability() > 0) {
                         applyDamage(item, (item.getType().getMaxDurability() / 4) * 3);
