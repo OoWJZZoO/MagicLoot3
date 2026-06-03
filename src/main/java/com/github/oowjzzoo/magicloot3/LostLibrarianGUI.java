@@ -1,0 +1,103 @@
+package com.github.oowjzzoo.magicloot3;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import com.github.oowjzzoo.magicloot3.util.SkullCreator;
+
+public final class LostLibrarianGUI {
+
+    public static final String TITLE =
+            ChatColor.DARK_PURPLE.toString() + ChatColor.BOLD + "Lost Librarian";
+
+    private LostLibrarianGUI() {}
+
+    public static Inventory create(Player player) {
+        Inventory inv = Bukkit.createInventory(null, 18, TITLE);
+
+        // Border panes (slots 0, 8, 9, 17)
+        ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta borderMeta = border.getItemMeta();
+        borderMeta.setDisplayName(" ");
+        border.setItemMeta(borderMeta);
+        inv.setItem(0, border);
+        inv.setItem(8, border);
+        inv.setItem(9, border);
+        inv.setItem(17, border);
+
+        // Random option (slot 4) — skull
+        ItemStack randomIcon = SkullCreator.createSkull(
+                "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzk3OTU1NDYyZTRlNTc2NjY0NDk5YWM0YTFjNTcyZjYxNDNmMTlhZDJkNjE5NDc3NjE5OGY4ZDEzNmZkYjIifX19",
+                "&7[&rRandom&7]"
+        );
+        ItemMeta randomMeta = randomIcon.getItemMeta();
+        List<String> randomLore = new ArrayList<>();
+        randomLore.add("");
+        randomLore.add("§7Cost: §b" + getCost(LootTier.getRandomApplicable()) + " XP Level");
+        randomMeta.setLore(randomLore);
+        randomIcon.setItemMeta(randomMeta);
+        inv.setItem(4, randomIcon);
+
+        // Tier buttons (slots 11-15)
+        LootTier[] tiers = {LootTier.COMMON, LootTier.UNCOMMON, LootTier.RARE, LootTier.EPIC, LootTier.LEGENDARY};
+        for (int i = 0; i < tiers.length; i++) {
+            LootTier tier = tiers[i];
+            Material pane = getPaneMaterial(tier.getPrimaryColor());
+            ItemStack paneItem = new ItemStack(pane);
+            ItemMeta paneMeta = paneItem.getItemMeta();
+            paneMeta.setDisplayName(tier.getTag());
+            List<String> lore = new ArrayList<>();
+            lore.add("");
+            lore.add("§7Cost: §b" + getCost(tier) + " XP Level");
+            paneMeta.setLore(lore);
+            paneItem.setItemMeta(paneMeta);
+            inv.setItem(11 + i, paneItem);
+        }
+
+        return inv;
+    }
+
+    public static boolean handleClick(Player player, int slot) {
+        switch (slot) {
+            case 4:  LostLibrarian.examineTier(player, LootTier.getRandomApplicable()); break;
+            case 11: LostLibrarian.examineTier(player, LootTier.COMMON); break;
+            case 12: LostLibrarian.examineTier(player, LootTier.UNCOMMON); break;
+            case 13: LostLibrarian.examineTier(player, LootTier.RARE); break;
+            case 14: LostLibrarian.examineTier(player, LootTier.EPIC); break;
+            case 15: LostLibrarian.examineTier(player, LootTier.LEGENDARY); break;
+            default: return false;
+        }
+        return true;
+    }
+
+    private static int getCost(LootTier tier) {
+        // Config lookup by tier name: costs.COMMON, costs.RARE, etc.
+        return org.bukkit.Bukkit.getPluginManager()
+                .getPlugin("MagicLoot3")
+                .getConfig()
+                .getInt("costs." + tier.toString());
+    }
+
+    /**
+     * Map legacy wool color data values to modern stained glass pane materials.
+     * 13=GREEN→LIME, 10=PURPLE→PURPLE, 9=CYAN→CYAN, 4=YELLOW→YELLOW, 1=ORANGE→ORANGE
+     */
+    private static Material getPaneMaterial(int colorId) {
+        return switch (colorId) {
+            case 13 -> Material.LIME_STAINED_GLASS_PANE;
+            case 10 -> Material.PURPLE_STAINED_GLASS_PANE;
+            case 9  -> Material.CYAN_STAINED_GLASS_PANE;
+            case 4  -> Material.YELLOW_STAINED_GLASS_PANE;
+            case 1  -> Material.ORANGE_STAINED_GLASS_PANE;
+            default -> Material.WHITE_STAINED_GLASS_PANE;
+        };
+    }
+}
