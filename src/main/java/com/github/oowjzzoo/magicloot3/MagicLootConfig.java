@@ -1,10 +1,6 @@
 package com.github.oowjzzoo.magicloot3;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,21 +102,6 @@ public class MagicLootConfig {
             }
         }
 
-        if (!new File(dataFolder, "schematics").exists()) {
-            new File(dataFolder, "schematics").mkdir();
-            loadRuin("GasStation");
-            loadRuin("House");
-            loadRuin("Outpost");
-            loadRuin("Farm");
-            loadRuin("Railstation");
-            loadRuin("Shop");
-        }
-
-        if (!new File(dataFolder, "buildings").exists()) {
-            new File(dataFolder, "buildings").mkdir();
-        }
-        loadBuilding("Lost_Library");
-
         ConfigManager cfg = new ConfigManager(new File(dataFolder, "config.yml"));
         for (String mob : cfg.getStringList("spawners")) {
             mobs.add(EntityType.valueOf(mob));
@@ -216,46 +197,6 @@ public class MagicLootConfig {
             if (part.length() > 1) sb.append(part.substring(1).toLowerCase());
         }
         return sb.toString();
-    }
-
-    // Resource loading
-
-    public static void loadRuin(String name) {
-        InputStream stream = MagicLootConfig.class.getResourceAsStream("/schematics/" + name + ".schematic");
-        if (stream == null) return;
-        OutputStream out = null;
-        byte[] buffer = new byte[4096];
-        try {
-            out = new FileOutputStream(new File(dataFolder, "schematics/" + name + ".schematic"));
-            int read;
-            while ((read = stream.read(buffer)) > 0) {
-                out.write(buffer, 0, read);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try { stream.close(); } catch (IOException ignored) {}
-            if (out != null) try { out.close(); } catch (IOException ignored) {}
-        }
-    }
-
-    private static void loadBuilding(String name) {
-        InputStream stream = MagicLootConfig.class.getResourceAsStream("/buildings/" + name + ".schematic");
-        if (stream == null) return;
-        OutputStream out = null;
-        byte[] buffer = new byte[4096];
-        try {
-            out = new FileOutputStream(new File(dataFolder, "buildings/" + name + ".schematic"));
-            int read;
-            while ((read = stream.read(buffer)) > 0) {
-                out.write(buffer, 0, read);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try { stream.close(); } catch (IOException ignored) {}
-            if (out != null) try { out.close(); } catch (IOException ignored) {}
-        }
     }
 
     private static void loadNames() {

@@ -1,9 +1,7 @@
 package com.github.oowjzzoo.magicloot3;
 
-import java.io.File;
 import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -22,10 +20,14 @@ import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
 public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
 
     private static MagicLoot3 instance;
+    private static boolean debug;
 
     @Override
     public void onEnable() {
         instance = this;
+
+        // Register commands
+        getCommand("magicloot").setExecutor(new MagicLootCommand(this));
 
         // Save default config if not present
         saveDefaultConfig();
@@ -33,12 +35,11 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
         // Initialize secondary configs
         MagicLootConfig.setupConfigs(this);
 
-        // Load ruins
-        try {
-            RuinBuilder.loadRuins();
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Failed to load ruins", e);
-        }
+        // Extract .nbt structure files from jar
+        StructurePlacer.extractStructures(this);
+
+        // Initialize ruin list
+        RuinBuilder.loadRuins(this);
 
         // Delayed registration: load settings and register Slimefun items
         getServer().getScheduler().runTaskLater(this, () -> {
@@ -79,72 +80,54 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
         MagicLootConfig.effects.clear();
         MagicLootConfig.mobs.clear();
 
-        RuinBuilder.schematics = null;
-        RuinBuilder.configs = null;
-        RuinBuilder.buildings = null;
+        RuinBuilder.ruinNames.clear();
+        RuinBuilder.buildingNames.clear();
     }
 
     // --- Slimefun Item Registration ---
 
     private void registerSlimefunItems() {
-        // Create ItemGroup
         ItemGroup itemGroup = new ItemGroup(
                 new NamespacedKey(this, "magicloot"),
-                new ItemStack(Material.BOOKSHELF)
-        );
+                new ItemStack(Material.BOOKSHELF));
 
-        // Register Lost Bookshelf
         SlimefunItemStack lostBookshelfStack = new SlimefunItemStack(
-                "LOST_BOOKSHELF",
-                Material.BOOKSHELF,
-                "§dLost Bookshelf",
-                "",
+                "LOST_BOOKSHELF", Material.BOOKSHELF,
+                "§dLost Bookshelf", "",
                 "§rScrambled Parts of an",
-                "§rancient Library..."
-        );
+                "§rancient Library...");
 
         ItemStack[] bookshelfRecipe = {
                 new ItemStack(Material.BOOKSHELF), null, new ItemStack(Material.BOOKSHELF),
                 SlimefunItems.MAGIC_LUMP_3, SlimefunItems.MAGICAL_BOOK_COVER, SlimefunItems.MAGIC_LUMP_3,
-                new ItemStack(Material.BOOKSHELF), null, new ItemStack(Material.BOOKSHELF)
-        };
+                new ItemStack(Material.BOOKSHELF), null, new ItemStack(Material.BOOKSHELF)};
 
         SlimefunItem lostBookshelf = new SlimefunItem(
-                itemGroup,
-                lostBookshelfStack,
+                itemGroup, lostBookshelfStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE,
                 bookshelfRecipe,
-                new SlimefunItemStack(lostBookshelfStack, 2)
-        );
+                new SlimefunItemStack(lostBookshelfStack, 2));
         lostBookshelf.register(this);
 
-        // Register Lost Librarian's Desk
         SlimefunItemStack lostDeskStack = new SlimefunItemStack(
-                "LOST_LIBRARIANS_DESK",
-                Material.CRAFTING_TABLE,
-                "§dLost Librarian's Desk",
-                "",
-                "§rBasically like a Lost Librarian"
-        );
+                "LOST_LIBRARIANS_DESK", Material.CRAFTING_TABLE,
+                "§dLost Librarian's Desk", "",
+                "§rBasically like a Lost Librarian");
 
         ItemStack[] deskRecipe = {
                 lostBookshelfStack, null, lostBookshelfStack,
                 null, SlimefunItems.COMMON_TALISMAN, null,
-                lostBookshelfStack, null, lostBookshelfStack
-        };
+                lostBookshelfStack, null, lostBookshelfStack};
 
         SlimefunItem lostDesk = new SlimefunItem(
-                itemGroup,
-                lostDeskStack,
+                itemGroup, lostDeskStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE,
-                deskRecipe
-        );
+                deskRecipe);
 
         lostDesk.addItemHandler((ItemUseHandler) event -> {
             event.cancel();
             LostLibrarian.openMenu(event.getPlayer());
         });
-
         lostDesk.register(this);
 
         getLogger().info("Registered Slimefun items: LOST_BOOKSHELF, LOST_LIBRARIANS_DESK");
@@ -153,18 +136,16 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
     // --- SlimefunAddon interface ---
 
     @Override
-    public JavaPlugin getJavaPlugin() {
-        return this;
-    }
+    public JavaPlugin getJavaPlugin() { return this; }
 
     @Override
     public String getBugTrackerURL() {
         return "https://github.com/OoWJZZoO/MagicLoot3/issues";
     }
 
-    // --- Static accessor ---
+    // --- Static accessors ---
 
-    public static MagicLoot3 getInstance() {
-        return instance;
-    }
+    public static MagicLoot3 getInstance() { return instance; }
+    public static boolean isDebug() { return debug; }
+    public static void setDebug(boolean value) { debug = value; }
 }
