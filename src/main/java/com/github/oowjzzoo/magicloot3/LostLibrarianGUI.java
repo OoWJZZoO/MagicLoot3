@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -15,38 +14,39 @@ import com.github.oowjzzoo.magicloot3.util.SkullCreator;
 
 public final class LostLibrarianGUI {
 
-    public static final String TITLE =
-            ChatColor.DARK_PURPLE.toString() + ChatColor.BOLD + "Lost Librarian";
+    public static String getTitle() {
+        return Messages.get("gui.title");
+    }
 
     private LostLibrarianGUI() {}
 
     public static Inventory create(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 18, TITLE);
+        String title = getTitle();
+        Inventory inv = Bukkit.createInventory(null, 18, title);
 
-        // Border panes (slots 0, 8, 9, 17)
+        // Border panes
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta borderMeta = border.getItemMeta();
-        borderMeta.setDisplayName(" ");
+        borderMeta.setDisplayName(Messages.get("gui.border"));
         border.setItemMeta(borderMeta);
         inv.setItem(0, border);
         inv.setItem(8, border);
         inv.setItem(9, border);
         inv.setItem(17, border);
 
-        // Random option (slot 4) — skull
+        // Random option (slot 4)
         ItemStack randomIcon = SkullCreator.createSkull(
                 "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzk3OTU1NDYyZTRlNTc2NjY0NDk5YWM0YTFjNTcyZjYxNDNmMTlhZDJkNjE5NDc3NjE5OGY4ZDEzNmZkYjIifX19",
-                "&7[&rRandom&7]"
-        );
+                Messages.get("gui.random"));
         ItemMeta randomMeta = randomIcon.getItemMeta();
         List<String> randomLore = new ArrayList<>();
         randomLore.add("");
-        randomLore.add("§7Cost: §b" + getCost(LootTier.getRandomApplicable()) + " XP Level");
+        randomLore.add(Messages.get("gui.cost", getCost(LootTier.getRandomApplicable())));
         randomMeta.setLore(randomLore);
         randomIcon.setItemMeta(randomMeta);
         inv.setItem(4, randomIcon);
 
-        // Tier buttons (slots 11-15)
+        // Tier buttons
         LootTier[] tiers = {LootTier.COMMON, LootTier.UNCOMMON, LootTier.RARE, LootTier.EPIC, LootTier.LEGENDARY};
         for (int i = 0; i < tiers.length; i++) {
             LootTier tier = tiers[i];
@@ -56,7 +56,7 @@ public final class LostLibrarianGUI {
             paneMeta.setDisplayName(tier.getTag());
             List<String> lore = new ArrayList<>();
             lore.add("");
-            lore.add("§7Cost: §b" + getCost(tier) + " XP Level");
+            lore.add(Messages.get("gui.cost", getCost(tier)));
             paneMeta.setLore(lore);
             paneItem.setItemMeta(paneMeta);
             inv.setItem(11 + i, paneItem);
@@ -79,17 +79,10 @@ public final class LostLibrarianGUI {
     }
 
     private static int getCost(LootTier tier) {
-        // Config lookup by tier name: costs.COMMON, costs.RARE, etc.
-        return org.bukkit.Bukkit.getPluginManager()
-                .getPlugin("MagicLoot3")
-                .getConfig()
-                .getInt("costs." + tier.toString());
+        return Bukkit.getPluginManager().getPlugin("MagicLoot3")
+                .getConfig().getInt("costs." + tier.toString());
     }
 
-    /**
-     * Map legacy wool color data values to modern stained glass pane materials.
-     * 13=GREEN→LIME, 10=PURPLE→PURPLE, 9=CYAN→CYAN, 4=YELLOW→YELLOW, 1=ORANGE→ORANGE
-     */
     private static Material getPaneMaterial(int colorId) {
         return switch (colorId) {
             case 13 -> Material.LIME_STAINED_GLASS_PANE;

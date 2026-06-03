@@ -33,18 +33,18 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
         getCommand("magicloot").setExecutor(cmd);
         getCommand("magicloot").setTabCompleter(cmd);
         saveDefaultConfig();
-        MagicLootConfig.setupConfigs(this);
 
-        // Extract default .nbt files to plugin folder (saveDefault semantics)
+        // Load language
+        String lang = getConfig().getString("language", "zh");
+        Messages.load(this, lang);
+
+        MagicLootConfig.setupConfigs(this);
         StructurePlacer.extractDefaults(this);
         RuinBuilder.loadRuins(this);
 
-        // Deploy structures to already-loaded worlds
         for (org.bukkit.World world : Bukkit.getWorlds()) {
             StructurePlacer.deployToWorld(this, world);
         }
-
-        // Deploy structures to worlds loaded later
         getServer().getPluginManager().registerEvents(this, this);
 
         getServer().getScheduler().runTaskLater(this, () -> {
@@ -52,13 +52,13 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
 
             if (Slimefun.instance() != null) {
                 registerSlimefunItems();
-                getLogger().info("Slimefun integration enabled!");
+                getLogger().info(Messages.get("log.slimefun_enabled"));
             } else {
-                getLogger().warning("Slimefun not found - SF items will not be registered.");
+                getLogger().warning(Messages.get("log.slimefun_not_found"));
             }
 
             new LootListener(this);
-            getLogger().info("MagicLoot3 loaded successfully!");
+            getLogger().info(Messages.get("log.loaded"));
         }, 10L);
     }
 
@@ -97,8 +97,9 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
 
         SlimefunItemStack lostBookshelfStack = new SlimefunItemStack(
                 "LOST_BOOKSHELF", Material.BOOKSHELF,
-                "§dLost Bookshelf", "",
-                "§rScrambled Parts of an", "§rancient Library...");
+                "§d旧日书架", "",
+                "§7残破的古老书页",
+                "§7似乎来自一座失落的图书馆……");
 
         ItemStack[] bookshelfRecipe = {
                 new ItemStack(Material.BOOKSHELF), null, new ItemStack(Material.BOOKSHELF),
@@ -114,8 +115,8 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
 
         SlimefunItemStack lostDeskStack = new SlimefunItemStack(
                 "LOST_LIBRARIANS_DESK", Material.CRAFTING_TABLE,
-                "§dLost Librarian's Desk", "",
-                "§rBasically like a Lost Librarian");
+                "§d遗物鉴定桌", "",
+                "§7与无魂鉴定师本人无异");
 
         ItemStack[] deskRecipe = {
                 lostBookshelfStack, null, lostBookshelfStack,
@@ -131,7 +132,7 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
         });
         lostDesk.register(this);
 
-        getLogger().info("Registered Slimefun items: LOST_BOOKSHELF, LOST_LIBRARIANS_DESK");
+        getLogger().info(Messages.get("log.items_registered"));
     }
 
     @Override
@@ -148,14 +149,15 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
 
     public static void reload(Plugin plugin) {
         instance.reloadConfig();
+        String lang = instance.getConfig().getString("language", "zh");
+        Messages.load(instance, lang);
         MagicLootConfig.setupConfigs(instance);
         MagicLootConfig.loadSettings();
         RuinBuilder.loadRuins(instance);
         for (org.bukkit.World world : Bukkit.getWorlds()) {
             StructurePlacer.deployToWorld(instance, world);
         }
-        instance.getLogger().info("Config reloaded — "
-                + RuinBuilder.ruinNames.size() + " ruins, "
-                + RuinBuilder.buildingNames.size() + " buildings");
+        instance.getLogger().info(Messages.get("log.config_reloaded",
+                RuinBuilder.ruinNames.size(), RuinBuilder.buildingNames.size()));
     }
 }

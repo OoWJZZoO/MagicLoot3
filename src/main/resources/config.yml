@@ -1,24 +1,38 @@
+# ====== MagicLoot3 主配置 ======
+# 语言：zh（中文）/ en（英文）
+language: zh
+
 options:
   auto-update: true
   log: true
+
+# ====== 生成概率 ======
 chances:
-  ruin: 30
-  mobs: 40
+  ruin: 30       # 遗迹生成概率（百分比，每个新区块触发一次判定）
+  mobs: 40       # 怪物穿戴随机装备的概率（百分比）
+
+# ====== 战利品数量范围 ======
 items:
   min: 2
   max: 10
+
 enchantments:
   min: 2
   max: 5
+
 potions:
   min: 1
   max: 3
+
 effects:
   min: 0
   max: 3
+
 slimefun:
   min: 2
   max: 6
+
+# ====== 鉴定费用（XP 等级） ======
 costs:
   RANDOM: 10
   COMMON: 2
@@ -26,6 +40,8 @@ costs:
   RARE: 10
   EPIC: 25
   LEGENDARY: 50
+
+# ====== 启用的战利品类型 ======
 enable:
   TREASURE: true
   TOOL: true
@@ -33,9 +49,13 @@ enable:
   BOOK: true
   POTION: true
   UNANALIZED: true
+
+# ====== 世界白名单（仅这些世界会生成遗迹） ======
 world-whitelist:
 - world
 - world_the_end
+
+# ====== 刷怪笼生物池 ======
 spawners:
 - ZOMBIE
 - SPIDER

@@ -53,7 +53,7 @@ public class LootListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player player)) return;
-        if (!e.getView().getTitle().equals(LostLibrarianGUI.TITLE)) return;
+        if (!e.getView().getTitle().equals(LostLibrarianGUI.getTitle())) return;
         e.setCancelled(true);
         if (e.getCurrentItem() == null) return;
         if (e.getClickedInventory() != e.getView().getTopInventory()) return;
@@ -108,7 +108,8 @@ public class LootListener implements Listener {
         Entity entity = e.getRightClicked();
         if (entity instanceof Villager villager
                 && villager.getCustomName() != null
-                && villager.getCustomName().equals("§5§lLost Librarian")) {
+                && villager.getCustomName() != null
+                && villager.getCustomName().equals(Messages.get("npc.name"))) {
             e.setCancelled(true);
             try {
                 LostLibrarian.openMenu(e.getPlayer());
@@ -129,7 +130,7 @@ public class LootListener implements Listener {
         // Protect Lost Librarian villagers
         if (victim instanceof Villager
                 && victim.getCustomName() != null
-                && victim.getCustomName().equals("§5§lLost Librarian")) {
+                && victim.getCustomName().equals(Messages.get("npc.name"))) {
             e.setCancelled(true);
             return;
         }

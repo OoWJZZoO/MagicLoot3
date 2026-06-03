@@ -114,10 +114,10 @@ public class ItemManager {
                     if (TOOLS.isEmpty()) break;
                     item.setType(TOOLS.get(random.nextInt(TOOLS.size())));
                     ItemMeta im = item.getItemMeta();
-                    im.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&7&kMEH WANNA BE EXAMINED"));
+                    im.setDisplayName(Messages.get("unanalyzed_name"));
                     List<String> lore = new ArrayList<>();
                     lore.add("");
-                    lore.add("§8Tier: §b§d§e§cUnknown");
+                    lore.add(Messages.get("tier_lore_prefix") + Messages.get("tiers.UNKNOWN"));
                     im.setLore(lore);
                     item.setItemMeta(im);
                     if (item.getType().getMaxDurability() > 0) {
@@ -168,7 +168,7 @@ public class ItemManager {
         }
 
         lore.add("");
-        lore.add("§8Tier: §b§d§e" + tier.getTag());
+        lore.add(Messages.get("tier_lore_prefix") + tier.getTag());
         im.setLore(lore);
 
         // Leather armor color
@@ -250,7 +250,7 @@ public class ItemManager {
 
             entity.getEquipment().setHelmet(SkullCreator.createSkull(
                     "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2JjYmIzZTRhMzhhYzJhMDVmNjk1NWNkMmM5ODk1YWQ5ZjI4NGM2ZTgyZTc1NWM5NGM1NDljNWJkYzg1MyJ9fX0=",
-                    "§4Santa's Head"));
+                    Messages.get("santa_hat")));
             entity.getEquipment().setItemInMainHand(applyTier(createItem(LootType.TOOL), LootTier.LEGENDARY));
         } else {
             entity.getEquipment().setHelmetDropChance(0.7F);

@@ -1,0 +1,147 @@
+npc:
+  name: "无魂鉴定师"
+  cannot_examine: "§5§l无魂鉴定师 §8> §7抱歉，我无法鉴定这件物品……"
+  success: "§5§l无魂鉴定师 §8> §7鉴定完成。欢迎再次光临。"
+  no_xp: "§5§l无魂鉴定师 §8> §7抱歉，你的经验等级不足……"
+
+gui:
+  title: "无魂鉴定师"
+  random: "&7[&r随机鉴定&7]"
+  cost: "§7消耗：§b{0} 级经验"
+  border: " "
+
+tiers:
+  COMMON: "§a普通"
+  UNCOMMON: "§5非凡"
+  RARE: "§9稀有"
+  EPIC: "§e§l史诗"
+  LEGENDARY: "§6§l传说"
+  UNKNOWN: "§c未鉴定"
+
+santa_hat: "§4圣诞帽"
+santa_lore: "§r你刚刚杀了圣诞老人？"
+
+unanalyzed_name: "&7&k未鉴定的神秘物品"
+tier_lore_prefix: "§8品级：§b§d§e"
+
+prefixes:
+  - 璀璨
+  - 魔导
+  - 不灭
+  - 深渊
+  - 混沌
+  - 辉光
+  - 破晓
+  - 黄昏
+  - 寒霜
+  - 烈焰
+  - 疾风
+  - 雷霆
+  - 幻影
+  - 星陨
+  - 月蚀
+  - 龙息
+  - 神灵
+  - 恶魔
+  - 魔女
+  - 贤者
+  - 君王
+  - 猎手
+  - 狂徒
+  - 隐士
+  - 流放
+  - 圣裁
+  - 天罚
+  - 虚无
+  - 永恒
+  - 守望
+  - 追忆
+  - 孤傲
+  - 狂暴
+  - 诡秘
+  - 哀悼
+  - 腐朽
+  - 荒芜
+  - 苍白
+  - 幽暗
+  - 猩红
+  - 缄默
+  - 残响
+  - 锈蚀
+  - 碎裂
+  - 扭曲
+  - 暗潮
+  - 血月
+  - 霜语
+  - 焚天
+  - 噬魂
+
+suffixes:
+  - 之印
+  - 之魂
+  - 之怒
+  - 之誓
+  - 之烬
+  - 獠牙
+  - 利刃
+  - 铁壁
+  - 鹰眼
+  - 狼心
+  - 陨星
+  - 裂空
+  - 烬
+  - 渊
+  - 棘
+  - 护符
+  - 圣物
+  - 魔典
+  - 挽歌
+  - 葬送曲
+  - 审判令
+  - 安魂曲
+  - 往日歌
+  - 不归途
+  - 镇魂歌
+  - 启示录
+  - 追忆录
+  - 默示录
+  - 破军
+  - 贪狼
+  - 七杀
+  - 无极
+  - 归墟
+
+colors:
+  - "&9"
+  - "&a"
+  - "&6"
+  - "&c"
+  - "&b"
+  - "&e"
+
+log:
+  slimefun_found: "检测到粘液科技！现在也会生成粘液科技战利品！"
+  slimefun_enabled: "粘液科技集成已启用！"
+  slimefun_not_found: "未检测到粘液科技 - SF 物品将不会注册。"
+  loaded: "MagicLoot3 加载成功！"
+  items_registered: "已注册粘液科技物品：旧日书架、遗物鉴定桌"
+  config_reloaded: "配置已重载 — {0} 个遗迹，{1} 个特殊建筑"
+  structure_generated: "已在当前位置生成 {0}。"
+  structure_failed: "生成 {0} 失败。"
+  structure_not_found: "未找到结构：{0}"
+  unknown_command: "未知指令。用法：/magicloot version|debug|reload|generate <名称>|language <zh|en>"
+
+cmd:
+  header: "&6MagicLoot3 &7v{0} (build #{1})"
+  usage: "&7/magicloot version|debug|reload|generate <名称>|language <zh|en>"
+  struct_mode: "&7结构模式：&avanilla (StructureManager)"
+  debug_on: "&6MagicLoot3 调试模式：&a开"
+  debug_off: "&6MagicLoot3 调试模式：&c关"
+  lang_current: "&6当前语言：&a{0}"
+  lang_switched: "&6语言已切换为：&a{0}"
+  lang_invalid: "&c无效语言。可用：zh 或 en"
+  no_permission: "&c你没有使用该指令的权限。"
+  player_only: "&c只有玩家才能使用 generate 指令。"
+  generate_usage: "&c用法：/magicloot generate <名称>"
+  generate_list: "&7可用结构：{0}"
+  unknown_structure: "&c未知结构：{0}"

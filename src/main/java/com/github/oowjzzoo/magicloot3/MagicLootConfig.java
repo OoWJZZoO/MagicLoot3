@@ -204,38 +204,11 @@ public class MagicLootConfig {
     }
 
     private static void loadNames() {
-        prefixes.add("Precious"); prefixes.add("Mighty"); prefixes.add("Fabulous");
-        prefixes.add("Devil's"); prefixes.add("Herobrine's"); prefixes.add("Hellish");
-        prefixes.add("Enchanted"); prefixes.add("Magical"); prefixes.add("Strange");
-        prefixes.add("Fancy"); prefixes.add("Emerald"); prefixes.add("Ruby");
-        prefixes.add("Sapphire"); prefixes.add("Golden"); prefixes.add("Asian");
-        prefixes.add("Enhanced"); prefixes.add("Advanced"); prefixes.add("Awkward");
-        prefixes.add("Pointless"); prefixes.add("Brave"); prefixes.add("Awesome");
-        prefixes.add("Holy"); prefixes.add("Unholy"); prefixes.add("Hallowed");
-        prefixes.add("Dark"); prefixes.add("Timelord"); prefixes.add("Master");
-        prefixes.add("Gallifreyan"); prefixes.add("Helpful"); prefixes.add("Trusty");
-        prefixes.add("Faithful"); prefixes.add("Mysterious"); prefixes.add("Legendary");
-        prefixes.add("Amazing"); prefixes.add("Old"); prefixes.add("Unbelievable");
-        prefixes.add("Godly"); prefixes.add("Frozen"); prefixes.add("Awakened");
-        prefixes.add("Deadly"); prefixes.add("Cursed"); prefixes.add("Elemental");
-        prefixes.add("Sharp"); prefixes.add("Travelling"); prefixes.add("Doomed");
-        prefixes.add("Ghostly"); prefixes.add("Dirty"); prefixes.add("Faithful");
-        prefixes.add("Bad"); prefixes.add("Great"); prefixes.add("Crying");
-
-        suffixes.add("Tool"); suffixes.add("Wizard"); suffixes.add("Magician");
-        suffixes.add("Kindness"); suffixes.add("Spirit"); suffixes.add("Darkness");
-        suffixes.add("Lion"); suffixes.add("King"); suffixes.add("Dragon");
-        suffixes.add("Heaven"); suffixes.add("Swiftness"); suffixes.add("Tool");
-        suffixes.add("Absorption"); suffixes.add("Spell"); suffixes.add("Lump");
-        suffixes.add("Glory"); suffixes.add("Demon"); suffixes.add("Fury");
-        suffixes.add("Challenge"); suffixes.add("Wolf"); suffixes.add("Ghost");
-        suffixes.add("Fire"); suffixes.add("Night"); suffixes.add("Day");
-        suffixes.add("Rose"); suffixes.add("Crime"); suffixes.add("Cry");
-        suffixes.add("Screwdriver"); suffixes.add("Intelligence"); suffixes.add("Madness");
-        suffixes.add("Skill"); suffixes.add("Skull"); suffixes.add("Sun");
-        suffixes.add("Monster"); suffixes.add("Treasure");
-
-        colors.add("&9"); colors.add("&a"); colors.add("&6");
-        colors.add("&c"); colors.add("&b"); colors.add("&e");
+        prefixes.clear();
+        suffixes.clear();
+        colors.clear();
+        prefixes.addAll(Messages.getList("prefixes"));
+        suffixes.addAll(Messages.getList("suffixes"));
+        colors.addAll(Messages.getList("colors"));
     }
 }

@@ -155,7 +155,7 @@ public final class StructurePlacer {
                                 PotionEffectType.SLOWNESS, Integer.MAX_VALUE, 255));
                         v.addPotionEffect(new PotionEffect(
                                 PotionEffectType.JUMP_BOOST, Integer.MAX_VALUE, -255));
-                        v.setCustomName("§5§lLost Librarian");
+                        v.setCustomName(Messages.get("npc.name"));
                         v.setCustomNameVisible(true);
                         v.setAdult();
                     }

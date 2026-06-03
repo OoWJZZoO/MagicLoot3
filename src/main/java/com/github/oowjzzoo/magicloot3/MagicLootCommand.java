@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -16,7 +17,7 @@ import org.bukkit.plugin.Plugin;
 
 public class MagicLootCommand implements CommandExecutor, TabCompleter {
 
-    private static final List<String> SUBCOMMANDS = List.of("version", "debug", "reload", "generate");
+    private static final List<String> SUBCOMMANDS = List.of("version", "debug", "reload", "generate", "language");
 
     private final Plugin plugin;
     private String buildNumber;
@@ -29,48 +30,62 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(ChatColor.GOLD + "MagicLoot3 " + ChatColor.GRAY + "v"
-                    + plugin.getDescription().getVersion() + " (build #" + buildNumber + ")");
-            sender.sendMessage(ChatColor.GRAY + "/magicloot version|debug|reload|generate <name>");
+            sender.sendMessage(Messages.get("cmd.header",
+                    plugin.getDescription().getVersion(), buildNumber));
+            sender.sendMessage(Messages.get("cmd.usage"));
             return true;
         }
 
         String sub = args[0].toLowerCase();
 
-        // Non-version commands require admin
         if (!sub.equals("version") && !sender.hasPermission("magicloot3.admin")) {
-            sender.sendMessage(ChatColor.RED + "You don't have permission for that.");
+            sender.sendMessage(Messages.get("cmd.no_permission"));
             return true;
         }
 
         switch (sub) {
             case "version" -> {
-                sender.sendMessage(ChatColor.GOLD + "MagicLoot3 " + ChatColor.GRAY
-                        + "v" + plugin.getDescription().getVersion());
-                sender.sendMessage(ChatColor.GRAY + "Build: #" + buildNumber);
-                sender.sendMessage(ChatColor.GRAY + "Structure mode: "
-                        + ChatColor.GREEN + "vanilla (StructureManager)");
-                sender.sendMessage(ChatColor.GRAY + "Debug mode: "
-                        + (MagicLoot3.isDebug() ? ChatColor.GREEN + "on" : ChatColor.RED + "off"));
+                sender.sendMessage(Messages.get("cmd.header",
+                        plugin.getDescription().getVersion(), buildNumber));
+                sender.sendMessage(Messages.get("cmd.struct_mode"));
+                sender.sendMessage(Messages.get("cmd.lang_current", Messages.getCurrentLang()));
+                sender.sendMessage(Messages.get(MagicLoot3.isDebug() ? "cmd.debug_on" : "cmd.debug_off"));
             }
             case "debug" -> {
                 boolean newState = !MagicLoot3.isDebug();
                 MagicLoot3.setDebug(newState);
-                sender.sendMessage(ChatColor.GOLD + "MagicLoot3 debug mode: "
-                        + (newState ? ChatColor.GREEN + "ON" : ChatColor.RED + "OFF"));
+                sender.sendMessage(Messages.get(newState ? "cmd.debug_on" : "cmd.debug_off"));
             }
             case "reload" -> {
                 MagicLoot3.reload(plugin);
-                sender.sendMessage(ChatColor.GOLD + "MagicLoot3 config reloaded!");
+                sender.sendMessage(Messages.get("log.config_reloaded",
+                        RuinBuilder.ruinNames.size(), RuinBuilder.buildingNames.size()));
+            }
+            case "language" -> {
+                if (args.length < 2) {
+                    sender.sendMessage(Messages.get("cmd.lang_current", Messages.getCurrentLang()));
+                    return true;
+                }
+                String lang = args[1].toLowerCase();
+                if (!Set.of("zh", "en").contains(lang)) {
+                    sender.sendMessage(Messages.get("cmd.lang_invalid"));
+                    return true;
+                }
+                MagicLoot3.getInstance().getConfig().set("language", lang);
+                MagicLoot3.getInstance().saveConfig();
+                Messages.load(MagicLoot3.getInstance(), lang);
+                MagicLootConfig.setupConfigs(MagicLoot3.getInstance());
+                MagicLootConfig.loadSettings();
+                sender.sendMessage(Messages.get("cmd.lang_switched", lang));
             }
             case "generate" -> {
                 if (!(sender instanceof Player player)) {
-                    sender.sendMessage(ChatColor.RED + "Only players can use generate.");
+                    sender.sendMessage(Messages.get("cmd.player_only"));
                     return true;
                 }
                 if (args.length < 2) {
-                    sender.sendMessage(ChatColor.RED + "Usage: /magicloot generate <name>");
-                    sender.sendMessage(ChatColor.GRAY + "Available: " + allStructureNames());
+                    sender.sendMessage(Messages.get("cmd.generate_usage"));
+                    sender.sendMessage(Messages.get("cmd.generate_list", allStructureNames()));
                     return true;
                 }
                 String name = args[1].toLowerCase();
@@ -78,18 +93,16 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                 boolean hasName = RuinBuilder.ruinNames.contains(name)
                         || RuinBuilder.buildingNames.contains(name);
                 if (!hasName) {
-                    sender.sendMessage(ChatColor.RED + "Unknown structure: " + name);
-                    sender.sendMessage(ChatColor.GRAY + "Available: " + allStructureNames());
+                    sender.sendMessage(Messages.get("cmd.unknown_structure", name));
+                    sender.sendMessage(Messages.get("cmd.generate_list", allStructureNames()));
                     return true;
                 }
                 Location loc = player.getLocation();
                 boolean ok = StructurePlacer.place(plugin, loc, name, isBuilding);
-                sender.sendMessage(ok
-                        ? ChatColor.GREEN + "Generated " + name + " at your location."
-                        : ChatColor.RED + "Failed to generate " + name + ".");
+                sender.sendMessage(Messages.get(ok
+                        ? "log.structure_generated" : "log.structure_failed", name));
             }
-            default -> sender.sendMessage(ChatColor.RED
-                    + "Unknown. Use: /magicloot version|debug|reload|generate <name>");
+            default -> sender.sendMessage(Messages.get("log.unknown_command"));
         }
         return true;
     }
@@ -111,6 +124,9 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                 if (name.startsWith(prefix)) matches.add(name);
             }
             return matches;
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("language")) {
+            return List.of("zh", "en");
         }
         return List.of();
     }

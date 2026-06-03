@@ -1,0 +1,148 @@
+npc:
+  name: "Lost Librarian"
+  cannot_examine: "§5§lLost Librarian §8> §7Sorry, but I cannot seem to be able to examine this Item"
+  success: "§5§lLost Librarian §8> §7There you go! Thanks for visiting me."
+  no_xp: "§5§lLost Librarian §8> §7Sorry, but it seems like you have insufficient Experience Levels."
+
+gui:
+  title: "Lost Librarian"
+  random: "&7[&rRandom&7]"
+  cost: "§7Cost: §b{0} XP Level"
+  border: " "
+
+tiers:
+  COMMON: "§aCommon"
+  UNCOMMON: "§5Uncommon"
+  RARE: "§9Rare"
+  EPIC: "§e§lEpic"
+  LEGENDARY: "§6§lLEGENDARY"
+  UNKNOWN: "§cUnknown"
+
+santa_hat: "§4Santa's Head"
+santa_lore: "§rDid you just kill Santa?"
+
+unanalyzed_name: "&7&kMEH WANNA BE EXAMINED"
+tier_lore_prefix: "§8Tier: §b§d§e"
+
+prefixes:
+  - Precious
+  - Mighty
+  - Fabulous
+  - Devil's
+  - Herobrine's
+  - Hellish
+  - Enchanted
+  - Magical
+  - Strange
+  - Fancy
+  - Emerald
+  - Ruby
+  - Sapphire
+  - Golden
+  - Asian
+  - Enhanced
+  - Advanced
+  - Awkward
+  - Pointless
+  - Brave
+  - Awesome
+  - Holy
+  - Unholy
+  - Hallowed
+  - Dark
+  - Timelord
+  - Master
+  - Gallifreyan
+  - Helpful
+  - Trusty
+  - Faithful
+  - Mysterious
+  - Legendary
+  - Amazing
+  - Old
+  - Unbelievable
+  - Godly
+  - Frozen
+  - Awakened
+  - Deadly
+  - Cursed
+  - Elemental
+  - Sharp
+  - Travelling
+  - Doomed
+  - Ghostly
+  - Dirty
+  - Bad
+  - Great
+  - Crying
+
+suffixes:
+  - Tool
+  - Wizard
+  - Magician
+  - Kindness
+  - Spirit
+  - Darkness
+  - Lion
+  - King
+  - Dragon
+  - Heaven
+  - Swiftness
+  - Absorption
+  - Spell
+  - Lump
+  - Glory
+  - Demon
+  - Fury
+  - Challenge
+  - Wolf
+  - Ghost
+  - Fire
+  - Night
+  - Day
+  - Rose
+  - Crime
+  - Cry
+  - Screwdriver
+  - Intelligence
+  - Madness
+  - Skill
+  - Skull
+  - Sun
+  - Monster
+  - Treasure
+
+colors:
+  - "&9"
+  - "&a"
+  - "&6"
+  - "&c"
+  - "&b"
+  - "&e"
+
+log:
+  slimefun_found: "Slimefun has been found! I will now generate Slimefun Loot as well!"
+  slimefun_enabled: "Slimefun integration enabled!"
+  slimefun_not_found: "Slimefun not found - SF items will not be registered."
+  loaded: "MagicLoot3 loaded successfully!"
+  items_registered: "Registered Slimefun items: LOST_BOOKSHELF, LOST_LIBRARIANS_DESK"
+  config_reloaded: "Config reloaded — {0} ruins, {1} buildings"
+  structure_generated: "Generated {0} at your location."
+  structure_failed: "Failed to generate {0}."
+  structure_not_found: "Structure not found: {0}"
+  unknown_command: "Unknown. Use: /magicloot version|debug|reload|generate <name>|language <zh|en>"
+
+cmd:
+  header: "&6MagicLoot3 &7v{0} (build #{1})"
+  usage: "&7/magicloot version|debug|reload|generate <name>|language <zh|en>"
+  struct_mode: "&7Structure mode: &avanilla (StructureManager)"
+  debug_on: "&6MagicLoot3 debug mode: &aON"
+  debug_off: "&6MagicLoot3 debug mode: &cOFF"
+  lang_current: "&6Current language: &a{0}"
+  lang_switched: "&6Language switched to: &a{0}"
+  lang_invalid: "&cInvalid language. Use: zh or en"
+  no_permission: "&cYou don't have permission for that."
+  player_only: "&cOnly players can use generate."
+  generate_usage: "&cUsage: /magicloot generate <name>"
+  generate_list: "&7Available: {0}"
+  unknown_structure: "&cUnknown structure: {0}"
