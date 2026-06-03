@@ -63,21 +63,21 @@ public final class StructurePlacer {
 
         for (String name : allNames) {
             File dest = new File(structuresDir, name + ".nbt");
-            if (dest.exists()) continue;
-            try (InputStream in = StructurePlacer.class.getResourceAsStream("/" + name + ".nbt")) {
-                if (in == null) {
-                    plugin.getLogger().warning("Structure resource not found: " + name + ".nbt");
+            if (!dest.exists()) {
+                try (InputStream in = StructurePlacer.class.getResourceAsStream("/" + name + ".nbt")) {
+                    if (in == null) {
+                        plugin.getLogger().warning("Structure resource not found: " + name + ".nbt");
+                        continue;
+                    }
+                    Files.copy(in, dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    plugin.getLogger().warning("Failed to extract structure " + name + ": " + e.getMessage());
                     continue;
                 }
-                Files.copy(in, dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                plugin.getLogger().warning("Failed to extract structure " + name + ": " + e.getMessage());
             }
 
-            // Fix the NBT structure if it has broken palette format
-            if (!fixNbtStructure(plugin, dest)) {
-                plugin.getLogger().warning("Failed to fix structure " + name + " — will retry next restart");
-            }
+            // Always fix NBT structure in case it has broken palette format
+            fixNbtStructure(plugin, dest);
         }
     }
 
