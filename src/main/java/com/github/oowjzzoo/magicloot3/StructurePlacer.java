@@ -102,21 +102,25 @@ public final class StructurePlacer {
     // --- Post-processing after WorldEdit paste ---
 
     /**
-     * Scan the world area that WorldEdit just pasted into. Find and fill chests,
-     * fix double chest connections. Uses world blocks directly — no schematic
-     * coordinate decoding, which avoids axis-ordering mismatches between our
-     * JNBT loader and WorldEdit's own .schematic parser.
+     * Scan the world area that WorldEdit just pasted into. Uses overscan
+     * (max of width/length + buffer) in both horizontal axes to tolerate
+     * axis-ordering differences between JNBT and WorldEdit.
      */
     private static void postProcessRuin(Plugin plugin, Location loc, Schematic s) {
         int w = s.getWidth(), h = s.getHeight(), l = s.getLenght();
+        // Overscan: JNBT and WE may disagree on which axis is Width vs Length
+        int scan = Math.max(w, l) + 2;
         var world = loc.getWorld();
-        boolean[][] chestDone = new boolean[w][l];
+        boolean[][] chestDone = new boolean[scan][scan];
         int bx = loc.getBlockX(), by = loc.getBlockY(), bz = loc.getBlockZ();
         int chestCount = 0, doubleCount = 0;
 
-        for (int x = 0; x < w; ++x) {
+        debug(plugin, "postProcessRuin: scanning " + scan + "×" + h + "×" + scan
+                + " for " + s.getName() + " (w=" + w + " l=" + l + ")");
+
+        for (int x = 0; x < scan; ++x) {
             for (int y = 0; y < h; ++y) {
-                for (int z = 0; z < l; ++z) {
+                for (int z = 0; z < scan; ++z) {
                     Block block = world.getBlockAt(bx + x, by + y, bz + z);
                     Material type = block.getType();
 
@@ -126,37 +130,33 @@ public final class StructurePlacer {
                         chestCount++;
 
                         block.getState(true);
-                        if (block.getState() instanceof Chest chest) {
+                        if (block.getState() instanceof Chest) {
                             ItemManager.fillChest(block);
                             debug(plugin, "postProcessRuin: filled chest at " + x + "," + y + "," + z);
                         }
 
-                        // Check +x neighbor
-                        if (x + 1 < w) {
-                            Block n = world.getBlockAt(bx + x + 1, by + y, bz + z);
-                            if (n.getType() == type && !chestDone[x + 1][z]) {
-                                chestDone[x + 1][z] = true;
-                                n.getState(true);
-                                if (connectDoubleChest(block, n)) doubleCount++;
-                            }
+                        // Check +x neighbor — fill AND connect
+                        Block nx = world.getBlockAt(bx + x + 1, by + y, bz + z);
+                        if (nx.getType() == type && !chestDone[x + 1][z]) {
+                            chestDone[x + 1][z] = true;
+                            nx.getState(true);
+                            if (nx.getState() instanceof Chest) ItemManager.fillChest(nx);
+                            if (connectDoubleChest(block, nx)) doubleCount++;
                         }
-                        // Check +z neighbor
-                        if (z + 1 < l) {
-                            Block n = world.getBlockAt(bx + x, by + y, bz + z + 1);
-                            if (n.getType() == type && !chestDone[x][z + 1]) {
-                                chestDone[x][z + 1] = true;
-                                n.getState(true);
-                                if (connectDoubleChest(block, n)) doubleCount++;
-                            }
+                        // Check +z neighbor — fill AND connect
+                        Block nz = world.getBlockAt(bx + x, by + y, bz + z + 1);
+                        if (nz.getType() == type && !chestDone[x][z + 1]) {
+                            chestDone[x][z + 1] = true;
+                            nz.getState(true);
+                            if (nz.getState() instanceof Chest) ItemManager.fillChest(nz);
+                            if (connectDoubleChest(block, nz)) doubleCount++;
                         }
                     }
                 }
             }
         }
-        if (chestCount > 0) {
-            debug(plugin, "postProcessRuin: " + chestCount + " chests ("
-                    + doubleCount + " double) in " + s.getName());
-        }
+        debug(plugin, "postProcessRuin: " + chestCount + " chests ("
+                + doubleCount + " double) in " + s.getName());
     }
 
     private static boolean connectDoubleChest(Block a, Block b) {
@@ -180,13 +180,14 @@ public final class StructurePlacer {
 
     private static void postProcessBuilding(Plugin plugin, Location loc, Schematic s) {
         int w = s.getWidth(), h = s.getHeight(), l = s.getLenght();
+        int scan = Math.max(w, l) + 2;
         var world = loc.getWorld();
-        boolean[][] chestDone = new boolean[w][l];
+        boolean[][] chestDone = new boolean[scan][scan];
         int bx = loc.getBlockX(), by = loc.getBlockY(), bz = loc.getBlockZ();
 
-        for (int x = 0; x < w; ++x) {
+        for (int x = 0; x < scan; ++x) {
             for (int y = 0; y < h; ++y) {
-                for (int z = 0; z < l; ++z) {
+                for (int z = 0; z < scan; ++z) {
                     Block block = world.getBlockAt(bx + x, by + y, bz + z);
                     Material type = block.getType();
 
@@ -195,23 +196,19 @@ public final class StructurePlacer {
                             chestDone[x][z] = true;
                             block.getState(true);
                             if (block.getState() instanceof Chest) ItemManager.fillChest(block);
-                            // Check +x neighbor
-                            if (x + 1 < w) {
-                                Block n = world.getBlockAt(bx + x + 1, by + y, bz + z);
-                                if (n.getType() == type && !chestDone[x + 1][z]) {
-                                    chestDone[x + 1][z] = true;
-                                    n.getState(true);
-                                    connectDoubleChest(block, n);
-                                }
+                            Block nx = world.getBlockAt(bx + x + 1, by + y, bz + z);
+                            if (nx.getType() == type && !chestDone[x + 1][z]) {
+                                chestDone[x + 1][z] = true;
+                                nx.getState(true);
+                                if (nx.getState() instanceof Chest) ItemManager.fillChest(nx);
+                                connectDoubleChest(block, nx);
                             }
-                            // Check +z neighbor
-                            if (z + 1 < l) {
-                                Block n = world.getBlockAt(bx + x, by + y, bz + z + 1);
-                                if (n.getType() == type && !chestDone[x][z + 1]) {
-                                    chestDone[x][z + 1] = true;
-                                    n.getState(true);
-                                    connectDoubleChest(block, n);
-                                }
+                            Block nz = world.getBlockAt(bx + x, by + y, bz + z + 1);
+                            if (nz.getType() == type && !chestDone[x][z + 1]) {
+                                chestDone[x][z + 1] = true;
+                                nz.getState(true);
+                                if (nz.getState() instanceof Chest) ItemManager.fillChest(nz);
+                                connectDoubleChest(block, nz);
                             }
                         }
                     } else if (type == Material.EMERALD_BLOCK) {
