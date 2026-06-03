@@ -115,6 +115,21 @@ public final class StructurePlacer {
         int bx = loc.getBlockX(), by = loc.getBlockY(), bz = loc.getBlockZ();
         int chestCount = 0, doubleCount = 0;
 
+        // Print bounding box for axis-mapping verification
+        debug(plugin, "=== " + s.getName() + " bounding box ===");
+        debug(plugin, "  paste origin: " + bx + "," + by + "," + bz);
+        debug(plugin, "  JNBT raw: w=" + w + " h=" + h + " l=" + l
+                + "  |  our map: xMax=" + xMax + " zMax=" + zMax);
+        debug(plugin, "  corners:");
+        debug(plugin, "    A( " + bx        + "," + by        + "," + bz        + " )  origin");
+        debug(plugin, "    B( " + (bx+xMax) + "," + by        + "," + bz        + " )  origin+X");
+        debug(plugin, "    C( " + bx        + "," + by        + "," + (bz+zMax) + " )  origin+Z");
+        debug(plugin, "    D( " + (bx+xMax) + "," + by        + "," + (bz+zMax) + " )  origin+X+Z");
+        debug(plugin, "    E( " + bx        + "," + (by+h)    + "," + bz        + " )  origin+Y");
+        debug(plugin, "    F( " + (bx+xMax) + "," + (by+h)    + "," + bz        + " )  origin+X+Y");
+        debug(plugin, "    G( " + bx        + "," + (by+h)    + "," + (bz+zMax) + " )  origin+Z+Y");
+        debug(plugin, "    H( " + (bx+xMax) + "," + (by+h)    + "," + (bz+zMax) + " )  origin+X+Z+Y");
+
         for (int x = 0; x < xMax; ++x) {
             for (int y = 0; y < h; ++y) {
                 for (int z = 0; z < zMax; ++z) {
@@ -181,6 +196,13 @@ public final class StructurePlacer {
         var world = loc.getWorld();
         boolean[][] chestDone = new boolean[xMax + 1][zMax + 1];
         int bx = loc.getBlockX(), by = loc.getBlockY(), bz = loc.getBlockZ();
+
+        debug(plugin, "=== " + s.getName() + " building bbox ===");
+        debug(plugin, "  paste origin: " + bx + "," + by + "," + bz);
+        debug(plugin, "  JNBT: w=" + w + " h=" + h + " l=" + l
+                + "  |  xMax=" + xMax + " zMax=" + zMax);
+        debug(plugin, "  corners: A(" + bx + "," + by + "," + bz + ")  to  H("
+                + (bx + xMax) + "," + (by + h) + "," + (bz + zMax) + ")");
 
         for (int x = 0; x < xMax; ++x) {
             for (int y = 0; y < h; ++y) {
