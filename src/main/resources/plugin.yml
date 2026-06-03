@@ -1,0 +1,10 @@
+name: MagicLoot3
+version: '${project.version}'
+author: mrCookieSlime
+contributors: [OoWJZZoO]
+main: com.github.oowjzzoo.magicloot3.MagicLoot3
+api-version: '1.21'
+depend: [Slimefun]
+softdepend: [WorldEdit]
+
+website: https://github.com/OoWJZZoO/MagicLoot3
