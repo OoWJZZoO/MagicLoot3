@@ -129,10 +129,20 @@ public final class StructurePlacer {
                         ItemManager.fillChest(block);
                         chestCount++;
                     } else if (type == Material.SPAWNER) {
+                        // Re-place spawner from scratch to clear structure NBT
+                        block.setType(Material.AIR);
+                        block.setType(Material.SPAWNER);
                         if (block.getState() instanceof CreatureSpawner spawner) {
                             if (!MagicLootConfig.mobs.isEmpty()) {
                                 spawner.setSpawnedType(MagicLootConfig.mobs.get(
                                         random.nextInt(MagicLootConfig.mobs.size())));
+                                spawner.setMinSpawnDelay(200);
+                                spawner.setMaxSpawnDelay(800);
+                                spawner.setSpawnCount(4);
+                                spawner.setMaxNearbyEntities(6);
+                                spawner.setRequiredPlayerRange(16);
+                                spawner.setSpawnRange(4);
+                                spawner.setDelay(200);
                                 spawner.update();
                             }
                         }
