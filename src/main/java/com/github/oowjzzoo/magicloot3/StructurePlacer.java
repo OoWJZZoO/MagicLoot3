@@ -90,7 +90,6 @@ public final class StructurePlacer {
      */
     public static boolean place(Plugin plugin, Location location, String name, boolean isBuilding) {
         NamespacedKey key = new NamespacedKey("magicloot3", name);
-        World world = location.getWorld();
 
         try {
             Structure structure = Bukkit.getStructureManager().loadStructure(key);
@@ -99,7 +98,7 @@ public final class StructurePlacer {
                 return false;
             }
 
-            structure.place(location, true, StructureRotation.NONE, Mirror.NONE, 1, 0, new Random());
+            structure.place(location, true, StructureRotation.NONE, Mirror.NONE, 0, 1.0f, new Random());
             debug(plugin, "Placed structure: " + name);
 
             BlockVector size = structure.getSize();
