@@ -17,7 +17,8 @@ public class RuinBuilder {
     public static List<Schematic> buildings = new ArrayList<>();
 
     public static void loadRuins() throws IOException {
-        File schematicsDir = new File("plugins/MagicLoot/schematics");
+        File dataFolder = MagicLootConfig.getDataFolder();
+        File schematicsDir = new File(dataFolder, "schematics");
         if (!schematicsDir.exists()) {
             schematicsDir.mkdirs();
         }
@@ -26,7 +27,7 @@ public class RuinBuilder {
                 schematics.add(Schematic.loadSchematic(file));
                 String name = file.getName().replace(".schematic", "");
                 ConfigManager cfg = new ConfigManager(
-                        new File("plugins/MagicLoot/ruin_settings/" + name + ".yml"));
+                        new File(dataFolder, "ruin_settings/" + name + ".yml"));
                 cfg.setDefaultValue("y-offset", 0);
                 cfg.setDefaultValue("underwater", false);
                 cfg.save();
@@ -34,7 +35,7 @@ public class RuinBuilder {
             }
         }
 
-        File buildingsDir = new File("plugins/MagicLoot/buildings");
+        File buildingsDir = new File(dataFolder, "buildings");
         if (!buildingsDir.exists()) {
             buildingsDir.mkdirs();
         }

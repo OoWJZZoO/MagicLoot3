@@ -26,6 +26,7 @@ public class MagicLootConfig {
     public static final List<String> effects = new ArrayList<>();
     public static final List<EntityType> mobs = new ArrayList<>();
 
+    private static File dataFolder;
     private static ConfigManager configItems;
     private static ConfigManager configNames;
     private static ConfigManager configEnch;
@@ -45,10 +46,15 @@ public class MagicLootConfig {
         }
     }
 
+    public static File getDataFolder() {
+        return dataFolder;
+    }
+
     public static void setupConfigs(JavaPlugin plugin) {
         loadNames();
 
-        File dataFolder = plugin.getDataFolder();
+        dataFolder = plugin.getDataFolder();
+        if (!dataFolder.exists()) dataFolder.mkdirs();
         configItems = new ConfigManager(new File(dataFolder, "Items.yml"));
         configNames = new ConfigManager(new File(dataFolder, "Names.yml"));
         configEnch = new ConfigManager(new File(dataFolder, "Enchantments.yml"));
@@ -174,7 +180,7 @@ public class MagicLootConfig {
             }
         }
 
-        ConfigManager cfg = new ConfigManager(new File("plugins/MagicLoot/config.yml"));
+        ConfigManager cfg = new ConfigManager(new File(dataFolder, "config.yml"));
         for (LootType type : LootType.values()) {
             if (cfg.contains("enable." + type.toString())) {
                 if (cfg.getBoolean("enable." + type.toString())) ItemManager.types.add(type);
@@ -220,7 +226,7 @@ public class MagicLootConfig {
         OutputStream out = null;
         byte[] buffer = new byte[4096];
         try {
-            out = new FileOutputStream(new File("plugins/MagicLoot/schematics/" + name + ".schematic"));
+            out = new FileOutputStream(new File(dataFolder, "schematics/" + name + ".schematic"));
             int read;
             while ((read = stream.read(buffer)) > 0) {
                 out.write(buffer, 0, read);
@@ -239,7 +245,7 @@ public class MagicLootConfig {
         OutputStream out = null;
         byte[] buffer = new byte[4096];
         try {
-            out = new FileOutputStream(new File("plugins/MagicLoot/buildings/" + name + ".schematic"));
+            out = new FileOutputStream(new File(dataFolder, "buildings/" + name + ".schematic"));
             int read;
             while ((read = stream.read(buffer)) > 0) {
                 out.write(buffer, 0, read);
