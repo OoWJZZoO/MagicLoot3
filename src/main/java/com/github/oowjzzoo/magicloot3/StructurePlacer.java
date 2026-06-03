@@ -11,6 +11,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.structure.Mirror;
@@ -25,37 +27,28 @@ import org.bukkit.util.BlockVector;
 
 public final class StructurePlacer {
 
-    /** Default structures bundled in the jar — extracted only once, never overwrite user files. */
+    /** Default structure names (lowercase). See extractStructures(). */
     private static final String[] DEFAULT_STRUCTURES = {
-        "Farm", "GasStation", "House", "Outpost", "Railstation", "Shop", "Lost_Library"
+        "farm", "gas_station", "house", "outpost", "railstation", "shop", "lost_library"
     };
 
-    /** Buildings (has emerald block → librarian villager). Users can add to this via config. */
-    public static final java.util.Set<String> BUILDING_SET = new java.util.HashSet<>();
-
-    static {
-        BUILDING_SET.add("Lost_Library");
-    }
+    /** Structures treated as buildings (emerald block → librarian villager). */
+    static final java.util.Set<String> BUILDING_NAMES = java.util.Set.of("lost_library");
 
     private StructurePlacer() {}
 
     /**
-     * Saves default .nbt files from the jar — only if they don't already exist.
-     * Never overwrites user files.
+     * Extracts default .nbt files from jar to the plugin's structures/ folder.
+     * Uses saveDefaultConfig semantics — only copies if the file doesn't exist.
      */
-    public static void extractStructures(Plugin plugin) {
-        File structuresDir = new File(plugin.getDataFolder(), "structures");
-        structuresDir.mkdirs();
-
+    public static void extractDefaults(Plugin plugin) {
+        File dir = new File(plugin.getDataFolder(), "structures");
+        dir.mkdirs();
         for (String name : DEFAULT_STRUCTURES) {
-            File dest = new File(structuresDir, name + ".nbt");
+            File dest = new File(dir, name + ".nbt");
             if (dest.exists()) continue;
-
             try (InputStream in = StructurePlacer.class.getResourceAsStream("/" + name + ".nbt")) {
-                if (in == null) {
-                    plugin.getLogger().warning("Default structure resource not found: " + name + ".nbt");
-                    continue;
-                }
+                if (in == null) continue;
                 Files.copy(in, dest.toPath());
             } catch (IOException e) {
                 plugin.getLogger().warning("Failed to extract default structure " + name + ": " + e.getMessage());
@@ -63,17 +56,46 @@ public final class StructurePlacer {
         }
     }
 
-    public static boolean place(Plugin plugin, Location location, String name, boolean isBuilding) {
-        File file = new File(plugin.getDataFolder(), "structures/" + name + ".nbt");
-        if (!file.exists()) {
-            debug(plugin, "Structure file missing: " + file);
-            return false;
+    /**
+     * Copies all .nbt files from the plugin's structures/ folder into the world's
+     * generated/magicloot3/structures/ directory (overwriting), so they are
+     * loadable via StructureManager.loadStructure(NamespacedKey).
+     */
+    public static void deployToWorld(Plugin plugin, World world) {
+        File srcDir = new File(plugin.getDataFolder(), "structures");
+        if (!srcDir.exists()) return;
+
+        File worldDir = world.getWorldFolder();
+        File destDir = new File(worldDir, "generated/magicloot3/structures");
+        destDir.mkdirs();
+
+        File[] files = srcDir.listFiles((d, n) -> n.endsWith(".nbt"));
+        if (files == null) return;
+
+        for (File src : files) {
+            File dest = new File(destDir, src.getName());
+            try {
+                Files.copy(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                plugin.getLogger().warning("Failed to deploy structure " + src.getName()
+                        + " to world " + world.getName() + ": " + e.getMessage());
+            }
         }
+    }
+
+    /**
+     * Places a structure using StructureManager with a NamespacedKey under
+     * the magicloot3 namespace. The corresponding .nbt must have been deployed
+     * to the world's generated/magicloot3/structures/ folder first.
+     */
+    public static boolean place(Plugin plugin, Location location, String name, boolean isBuilding) {
+        NamespacedKey key = new NamespacedKey("magicloot3", name);
+        World world = location.getWorld();
 
         try {
-            Structure structure = Bukkit.getStructureManager().loadStructure(file);
+            Structure structure = Bukkit.getStructureManager().loadStructure(key);
             if (structure == null) {
-                debug(plugin, "Failed to load structure: " + name);
+                debug(plugin, "Structure not found: " + key);
                 return false;
             }
 

@@ -1,9 +1,11 @@
 package com.github.oowjzzoo.magicloot3;
 
-import java.util.logging.Level;
-
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -17,7 +19,7 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.ItemUseHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
 
-public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
+public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
 
     private static MagicLoot3 instance;
     private static boolean debug;
@@ -26,22 +28,22 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
     public void onEnable() {
         instance = this;
 
-        // Register commands
         getCommand("magicloot").setExecutor(new MagicLootCommand(this));
-
-        // Save default config if not present
         saveDefaultConfig();
-
-        // Initialize secondary configs
         MagicLootConfig.setupConfigs(this);
 
-        // Extract .nbt structure files from jar
-        StructurePlacer.extractStructures(this);
-
-        // Initialize ruin list
+        // Extract default .nbt files to plugin folder (saveDefault semantics)
+        StructurePlacer.extractDefaults(this);
         RuinBuilder.loadRuins(this);
 
-        // Delayed registration: load settings and register Slimefun items
+        // Deploy structures to already-loaded worlds
+        for (org.bukkit.World world : Bukkit.getWorlds()) {
+            StructurePlacer.deployToWorld(this, world);
+        }
+
+        // Deploy structures to worlds loaded later
+        getServer().getPluginManager().registerEvents(this, this);
+
         getServer().getScheduler().runTaskLater(this, () -> {
             MagicLootConfig.loadSettings();
 
@@ -52,7 +54,6 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
                 getLogger().warning("Slimefun not found - SF items will not be registered.");
             }
 
-            // Register event listener
             new LootListener(this);
             getLogger().info("MagicLoot3 loaded successfully!");
         }, 10L);
@@ -61,7 +62,6 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
     @Override
     public void onDisable() {
         instance = null;
-
         ItemManager.ENCHANTMENTS = null;
         ItemManager.POTIONEFFECTS = null;
         ItemManager.PREFIX = null;
@@ -73,18 +73,19 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
         ItemManager.SLIMEFUN = null;
         ItemManager.types = null;
         ItemManager.potion = null;
-
         MagicLootConfig.prefixes.clear();
         MagicLootConfig.suffixes.clear();
         MagicLootConfig.colors.clear();
         MagicLootConfig.effects.clear();
         MagicLootConfig.mobs.clear();
-
         RuinBuilder.ruinNames.clear();
         RuinBuilder.buildingNames.clear();
     }
 
-    // --- Slimefun Item Registration ---
+    @EventHandler
+    public void onWorldInit(WorldInitEvent event) {
+        StructurePlacer.deployToWorld(this, event.getWorld());
+    }
 
     private void registerSlimefunItems() {
         ItemGroup itemGroup = new ItemGroup(
@@ -94,8 +95,7 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
         SlimefunItemStack lostBookshelfStack = new SlimefunItemStack(
                 "LOST_BOOKSHELF", Material.BOOKSHELF,
                 "§dLost Bookshelf", "",
-                "§rScrambled Parts of an",
-                "§rancient Library...");
+                "§rScrambled Parts of an", "§rancient Library...");
 
         ItemStack[] bookshelfRecipe = {
                 new ItemStack(Material.BOOKSHELF), null, new ItemStack(Material.BOOKSHELF),
@@ -121,9 +121,7 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
 
         SlimefunItem lostDesk = new SlimefunItem(
                 itemGroup, lostDeskStack,
-                RecipeType.ENHANCED_CRAFTING_TABLE,
-                deskRecipe);
-
+                RecipeType.ENHANCED_CRAFTING_TABLE, deskRecipe);
         lostDesk.addItemHandler((ItemUseHandler) event -> {
             event.cancel();
             LostLibrarian.openMenu(event.getPlayer());
@@ -133,8 +131,6 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
         getLogger().info("Registered Slimefun items: LOST_BOOKSHELF, LOST_LIBRARIANS_DESK");
     }
 
-    // --- SlimefunAddon interface ---
-
     @Override
     public JavaPlugin getJavaPlugin() { return this; }
 
@@ -142,8 +138,6 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
     public String getBugTrackerURL() {
         return "https://github.com/OoWJZZoO/MagicLoot3/issues";
     }
-
-    // --- Static accessors ---
 
     public static MagicLoot3 getInstance() { return instance; }
     public static boolean isDebug() { return debug; }

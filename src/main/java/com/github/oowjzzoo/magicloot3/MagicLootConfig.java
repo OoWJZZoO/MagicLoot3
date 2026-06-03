@@ -104,7 +104,11 @@ public class MagicLootConfig {
 
         ConfigManager cfg = new ConfigManager(new File(dataFolder, "config.yml"));
         for (String mob : cfg.getStringList("spawners")) {
-            mobs.add(EntityType.valueOf(mob));
+            // Compatibility: PIG_ZOMBIE was renamed to ZOMBIFIED_PIGLIN in 1.16
+            if ("PIG_ZOMBIE".equals(mob)) mob = "ZOMBIFIED_PIGLIN";
+            try {
+                mobs.add(EntityType.valueOf(mob));
+            } catch (IllegalArgumentException ignored) {}
         }
 
         for (ConfigType type : ConfigType.values()) {

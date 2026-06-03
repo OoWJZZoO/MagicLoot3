@@ -12,16 +12,14 @@ import org.bukkit.plugin.Plugin;
 
 public class RuinBuilder {
 
-    /** All .nbt file names (without extension) found in the structures folder. */
     public static final List<String> ruinNames = new ArrayList<>();
     public static final List<String> buildingNames = new ArrayList<>();
     public static final Map<String, ConfigManager> configs = new HashMap<>();
     private static Plugin plugin;
 
     /**
-     * Scans the structures/ folder for .nbt files.
-     * Files listed in StructurePlacer.BUILDING_SET are treated as buildings,
-     * everything else as ruins.
+     * Scans the plugin's structures/ folder for .nbt files.
+     * Classifies them as ruins or buildings based on StructurePlacer.BUILDING_NAMES.
      */
     public static void loadRuins(Plugin pl) {
         plugin = pl;
@@ -35,13 +33,13 @@ public class RuinBuilder {
         File ruinSettingsDir = new File(plugin.getDataFolder(), "ruin_settings");
         if (!ruinSettingsDir.exists()) ruinSettingsDir.mkdirs();
 
-        File[] files = structuresDir.listFiles((dir, name) -> name.endsWith(".nbt"));
+        File[] files = structuresDir.listFiles((d, n) -> n.endsWith(".nbt"));
         if (files == null) return;
 
         for (File file : files) {
             String name = file.getName().replace(".nbt", "");
 
-            if (StructurePlacer.BUILDING_SET.contains(name)) {
+            if (StructurePlacer.BUILDING_NAMES.contains(name)) {
                 buildingNames.add(name);
             } else {
                 ruinNames.add(name);
