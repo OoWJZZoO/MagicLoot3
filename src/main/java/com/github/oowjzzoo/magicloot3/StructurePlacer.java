@@ -12,14 +12,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.type.Chest.Type;
 import org.bukkit.plugin.Plugin;
 
-/**
- * Places structures into the world. Uses WorldEdit API if available,
- * falling back to legacy .schematic paste when WorldEdit is absent.
- */
 public final class StructurePlacer {
 
     private static boolean weChecked;
@@ -37,31 +34,41 @@ public final class StructurePlacer {
 
     public static void pasteRuin(Plugin plugin, Location location, String name) {
         Schematic s = RuinBuilder.getSchematic(name);
-        if (s == null) return;
+        if (s == null) {
+            debug(plugin, "pasteRuin: no schematic for " + name);
+            return;
+        }
 
         if (isWorldEditAvailable()) {
             File schemFile = new File(plugin.getDataFolder(), "schematics/" + name + ".schematic");
             if (schemFile.exists()) {
+                debug(plugin, "pasteRuin: using WorldEdit for " + name);
                 pasteWithWorldEdit(plugin, location, schemFile);
-                postProcessRuin(location, s);
+                postProcessRuin(plugin, location, s);
                 return;
             }
         }
+        debug(plugin, "pasteRuin: using legacy paste for " + name);
         Schematic.pasteSchematic(location, s, true);
     }
 
     public static void pasteBuilding(Plugin plugin, Location location, String name) {
         Schematic s = RuinBuilder.getBuilding(name);
-        if (s == null) return;
+        if (s == null) {
+            debug(plugin, "pasteBuilding: no schematic for " + name);
+            return;
+        }
 
         if (isWorldEditAvailable()) {
             File schemFile = new File(plugin.getDataFolder(), "buildings/" + name + ".schematic");
             if (schemFile.exists()) {
+                debug(plugin, "pasteBuilding: using WorldEdit for " + name);
                 pasteWithWorldEdit(plugin, location, schemFile);
-                postProcessBuilding(location, s);
+                postProcessBuilding(plugin, location, s);
                 return;
             }
         }
+        debug(plugin, "pasteBuilding: using legacy paste for " + name);
         Schematic.pasteSchematic(location, s, false);
     }
 
@@ -93,83 +100,118 @@ public final class StructurePlacer {
         }
     }
 
-    // --- Post-processing after WorldEdit paste ---
+    // --- Post-processing after WorldEdit paste (single-pass) ---
 
     /**
-     * Single-pass post-processing for ruins: fills chests with loot,
-     * connects double chests, sets spawner types.
+     * After WE paste: fill chests, fix double chest connections.
+     * Detects chests by Material name rather than hardcoded legacy IDs.
      */
-    @SuppressWarnings("deprecation")
-    private static void postProcessRuin(Location loc, Schematic s) {
+    private static void postProcessRuin(Plugin plugin, Location loc, Schematic s) {
         short[] blocks = s.getBlocks();
         short w = s.getWidth(), h = s.getHeight(), l = s.getLenght();
         var world = loc.getWorld();
-        // Track processed chest positions to avoid double-processing
         boolean[][] chestDone = new boolean[w][l];
+        int chestCount = 0, doubleCount = 0;
 
         for (int x = 0; x < w; ++x) {
             for (int y = 0; y < h; ++y) {
                 for (int z = 0; z < l; ++z) {
                     int idx = y * w * l + z * w + x;
-                    short id = blocks[idx];
-                    if (id == 0) continue;
+                    Material mat = Schematic.getMaterialById(blocks[idx]);
+                    if (mat == null || mat == Material.AIR) continue;
 
                     Block block = world.getBlockAt(loc.getBlockX() + x, loc.getBlockY() + y, loc.getBlockZ() + z);
 
-                    if (id == 54 || id == 146) { // CHEST or TRAPPED_CHEST
+                    if (mat == Material.CHEST || mat == Material.TRAPPED_CHEST) {
                         if (chestDone[x][z]) continue;
                         chestDone[x][z] = true;
+                        chestCount++;
 
-                        // Fill with loot
-                        ItemManager.fillChest(block);
+                        // Force tile entity refresh from NBT (WE paste may not have loaded it)
+                        BlockState state = block.getState(true);
+                        if (state instanceof Chest chest) {
+                            ItemManager.fillChest(block);
+                            debug(plugin, "postProcessRuin: filled chest at " + x + "," + y + "," + z);
+                        } else {
+                            debug(plugin, "postProcessRuin: block at " + x + "," + y + "," + z
+                                    + " is " + block.getType() + " but state is " + state.getClass().getSimpleName());
+                        }
 
-                        // Check for double chest: adjacent chest in +x or +z direction
-                        Material chestMat = block.getType();
-                        if (chestMat == Material.CHEST || chestMat == Material.TRAPPED_CHEST) {
-                            fixDoubleChest(block, blocks, w, l, h, x, y, z, chestDone);
+                        // Fix double chest
+                        if (fixDoubleChest(block, blocks, w, l, h, x, y, z, chestDone)) {
+                            doubleCount++;
                         }
                     }
                 }
             }
         }
-    }
-
-    private static void fixDoubleChest(Block block, short[] blocks, short w, short l, short h,
-                                        int x, int y, int z, boolean[][] chestDone) {
-        // Check +x direction
-        if (x + 1 < w && isChestId(blocks[y * w * l + z * w + (x + 1)])) {
-            chestDone[x + 1][z] = true;
-            Block other = block.getWorld().getBlockAt(block.getX() + 1, block.getY(), block.getZ());
-            setDoubleChest(block, other);
-            return;
-        }
-        // Check +z direction
-        if (z + 1 < l && isChestId(blocks[y * w * l + (z + 1) * w + x])) {
-            chestDone[x][z + 1] = true;
-            Block other = block.getWorld().getBlockAt(block.getX(), block.getY(), block.getZ() + 1);
-            setDoubleChest(block, other);
-        }
-    }
-
-    private static boolean isChestId(short id) {
-        return id == 54 || id == 146;
-    }
-
-    private static void setDoubleChest(Block left, Block right) {
-        if (left.getBlockData() instanceof org.bukkit.block.data.type.Chest leftChest
-                && right.getBlockData() instanceof org.bukkit.block.data.type.Chest rightChest) {
-            leftChest.setType(Type.LEFT);
-            left.setBlockData(leftChest);
-            rightChest.setType(Type.RIGHT);
-            right.setBlockData(rightChest);
+        if (chestCount > 0) {
+            debug(plugin, "postProcessRuin: processed " + chestCount + " chests ("
+                    + doubleCount + " double) in " + s.getName());
         }
     }
 
     /**
-     * Post-processing for buildings: handles chests + Lost Librarian NPC spawning.
+     * Detects and connects adjacent chests. Both schematic neighbors and
+     * actual placed blocks are checked for compatibility.
      */
-    @SuppressWarnings("deprecation")
-    private static void postProcessBuilding(Location loc, Schematic s) {
+    private static boolean fixDoubleChest(Block block, short[] blocks,
+                                           short w, short l, short h,
+                                           int x, int y, int z, boolean[][] chestDone) {
+        Material mat = block.getType();
+        // Check +x direction
+        if (x + 1 < w) {
+            Material neighborMat = Schematic.getMaterialById(blocks[y * w * l + z * w + (x + 1)]);
+            if (isChestMaterial(neighborMat)) {
+                chestDone[x + 1][z] = true;
+                Block other = block.getWorld().getBlockAt(block.getX() + 1, block.getY(), block.getZ());
+                other.getState(true); // force tile entity load
+                return applyDoubleChest(block, other);
+            }
+        }
+        // Check +z direction
+        if (z + 1 < l) {
+            Material neighborMat = Schematic.getMaterialById(blocks[y * w * l + (z + 1) * w + x]);
+            if (isChestMaterial(neighborMat)) {
+                chestDone[x][z + 1] = true;
+                Block other = block.getWorld().getBlockAt(block.getX(), block.getY(), block.getZ() + 1);
+                other.getState(true);
+                return applyDoubleChest(block, other);
+            }
+        }
+        return false;
+    }
+
+    private static boolean isChestMaterial(Material m) {
+        return m == Material.CHEST || m == Material.TRAPPED_CHEST;
+    }
+
+    private static boolean applyDoubleChest(Block chestA, Block chestB) {
+        Material matA = chestA.getType();
+        Material matB = chestB.getType();
+        if (matA != matB) return false;
+        if (matA != Material.CHEST && matA != Material.TRAPPED_CHEST) return false;
+
+        // Figure out left/right based on block position
+        // If chestA is west (-x) or north (-z) of chestB, it's LEFT
+        boolean aIsLeft = chestA.getX() < chestB.getX() || chestA.getZ() < chestB.getZ();
+        Block left = aIsLeft ? chestA : chestB;
+        Block right = aIsLeft ? chestB : chestA;
+
+        if (left.getBlockData() instanceof org.bukkit.block.data.type.Chest leftData
+                && right.getBlockData() instanceof org.bukkit.block.data.type.Chest rightData) {
+            leftData.setType(Type.LEFT);
+            rightData.setType(Type.RIGHT);
+            left.setBlockData(leftData, false);
+            right.setBlockData(rightData, false);
+            return true;
+        }
+        return false;
+    }
+
+    // --- Building post-processing (chests + NPC spawning) ---
+
+    private static void postProcessBuilding(Plugin plugin, Location loc, Schematic s) {
         short[] blocks = s.getBlocks();
         short w = s.getWidth(), h = s.getHeight(), l = s.getLenght();
         var world = loc.getWorld();
@@ -179,19 +221,21 @@ public final class StructurePlacer {
             for (int y = 0; y < h; ++y) {
                 for (int z = 0; z < l; ++z) {
                     int idx = y * w * l + z * w + x;
-                    short id = blocks[idx];
-                    if (id == 0) continue;
+                    Material mat = Schematic.getMaterialById(blocks[idx]);
+                    if (mat == null || mat == Material.AIR) continue;
 
                     Block block = world.getBlockAt(loc.getBlockX() + x, loc.getBlockY() + y, loc.getBlockZ() + z);
 
-                    if (isChestId(id)) {
+                    if (isChestMaterial(mat)) {
                         if (!chestDone[x][z]) {
                             chestDone[x][z] = true;
-                            ItemManager.fillChest(block);
+                            BlockState state = block.getState(true);
+                            if (state instanceof Chest) {
+                                ItemManager.fillChest(block);
+                            }
                             fixDoubleChest(block, blocks, w, l, h, x, y, z, chestDone);
                         }
-                    } else if (id == 133 && block.getType() == Material.EMERALD_BLOCK) {
-                        // Replace emerald block with Lost Librarian NPC
+                    } else if (mat == Material.EMERALD_BLOCK && block.getType() == Material.EMERALD_BLOCK) {
                         block.setType(Material.AIR);
                         var v = (org.bukkit.entity.Villager) world.spawnEntity(block.getLocation(),
                                 org.bukkit.entity.EntityType.VILLAGER);
@@ -203,13 +247,14 @@ public final class StructurePlacer {
                         v.setCustomName("§5§lLost Librarian");
                         v.setCustomNameVisible(true);
                         v.setAdult();
+                        debug(plugin, "postProcessBuilding: spawned Lost Librarian at " + x + "," + y + "," + z);
                     }
                 }
             }
         }
     }
 
-    // --- NBT resource loading (for future fallback) ---
+    // --- NBT resource loading ---
 
     static void copyNbtResources(Plugin plugin) {
         String[] names = {"Farm", "GasStation", "House", "Outpost", "Railstation", "Shop", "Lost_Library"};
@@ -220,11 +265,17 @@ public final class StructurePlacer {
             File dest = new File(destDir, name + ".nbt");
             if (dest.exists()) continue;
             try (InputStream in = StructurePlacer.class.getResourceAsStream(resourcePath)) {
-                if (in == null) {
-                    continue;
-                }
+                if (in == null) continue;
                 Files.copy(in, dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException ignored) {}
+        }
+    }
+
+    // --- Debug logging ---
+
+    static void debug(Plugin plugin, String msg) {
+        if (MagicLoot3.isDebug()) {
+            plugin.getLogger().info("[DEBUG] " + msg);
         }
     }
 }

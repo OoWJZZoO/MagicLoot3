@@ -8,3 +8,8 @@ depend: [Slimefun]
 softdepend: [WorldEdit]
 
 website: https://github.com/OoWJZZoO/MagicLoot3
+
+commands:
+  magicloot:
+    description: MagicLoot3 commands
+    usage: /magicloot <version|debug>

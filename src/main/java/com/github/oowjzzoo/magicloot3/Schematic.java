@@ -198,7 +198,7 @@ public class Schematic {
      * Converts legacy numeric block IDs (from .schematic files) to modern Materials.
      * Uses CraftBukkit's internal mapping, which is always available at runtime on Paper.
      */
-    private static Material getMaterialById(short id) {
+    public static Material getMaterialById(short id) {
         try {
             Class<?> magicNumbers = Class.forName("org.bukkit.craftbukkit.util.CraftMagicNumbers");
             java.lang.reflect.Method getBlock = magicNumbers.getMethod("getBlock", int.class);

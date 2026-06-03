@@ -10,6 +10,11 @@
     <packaging>jar</packaging>
 
     <name>MagicLoot3</name>
+    <scm>
+        <connection>scm:git:https://github.com/OoWJZZoO/MagicLoot3.git</connection>
+        <developerConnection>scm:git:https://github.com/OoWJZZoO/MagicLoot3.git</developerConnection>
+        <url>https://github.com/OoWJZZoO/MagicLoot3</url>
+    </scm>
     <description>A revived Slimefun 4 addon that adds dungeons, ruins and random loot systems</description>
     <url>https://github.com/OoWJZZoO/MagicLoot3</url>
 
@@ -56,6 +61,28 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>git-revision-count</id>
+                        <phase>validate</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <exportAntProperties>true</exportAntProperties>
+                            <target>
+                                <exec executable="git" outputproperty="buildNumber" failonerror="false">
+                                    <arg value="rev-list"/>
+                                    <arg value="--count"/>
+                                    <arg value="HEAD"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
@@ -83,6 +110,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>plugin.yml</include>
+                    <include>build-info.properties</include>
                 </includes>
             </resource>
             <resource>

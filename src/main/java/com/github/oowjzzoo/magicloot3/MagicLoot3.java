@@ -22,10 +22,14 @@ import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
 public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
 
     private static MagicLoot3 instance;
+    private static boolean debug;
 
     @Override
     public void onEnable() {
         instance = this;
+
+        // Register commands
+        getCommand("magicloot").setExecutor(new MagicLootCommand(this));
 
         // Save default config if not present
         saveDefaultConfig();
@@ -169,5 +173,13 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon {
 
     public static MagicLoot3 getInstance() {
         return instance;
+    }
+
+    public static boolean isDebug() {
+        return debug;
+    }
+
+    public static void setDebug(boolean value) {
+        debug = value;
     }
 }
