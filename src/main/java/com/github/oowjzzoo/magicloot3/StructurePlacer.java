@@ -102,25 +102,22 @@ public final class StructurePlacer {
     // --- Post-processing after WorldEdit paste ---
 
     /**
-     * Scan the world area that WorldEdit just pasted into. Uses overscan
-     * (max of width/length + buffer) in both horizontal axes to tolerate
-     * axis-ordering differences between JNBT and WorldEdit.
+     * Scan the world area that WorldEdit just pasted into. Swaps JNBT's
+     * Width/Length in the x/z loop dimensions to match WorldEdit's axis
+     * interpretation of the .schematic format.
      */
     private static void postProcessRuin(Plugin plugin, Location loc, Schematic s) {
         int w = s.getWidth(), h = s.getHeight(), l = s.getLenght();
-        // Overscan: JNBT and WE may disagree on which axis is Width vs Length
-        int scan = Math.max(w, l) + 2;
+        // Swap: JNBT Width → world Z, JNBT Length → world X
+        int xMax = l, zMax = w;
         var world = loc.getWorld();
-        boolean[][] chestDone = new boolean[scan][scan];
+        boolean[][] chestDone = new boolean[xMax + 1][zMax + 1];
         int bx = loc.getBlockX(), by = loc.getBlockY(), bz = loc.getBlockZ();
         int chestCount = 0, doubleCount = 0;
 
-        debug(plugin, "postProcessRuin: scanning " + scan + "×" + h + "×" + scan
-                + " for " + s.getName() + " (w=" + w + " l=" + l + ")");
-
-        for (int x = 0; x < scan; ++x) {
+        for (int x = 0; x < xMax; ++x) {
             for (int y = 0; y < h; ++y) {
-                for (int z = 0; z < scan; ++z) {
+                for (int z = 0; z < zMax; ++z) {
                     Block block = world.getBlockAt(bx + x, by + y, bz + z);
                     Material type = block.getType();
 
@@ -180,14 +177,14 @@ public final class StructurePlacer {
 
     private static void postProcessBuilding(Plugin plugin, Location loc, Schematic s) {
         int w = s.getWidth(), h = s.getHeight(), l = s.getLenght();
-        int scan = Math.max(w, l) + 2;
+        int xMax = l, zMax = w; // swap: JNBT Width → world Z
         var world = loc.getWorld();
-        boolean[][] chestDone = new boolean[scan][scan];
+        boolean[][] chestDone = new boolean[xMax + 1][zMax + 1];
         int bx = loc.getBlockX(), by = loc.getBlockY(), bz = loc.getBlockZ();
 
-        for (int x = 0; x < scan; ++x) {
+        for (int x = 0; x < xMax; ++x) {
             for (int y = 0; y < h; ++y) {
-                for (int z = 0; z < scan; ++z) {
+                for (int z = 0; z < zMax; ++z) {
                     Block block = world.getBlockAt(bx + x, by + y, bz + z);
                     Material type = block.getType();
 
