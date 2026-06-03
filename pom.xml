@@ -10,11 +10,6 @@
     <packaging>jar</packaging>
 
     <name>MagicLoot3</name>
-    <scm>
-        <connection>scm:git:https://github.com/OoWJZZoO/MagicLoot3.git</connection>
-        <developerConnection>scm:git:https://github.com/OoWJZZoO/MagicLoot3.git</developerConnection>
-        <url>https://github.com/OoWJZZoO/MagicLoot3</url>
-    </scm>
     <description>A revived Slimefun 4 addon that adds dungeons, ruins and random loot systems</description>
     <url>https://github.com/OoWJZZoO/MagicLoot3</url>
 
@@ -28,10 +23,6 @@
         <repository>
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
-        </repository>
-        <repository>
-            <id>enginehub</id>
-            <url>https://maven.enginehub.org/repo/</url>
         </repository>
     </repositories>
 
@@ -48,12 +39,6 @@
             <version>RC-37</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/Slimefun.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.sk89q.worldedit</groupId>
-            <artifactId>worldedit-bukkit</artifactId>
-            <version>7.3.9</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -118,7 +103,6 @@
                 <filtering>false</filtering>
                 <includes>
                     <include>**/*.yml</include>
-                    <include>**/*.schematic</include>
                     <include>**/*.nbt</include>
                 </includes>
             </resource>

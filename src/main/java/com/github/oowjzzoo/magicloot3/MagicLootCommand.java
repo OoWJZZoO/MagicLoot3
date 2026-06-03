@@ -33,8 +33,8 @@ public class MagicLootCommand implements CommandExecutor {
                 sender.sendMessage(ChatColor.GOLD + "MagicLoot3 " + ChatColor.GRAY
                         + "v" + plugin.getDescription().getVersion());
                 sender.sendMessage(ChatColor.GRAY + "Build: #" + buildNumber);
-                sender.sendMessage(ChatColor.GRAY + "WorldEdit: "
-                        + (StructurePlacer.isWorldEditAvailable() ? ChatColor.GREEN + "yes" : ChatColor.RED + "no"));
+                sender.sendMessage(ChatColor.GRAY + "Structure mode: "
+                        + ChatColor.GREEN + "vanilla (StructureManager)");
                 sender.sendMessage(ChatColor.GRAY + "Debug mode: "
                         + (MagicLoot3.isDebug() ? ChatColor.GREEN + "on" : ChatColor.RED + "off"));
             }

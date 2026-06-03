@@ -33,8 +33,9 @@ enable:
   BOOK: true
   POTION: true
   UNANALIZED: true
-world-blacklist:
-- world_nether
+world-whitelist:
+- world
+- world_the_end
 spawners:
 - ZOMBIE
 - SPIDER
@@ -42,5 +43,5 @@ spawners:
 - BLAZE
 - SKELETON
 - ENDERMAN
-- PIG_ZOMBIE
+- ZOMBIFIED_PIGLIN
 - WITCH

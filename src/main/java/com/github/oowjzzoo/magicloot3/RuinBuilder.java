@@ -1,7 +1,6 @@
 package com.github.oowjzzoo.magicloot3;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,67 +12,62 @@ import org.bukkit.plugin.Plugin;
 
 public class RuinBuilder {
 
-    public static List<Schematic> schematics = new ArrayList<>();
-    public static Map<String, ConfigManager> configs = new HashMap<>();
-    public static List<Schematic> buildings = new ArrayList<>();
-    private static final Map<String, Schematic> schemMap = new HashMap<>();
-    private static final Map<String, Schematic> buildingMap = new HashMap<>();
+    public static final List<String> ruinNames = new ArrayList<>();
+    public static final List<String> buildingNames = new ArrayList<>();
+    public static final Map<String, ConfigManager> configs = new HashMap<>();
     private static Plugin plugin;
 
-    public static void loadRuins(Plugin pl) throws IOException {
+    /**
+     * Scans the plugin's structures/ folder for .nbt files.
+     * Classifies them as ruins or buildings based on StructurePlacer.BUILDING_NAMES.
+     */
+    public static void loadRuins(Plugin pl) {
         plugin = pl;
-        File dataFolder = plugin.getDataFolder();
-        File schematicsDir = new File(dataFolder, "schematics");
-        if (!schematicsDir.exists()) schematicsDir.mkdirs();
+        ruinNames.clear();
+        buildingNames.clear();
+        configs.clear();
 
-        for (File file : schematicsDir.listFiles()) {
-            if (file.getName().endsWith(".schematic")) {
-                Schematic s = Schematic.loadSchematic(file);
-                schematics.add(s);
-                schemMap.put(s.getName(), s);
-                String name = s.getName();
-                ConfigManager cfg = new ConfigManager(new File(dataFolder, "ruin_settings/" + name + ".yml"));
-                cfg.setDefaultValue("y-offset", 0);
-                cfg.setDefaultValue("underwater", false);
-                cfg.save();
-                configs.put(name, cfg);
+        File structuresDir = new File(plugin.getDataFolder(), "structures");
+        if (!structuresDir.exists()) structuresDir.mkdirs();
+
+        File ruinSettingsDir = new File(plugin.getDataFolder(), "ruin_settings");
+        if (!ruinSettingsDir.exists()) ruinSettingsDir.mkdirs();
+
+        File[] files = structuresDir.listFiles((d, n) -> n.endsWith(".nbt"));
+        if (files == null) return;
+
+        for (File file : files) {
+            String name = file.getName().replace(".nbt", "");
+
+            if (StructurePlacer.BUILDING_NAMES.contains(name)) {
+                buildingNames.add(name);
+            } else {
+                ruinNames.add(name);
             }
+
+            ConfigManager cfg = new ConfigManager(
+                    new File(ruinSettingsDir, name + ".yml"));
+            cfg.setDefaultValue("y-offset", 0);
+            cfg.setDefaultValue("underwater", false);
+            cfg.save();
+            configs.put(name, cfg);
         }
-
-        File buildingsDir = new File(dataFolder, "buildings");
-        if (!buildingsDir.exists()) buildingsDir.mkdirs();
-
-        for (File file : buildingsDir.listFiles()) {
-            if (file.getName().endsWith(".schematic")) {
-                Schematic s = Schematic.loadSchematic(file);
-                buildings.add(s);
-                buildingMap.put(s.getName(), s);
-            }
-        }
-    }
-
-    public static Schematic getSchematic(String name) {
-        return schemMap.get(name);
-    }
-
-    public static Schematic getBuilding(String name) {
-        return buildingMap.get(name);
     }
 
     public static void buildRuin(Location l) {
-        if (schematics.isEmpty()) return;
+        if (ruinNames.isEmpty() && buildingNames.isEmpty()) return;
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
-        if (random.nextInt(100) < 4 && !buildings.isEmpty()) {
-            Schematic s = buildings.get(random.nextInt(buildings.size()));
+        if (random.nextInt(100) < 4 && !buildingNames.isEmpty()) {
+            String name = buildingNames.get(random.nextInt(buildingNames.size()));
             if (l.getBlock().isLiquid()) return;
-            StructurePlacer.pasteBuilding(plugin, l, s.getName());
-        } else {
-            Schematic s = schematics.get(random.nextInt(schematics.size()));
-            ConfigManager cfg = configs.get(s.getName());
+            StructurePlacer.place(plugin, l, name, true);
+        } else if (!ruinNames.isEmpty()) {
+            String name = ruinNames.get(random.nextInt(ruinNames.size()));
+            ConfigManager cfg = configs.get(name);
             if (cfg != null && l.getBlock().isLiquid() && !cfg.getBoolean("underwater")) return;
             if (cfg != null) l.setY(l.getY() + cfg.getInt("y-offset"));
-            StructurePlacer.pasteRuin(plugin, l, s.getName());
+            StructurePlacer.place(plugin, l, name, false);
         }
     }
 }

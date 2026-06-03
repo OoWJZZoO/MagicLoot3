@@ -66,8 +66,8 @@ public class LootListener implements Listener {
     public void onRuinGenerate(ChunkPopulateEvent e) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
-        List<String> worldBlacklist = plugin.getConfig().getStringList("world-blacklist");
-        if (worldBlacklist.contains(e.getWorld().getName())) return;
+        List<String> worldWhitelist = plugin.getConfig().getStringList("world-whitelist");
+        if (!worldWhitelist.contains(e.getWorld().getName())) return;
         if (random.nextInt(100) >= plugin.getConfig().getInt("chances.ruin", 30)) return;
 
         int x = e.getChunk().getX() * 16 + random.nextInt(16);
