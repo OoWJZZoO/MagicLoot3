@@ -16,7 +16,6 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.data.type.Chest.Type;
 import org.bukkit.plugin.Plugin;
 
-import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.math.BlockVector3;
 
 public final class StructurePlacer {
@@ -39,9 +38,9 @@ public final class StructurePlacer {
             File file = new File(plugin.getDataFolder(), "schematics/" + name + ".schematic");
             if (file.exists()) {
                 debug(plugin, "pasteRuin: WE for " + name);
-                BlockVector3[] dimsOrigin = pasteWithWorldEdit(plugin, location, file);
-                if (dimsOrigin != null) {
-                    postProcess(plugin, location, dimsOrigin[0], dimsOrigin[1], false, name);
+                BlockVector3[] bbox = pasteWithWorldEdit(plugin, location, file);
+                if (bbox != null) {
+                    postProcess(plugin, bbox[0], bbox[1], location, false, name);
                     return;
                 }
             }
@@ -56,9 +55,9 @@ public final class StructurePlacer {
             File file = new File(plugin.getDataFolder(), "buildings/" + name + ".schematic");
             if (file.exists()) {
                 debug(plugin, "pasteBuilding: WE for " + name);
-                BlockVector3[] dimsOrigin = pasteWithWorldEdit(plugin, location, file);
-                if (dimsOrigin != null) {
-                    postProcess(plugin, location, dimsOrigin[0], dimsOrigin[1], true, name);
+                BlockVector3[] bbox = pasteWithWorldEdit(plugin, location, file);
+                if (bbox != null) {
+                    postProcess(plugin, bbox[0], bbox[1], location, true, name);
                     return;
                 }
             }
@@ -71,8 +70,8 @@ public final class StructurePlacer {
     // --- WorldEdit backend ---
 
     /**
-     * Pastes a schematic via WorldEdit. Returns [dimensions, originOffset]
-     * or null on failure.
+     * Pastes via WorldEdit. Returns [minCorner, maxCorner] from the EditSession's
+     * own block-change tracking — the authoritative bounding box of the paste.
      */
     private static BlockVector3[] pasteWithWorldEdit(Plugin plugin, Location loc, File file) {
         try (FileInputStream fis = new FileInputStream(file)) {
@@ -82,9 +81,7 @@ public final class StructurePlacer {
                 return null;
             }
             var reader = format.getReader(fis);
-            Clipboard clipboard = reader.read();
-            BlockVector3 dims = clipboard.getDimensions();
-            BlockVector3 origin = clipboard.getOrigin();
+            var clipboard = reader.read();
 
             var weWorld = com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(loc.getWorld());
             try (var session = com.sk89q.worldedit.WorldEdit.getInstance().newEditSession(weWorld)) {
@@ -94,11 +91,16 @@ public final class StructurePlacer {
                         .ignoreAirBlocks(false)
                         .build();
                 com.sk89q.worldedit.function.operation.Operations.complete(pasteOp);
+
+                // EditSession tracks the bounding box of all changes
+                return new BlockVector3[] {
+                        session.getMinimumPoint(),
+                        session.getMaximumPoint()
+                };
             }
-            return new BlockVector3[] { dims, origin };
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING,
-                    "WE paste failed for " + file.getName() + ": " + e.getMessage());
+                    "WE paste failed: " + e.getMessage());
             return null;
         }
     }
@@ -106,35 +108,28 @@ public final class StructurePlacer {
     // --- Post-processing ---
 
     /**
-     * Scan the area WorldEdit actually pasted into.
-     * WE maps the clipboard's origin point to our paste location,
-     * so the true world bounding box is:
-     *   minCorner = pasteLoc - origin
-     *   maxCorner = pasteLoc - origin + dimensions
+     * Scan the exact region that WorldEdit modified, as reported by the
+     * EditSession's own block-change tracking. No guessing, no calculating.
      */
-    private static void postProcess(Plugin plugin, Location loc,
-                                      BlockVector3 dims, BlockVector3 origin,
-                                      boolean isBuilding, String name) {
-        int dx = dims.x(), dy = dims.y(), dz = dims.z();
-        // ClipboardHolder.createPaste().to() places the schematic with its
-        // minimum corner at the paste location. We don't apply the clipboard
-        // origin because the holder already handles it internally.
-        int minX = loc.getBlockX();
-        int minY = loc.getBlockY();
-        int minZ = loc.getBlockZ();
+    private static void postProcess(Plugin plugin,
+                                      BlockVector3 min, BlockVector3 max,
+                                      Location loc, boolean isBuilding, String name) {
+        int minX = min.x(), minY = min.y(), minZ = min.z();
+        int maxX = max.x(), maxY = max.y(), maxZ = max.z();
+        int dx = maxX - minX + 1;
+        int dz = maxZ - minZ + 1;
 
         var world = loc.getWorld();
         boolean[][] chestDone = new boolean[dx + 1][dz + 1];
         int chestCount = 0, doubleCount = 0;
 
-        debug(plugin, "postProcess " + name + ": corner=("
-                + minX + "," + minY + "," + minZ + ")"
-                + " dims=(" + dx + "," + dy + "," + dz + ")"
-                + " from WE clipboard"
-                + " (raw-origin=" + origin.x() + "," + origin.y() + "," + origin.z() + ")");
+        debug(plugin, "postProcess " + name
+                + ": min=(" + minX + "," + minY + "," + minZ + ")"
+                + " max=(" + maxX + "," + maxY + "," + maxZ + ")"
+                + " size=" + dx + "×" + (maxY - minY + 1) + "×" + dz);
 
         for (int x = 0; x < dx; ++x) {
-            for (int y = 0; y < dy; ++y) {
+            for (int y = 0; y <= maxY - minY; ++y) {
                 for (int z = 0; z < dz; ++z) {
                     Block block = world.getBlockAt(minX + x, minY + y, minZ + z);
                     Material type = block.getType();
@@ -147,8 +142,6 @@ public final class StructurePlacer {
                         block.getState(true);
                         if (block.getState() instanceof Chest) {
                             ItemManager.fillChest(block);
-                            debug(plugin, "  chest at rel(" + x + "," + y + "," + z + ") world("
-                                    + (minX + x) + "," + (minY + y) + "," + (minZ + z) + ")");
                         }
 
                         // +X neighbor
