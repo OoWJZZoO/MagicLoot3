@@ -49,4 +49,9 @@ public final class Messages {
     public static String getCurrentLang() {
         return currentLang;
     }
+
+    /** Returns the raw YAML value, or null if key doesn't exist. */
+    public static String raw(String key) {
+        return lang.getString(key, null);
+    }
 }

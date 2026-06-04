@@ -145,8 +145,10 @@ public class MagicLootConfig {
                 ItemManager.potionEffectTypes.add(e);
                 ItemManager.potionEffectMap.put(e.getKey().getKey(), e);
                 String enKey = e.getKey().getKey();
+                String display = Messages.raw("effects." + enKey);
                 ItemManager.effectNames.put(enKey,
-                        Messages.get("effects." + enKey, formatEffectName(enKey)));
+                        display != null ? org.bukkit.ChatColor.translateAlternateColorCodes('&', display)
+                                : formatEffectName(enKey));
             }
         }
 

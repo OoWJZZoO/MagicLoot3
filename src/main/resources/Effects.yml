@@ -77,4 +77,6 @@ oozing:
 weaving:
   max-level: 10
 wind_charged:
+  max-level: 1
+root:
   max-level: 10

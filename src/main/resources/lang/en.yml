@@ -121,6 +121,7 @@ effects:
   oozing: "Oozing"
   weaving: "Weaving"
   wind_charged: "Wind Charged"
+  root: "Rooted"
 
 suffixes:
   - Tool
