@@ -85,7 +85,7 @@ public class ItemManager {
                             PotionEffectType e = POTIONEFFECTS.get(random.nextInt(POTIONEFFECTS.size()));
                             int maxLvl = MagicLootConfig.getMaxLevel(e);
                             meta.addCustomEffect(new PotionEffect(e, (random.nextInt(8) + 2) * 10 * 20,
-                                    maxLvl == 1 ? 1 : random.nextInt(maxLvl - 1) + 1), true);
+                                    random.nextInt(maxLvl)), true);
                         }
                     }
                     item.setItemMeta(meta);
@@ -166,7 +166,7 @@ public class ItemManager {
                 String enKey = e.getKey().getKey();
                 int maxLvl = MagicLootConfig.getMaxLevel(e);
                 if (maxLvl <= 0) continue;
-                int level = maxLvl > 1 ? (random.nextInt(maxLvl - 1) + 1) : 1;
+                int level = random.nextInt(maxLvl);
                 String apply = random.nextInt(10) > 5 ? "+" : "-";
                 effectData.add(enKey + ":" + apply + ":" + level);
                 String displayName = ItemManager.effectNames.getOrDefault(enKey, enKey);
@@ -203,7 +203,7 @@ public class ItemManager {
                     Enchantment e = ENCHANTMENTS.get(random.nextInt(ENCHANTMENTS.size()));
                     int maxLvl = MagicLootConfig.getMaxLevel(e);
                     if (maxLvl > 0) {
-                        storageMeta.addStoredEnchant(e, maxLvl == 1 ? 1 : random.nextInt(maxLvl - 1) + 1, true);
+                        storageMeta.addStoredEnchant(e, random.nextInt(maxLvl) + 1, true);
                     }
                 }
             }
@@ -217,7 +217,7 @@ public class ItemManager {
                 Enchantment e = ENCHANTMENTS.get(random.nextInt(ENCHANTMENTS.size()));
                 int maxLvl = MagicLootConfig.getMaxLevel(e);
                 if (maxLvl > 0) {
-                    item.addUnsafeEnchantment(e, maxLvl == 1 ? 1 : random.nextInt(maxLvl - 1) + 1);
+                    item.addUnsafeEnchantment(e, random.nextInt(maxLvl) + 1);
                 }
             }
         }
