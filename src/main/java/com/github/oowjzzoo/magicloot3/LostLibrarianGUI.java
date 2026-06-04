@@ -65,14 +65,14 @@ public final class LostLibrarianGUI {
         return inv;
     }
 
-    public static boolean handleClick(Player player, int slot) {
+    public static boolean handleClick(Player player, int slot, boolean isDesk) {
         switch (slot) {
-            case 4:  LostLibrarian.examineTier(player, LootTier.getRandomApplicable()); break;
-            case 11: LostLibrarian.examineTier(player, LootTier.COMMON); break;
-            case 12: LostLibrarian.examineTier(player, LootTier.UNCOMMON); break;
-            case 13: LostLibrarian.examineTier(player, LootTier.RARE); break;
-            case 14: LostLibrarian.examineTier(player, LootTier.EPIC); break;
-            case 15: LostLibrarian.examineTier(player, LootTier.LEGENDARY); break;
+            case 4:  LostLibrarian.examineTier(player, LootTier.getRandomApplicable(), isDesk); break;
+            case 11: LostLibrarian.examineTier(player, LootTier.COMMON, isDesk); break;
+            case 12: LostLibrarian.examineTier(player, LootTier.UNCOMMON, isDesk); break;
+            case 13: LostLibrarian.examineTier(player, LootTier.RARE, isDesk); break;
+            case 14: LostLibrarian.examineTier(player, LootTier.EPIC, isDesk); break;
+            case 15: LostLibrarian.examineTier(player, LootTier.LEGENDARY, isDesk); break;
             default: return false;
         }
         return true;

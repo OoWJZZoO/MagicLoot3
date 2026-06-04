@@ -135,7 +135,7 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
                 RecipeType.ENHANCED_CRAFTING_TABLE, deskRecipe);
         lostDesk.addItemHandler((BlockUseHandler) event -> {
             event.cancel();
-            LostLibrarian.openMenu(event.getPlayer());
+            LostLibrarian.openMenu(event.getPlayer(), true);
         });
         lostDesk.register(this);
 

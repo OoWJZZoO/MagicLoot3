@@ -9,7 +9,7 @@ public final class LostLibrarian {
 
     private LostLibrarian() {}
 
-    public static void openMenu(Player player) {
+    public static void openMenu(Player player, boolean isDesk) {
         ItemStack item = player.getInventory().getItemInMainHand();
         LootTier tier = LootTier.get(item);
 
@@ -17,11 +17,11 @@ public final class LostLibrarian {
             player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1F, 1F);
             player.openInventory(LostLibrarianGUI.create(player));
         } else {
-            player.sendMessage(Messages.get("npc.cannot_examine"));
+            player.sendMessage(isDesk ? Messages.get("desk.cannot_examine") : Messages.get("npc.cannot_examine"));
         }
     }
 
-    public static void examineTier(Player player, LootTier tier) {
+    public static void examineTier(Player player, LootTier tier, boolean isDesk) {
         int cost = Bukkit.getPluginManager().getPlugin("MagicLoot3")
                 .getConfig().getInt("costs." + tier.toString());
 
@@ -30,9 +30,9 @@ public final class LostLibrarian {
             player.getInventory().setItemInMainHand(ItemManager.applyTier(item, tier));
             player.updateInventory();
             player.setLevel(player.getLevel() - cost);
-            player.sendMessage(Messages.get("npc.success"));
+            player.sendMessage(isDesk ? Messages.get("desk.success") : Messages.get("npc.success"));
         } else {
-            player.sendMessage(Messages.get("npc.no_xp"));
+            player.sendMessage(isDesk ? Messages.get("desk.no_xp") : Messages.get("npc.no_xp"));
         }
     }
 }

@@ -58,7 +58,7 @@ public class LootListener implements Listener {
         e.setCancelled(true);
         if (e.getCurrentItem() == null) return;
         if (e.getClickedInventory() != e.getView().getTopInventory()) return;
-        LostLibrarianGUI.handleClick(player, e.getRawSlot());
+        LostLibrarianGUI.handleClick(player, e.getRawSlot(), false);
     }
 
     // --- Ruin generation ---
@@ -111,7 +111,7 @@ public class LootListener implements Listener {
                 && entity.getPersistentDataContainer().has(ItemKeys.LIBRARIAN)) {
             e.setCancelled(true);
             try {
-                LostLibrarian.openMenu(e.getPlayer());
+                LostLibrarian.openMenu(e.getPlayer(), false);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
