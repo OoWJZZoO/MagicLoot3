@@ -267,11 +267,11 @@ plugins/MagicLoot3/
 需要 Java 21 + Maven 3.9+。
 
 ```bash
-# 中文端
-mvn clean package -P zh
-
-# 英文端（默认）
+# 中文端（默认）
 mvn clean package
+
+# 英文端
+mvn clean package -P en
 ```
 
 产物：`target/MagicLoot3-3.5.0-zh.jar` 和 `target/MagicLoot3-3.5.0-en.jar`。

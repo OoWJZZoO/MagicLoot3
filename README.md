@@ -268,11 +268,11 @@ plugins/MagicLoot3/
 Requires Java 21 + Maven 3.9+.
 
 ```bash
-# English build (default)
+# Chinese build (default)
 mvn clean package
 
-# Chinese build
-mvn clean package -P zh
+# English build
+mvn clean package -P en
 ```
 
 Output: `target/MagicLoot3-3.5.0-en.jar` and `target/MagicLoot3-3.5.0-zh.jar`.
