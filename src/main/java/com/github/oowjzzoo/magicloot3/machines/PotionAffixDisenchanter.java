@@ -1,6 +1,7 @@
 package com.github.oowjzzoo.magicloot3.machines;
 
 import java.util.List;
+import java.util.logging.Level;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -45,32 +46,48 @@ public class PotionAffixDisenchanter extends AContainer {
     public ItemStack getProgressBar() { return new ItemStack(Material.ENCHANTED_BOOK); }
 
     @Override
-    protected void registerDefaultRecipes() {
-        // Dynamic recipe matching via findNextRecipe
-    }
+    protected void registerDefaultRecipes() {}
 
     @Override
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
         ItemStack s19 = menu.getItemInSlot(getInputSlots()[0]);
         ItemStack s20 = menu.getItemInSlot(getInputSlots()[1]);
-        if (s19 == null || s20 == null) return null;
+        if (s19 == null || s20 == null) {
+            debug("Disenchanter: one or both input slots are empty");
+            return null;
+        }
 
-        // Identify which slot holds equipment (has effects PDC) and which holds a book
+        // Identify which slot holds equipment (has EFFECTS PDC) and which holds a plain BOOK
         ItemStack equipment;
         ItemStack plainBook;
-        if (AffixTransferUtil.hasPotionAffixes(s19) && s20.getType() == Material.BOOK) {
+        boolean s19isEquip = AffixTransferUtil.hasPotionAffixes(s19) && s19.getType() != Material.BOOK;
+        boolean s20isEquip = AffixTransferUtil.hasPotionAffixes(s20) && s20.getType() != Material.BOOK;
+        boolean s19isBook = s19.getType() == Material.BOOK;
+        boolean s20isBook = s20.getType() == Material.BOOK;
+
+        debug("Disenchanter: s19=" + s19.getType() + " hasAffix=" + AffixTransferUtil.hasPotionAffixes(s19)
+                + " | s20=" + s20.getType() + " hasAffix=" + AffixTransferUtil.hasPotionAffixes(s20));
+
+        if (s19isEquip && s20isBook) {
             equipment = s19; plainBook = s20;
-        } else if (AffixTransferUtil.hasPotionAffixes(s20) && s19.getType() == Material.BOOK) {
+        } else if (s20isEquip && s19isBook) {
             equipment = s20; plainBook = s19;
         } else {
+            debug("Disenchanter: no valid equipment + book pair found");
             return null;
         }
 
         ItemMeta eqMeta = equipment.getItemMeta();
         String pdcData = eqMeta.getPersistentDataContainer().get(
                 ItemKeys.EFFECTS, PersistentDataType.STRING);
+        debug("Disenchanter: equipment PDC EFFECTS = " + pdcData);
+
         List<EffectEntry> effects = AffixTransferUtil.parseEffects(pdcData);
-        if (effects.isEmpty()) return null;
+        if (effects.isEmpty()) {
+            debug("Disenchanter: parsed effects is empty");
+            return null;
+        }
+        debug("Disenchanter: parsed " + effects.size() + " effect(s)");
 
         ItemStack outputEquipment = AffixTransferUtil.stripAffixes(equipment.clone());
         ItemStack outputBook = AffixTransferUtil.createAffixBook(effects, LootTier.get(equipment));
@@ -82,15 +99,26 @@ public class PotionAffixDisenchanter extends AContainer {
                 new ItemStack[]{s19.clone(), s20.clone()},
                 new ItemStack[]{outputEquipment, outputBook});
 
-        // Check output slots have room before consuming inputs
-        if (!menu.fits(outputEquipment, getOutputSlots())) return null;
-        if (!menu.fits(outputBook, getOutputSlots())) return null;
+        if (!menu.fits(outputEquipment, getOutputSlots())) {
+            debug("Disenchanter: output equipment doesn't fit");
+            return null;
+        }
+        if (!menu.fits(outputBook, getOutputSlots())) {
+            debug("Disenchanter: output book doesn't fit");
+            return null;
+        }
 
-        // Consume one item from each input slot (mirrors SF AutoEnchanter/Disenchanter)
         for (int slot : getInputSlots()) {
             menu.consumeItem(slot);
         }
 
+        debug("Disenchanter: recipe created, ticks=" + ticks);
         return recipe;
+    }
+
+    private static void debug(String msg) {
+        if (MagicLoot3.getInstance() != null && MagicLoot3.isDebug()) {
+            MagicLoot3.getInstance().getLogger().log(Level.INFO, "[DEBUG] " + msg);
+        }
     }
 }

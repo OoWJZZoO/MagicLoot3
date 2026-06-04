@@ -1,6 +1,7 @@
 package com.github.oowjzzoo.magicloot3.machines;
 
 import java.util.List;
+import java.util.logging.Level;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -46,34 +47,54 @@ public class PotionAffixEnchanter extends AContainer {
     public ItemStack getProgressBar() { return new ItemStack(Material.ENCHANTED_BOOK); }
 
     @Override
-    protected void registerDefaultRecipes() {
-        // Dynamic recipe matching via findNextRecipe
-    }
+    protected void registerDefaultRecipes() {}
 
     @Override
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
         ItemStack s19 = menu.getItemInSlot(getInputSlots()[0]);
         ItemStack s20 = menu.getItemInSlot(getInputSlots()[1]);
-        if (s19 == null || s20 == null) return null;
+        if (s19 == null || s20 == null) {
+            debug("Enchanter: one or both input slots are empty");
+            return null;
+        }
 
-        // Identify which slot holds equipment and which holds the affix enchanted book
+        // Identify which slot holds the affix book and which holds equipment.
+        // An affix book is ENCHANTED_BOOK with EFFECTS PDC. Equipment is anything else.
         ItemStack equipment;
         ItemStack affixBook;
-        if (s19.getType() == Material.ENCHANTED_BOOK && AffixTransferUtil.hasPotionAffixes(s19)
-                && s20.getType() != Material.ENCHANTED_BOOK) {
+        boolean s19isBook = s19.getType() == Material.ENCHANTED_BOOK;
+        boolean s20isBook = s20.getType() == Material.ENCHANTED_BOOK;
+        boolean s19hasAffix = s19isBook && AffixTransferUtil.hasPotionAffixes(s19);
+        boolean s20hasAffix = s20isBook && AffixTransferUtil.hasPotionAffixes(s20);
+
+        debug("Enchanter: s19=" + s19.getType() + " isBook=" + s19isBook + " hasAffix=" + s19hasAffix
+                + " | s20=" + s20.getType() + " isBook=" + s20isBook + " hasAffix=" + s20hasAffix);
+
+        if (s19hasAffix && !s20isBook) {
             affixBook = s19; equipment = s20;
-        } else if (s20.getType() == Material.ENCHANTED_BOOK && AffixTransferUtil.hasPotionAffixes(s20)
-                && s19.getType() != Material.ENCHANTED_BOOK) {
+        } else if (s20hasAffix && !s19isBook) {
             affixBook = s20; equipment = s19;
         } else {
+            debug("Enchanter: no valid equipment + affix-book pair found");
             return null;
         }
 
         ItemMeta bookMeta = affixBook.getItemMeta();
+        if (bookMeta == null) {
+            debug("Enchanter: book meta is null");
+            return null;
+        }
+
         String pdcData = bookMeta.getPersistentDataContainer().get(
                 ItemKeys.EFFECTS, PersistentDataType.STRING);
+        debug("Enchanter: book PDC EFFECTS = " + pdcData);
+
         List<EffectEntry> effects = AffixTransferUtil.parseEffects(pdcData);
-        if (effects.isEmpty()) return null;
+        if (effects.isEmpty()) {
+            debug("Enchanter: parsed effects is empty");
+            return null;
+        }
+        debug("Enchanter: parsed " + effects.size() + " effect(s)");
 
         ItemStack outputEquipment = AffixTransferUtil.appendAffixes(equipment.clone(), effects);
         ItemStack outputBook = buildResultBook(affixBook.clone());
@@ -85,15 +106,20 @@ public class PotionAffixEnchanter extends AContainer {
                 new ItemStack[]{s19.clone(), s20.clone()},
                 new ItemStack[]{outputEquipment, outputBook});
 
-        // Check output slots have room before consuming inputs
-        if (!menu.fits(outputEquipment, getOutputSlots())) return null;
-        if (!menu.fits(outputBook, getOutputSlots())) return null;
+        if (!menu.fits(outputEquipment, getOutputSlots())) {
+            debug("Enchanter: output equipment doesn't fit");
+            return null;
+        }
+        if (!menu.fits(outputBook, getOutputSlots())) {
+            debug("Enchanter: output book doesn't fit");
+            return null;
+        }
 
-        // Consume one item from each input slot (mirrors SF AutoEnchanter/Disenchanter)
         for (int slot : getInputSlots()) {
             menu.consumeItem(slot);
         }
 
+        debug("Enchanter: recipe created, ticks=" + ticks);
         return recipe;
     }
 
@@ -107,5 +133,11 @@ public class PotionAffixEnchanter extends AContainer {
             return normalBook;
         }
         return book;
+    }
+
+    private static void debug(String msg) {
+        if (MagicLoot3.getInstance() != null && MagicLoot3.isDebug()) {
+            MagicLoot3.getInstance().getLogger().log(Level.INFO, "[DEBUG] " + msg);
+        }
     }
 }
