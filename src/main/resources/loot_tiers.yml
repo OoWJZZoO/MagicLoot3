@@ -1,0 +1,45 @@
+COMMON:
+  weight: 11
+  applicable-weight: 8
+  enchantments:
+    min: 1
+    max: 1
+  effects:
+    min: 0
+    max: 0
+UNCOMMON:
+  weight: 7
+  applicable-weight: 7
+  enchantments:
+    min: 1
+    max: 2
+  effects:
+    min: 0
+    max: 1
+RARE:
+  weight: 4
+  applicable-weight: 3
+  enchantments:
+    min: 2
+    max: 3
+  effects:
+    min: 1
+    max: 2
+EPIC:
+  weight: 3
+  applicable-weight: 2
+  enchantments:
+    min: 2
+    max: 4
+  effects:
+    min: 1
+    max: 3
+LEGENDARY:
+  weight: 1
+  applicable-weight: 1
+  enchantments:
+    min: 3
+    max: 5
+  effects:
+    min: 2
+    max: 4

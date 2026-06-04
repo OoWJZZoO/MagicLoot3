@@ -4,7 +4,7 @@ language: zh
 
 # ====== 生成概率 ======
 chances:
-  mobs: 40       # 怪物穿戴随机装备的概率（百分比，每个怪物独立判定）
+  mobs: 15 # 怪物穿戴随机装备的概率（百分比，每个怪物独立判定）
 
 # ====== 世界配置 ======
 # 每个世界单独配置生成概率。只有在此处列出的世界才会生成遗迹。
@@ -12,28 +12,28 @@ chances:
 # building-chance: 遗迹中特殊建筑的概率（百分比，0-100，如迷失图书馆）
 worlds:
   world:
-    ruin-chance: 30
-    building-chance: 4
+    ruin-chance: 8
+    building-chance: 12
   world_the_end:
-    ruin-chance: 30
-    building-chance: 4
+    ruin-chance: 35
+    building-chance: 5
 
 # ====== 宝箱战利品数量 ======
 chest:
   items:
-    min: 2
-    max: 9       # 每箱物品数量 2~9
+    min: 3
+    max: 11 # 每箱物品数量
   treasure-stack:
     min: 2
-    max: 9       # 财宝堆叠数量
+    max: 9 # 财宝堆叠数量
   slimefun-stack:
-    min: 2
-    max: 6       # 粘液科技物品堆叠数量
+    min: 1
+    max: 3 # 粘液科技物品堆叠数量
 
 # ====== 装备生成时扣除的耐久百分比 ======
 durability:
-  min: 10         # 最低剩余耐久 10%
-  max: 90         # 最高剩余耐久 90%，取随机值
+  min: 10 # 最低剩余耐久 10%
+  max: 90 # 最高剩余耐久 90%
 
 # ====== 鉴定费用（XP 等级） ======
 costs:
@@ -58,8 +58,4 @@ spawners:
 - ZOMBIE
 - SPIDER
 - CAVE_SPIDER
-- BLAZE
-- SKELETON
-- ENDERMAN
-- ZOMBIFIED_PIGLIN
-- WITCH
+- VEX

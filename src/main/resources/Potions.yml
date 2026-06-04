@@ -1,0 +1,80 @@
+fire_resistance:
+  max-level: 5
+water_breathing:
+  max-level: 5
+jump_boost:
+  max-level: 5
+saturation:
+  max-level: 5
+health_boost:
+  max-level: 5
+night_vision:
+  max-level: 5
+weakness:
+  max-level: 5
+wind_charged:
+  max-level: 5
+breath_of_the_nautilus:
+  max-level: 5
+wither:
+  max-level: 5
+mining_fatigue:
+  max-level: 5
+slow_falling:
+  max-level: 5
+raid_omen:
+  max-level: 5
+luck:
+  max-level: 5
+strength:
+  max-level: 5
+infested:
+  max-level: 5
+poison:
+  max-level: 5
+hero_of_the_village:
+  max-level: 5
+unluck:
+  max-level: 5
+invisibility:
+  max-level: 5
+absorption:
+  max-level: 5
+slowness:
+  max-level: 5
+haste:
+  max-level: 5
+weaving:
+  max-level: 5
+glowing:
+  max-level: 5
+bad_omen:
+  max-level: 5
+dolphins_grace:
+  max-level: 5
+levitation:
+  max-level: 5
+conduit_power:
+  max-level: 5
+blindness:
+  max-level: 5
+instant_damage:
+  max-level: 5
+nausea:
+  max-level: 5
+instant_health:
+  max-level: 5
+regeneration:
+  max-level: 5
+hunger:
+  max-level: 5
+speed:
+  max-level: 5
+trial_omen:
+  max-level: 5
+darkness:
+  max-level: 5
+oozing:
+  max-level: 5
+resistance:
+  max-level: 5

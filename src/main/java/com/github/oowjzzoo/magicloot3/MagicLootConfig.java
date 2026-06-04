@@ -24,7 +24,6 @@ public class MagicLootConfig {
 
     private static File dataFolder;
     private static ConfigManager configItems;
-    private static ConfigManager configNames;
     private static ConfigManager configEnch;
     private static ConfigManager configPotions;
     private static ConfigManager configEffects;
@@ -35,7 +34,6 @@ public class MagicLootConfig {
             case EFFECTS: return configEffects;
             case ENCHANTMENTS: return configEnch;
             case ITEMS: return configItems;
-            case NAMES: return configNames;
             case POTIONS: return configPotions;
             case LOOT_TIER: return configTiers;
             default: return null;
@@ -54,11 +52,12 @@ public class MagicLootConfig {
         configItems = new ConfigManager(new File(dataFolder, "Items.yml"));
         configItems.setHeader("""
                 物品权重配置
-                权重越大，生成时被抽中的概率越高
-                设为 0 意味着禁用该物品，不会出现在战利品中
-                修改后需执行 /magicloot reload 或重启服务器生效
+                - 权重越大，生成时被抽中的概率越高
+                - 设为 0 即禁用该物品
+                - 装备池/财宝池/粘液池三个池子完全独立，互不影响
+                - 可附魔的物品自动归为装备池，不可附魔的归为财宝池
+                - 修改后 /magicloot reload 生效
                 """);
-        configNames = new ConfigManager(new File(dataFolder, "Names.yml"));
         configEnch = new ConfigManager(new File(dataFolder, "Enchantments.yml"));
         configPotions = new ConfigManager(new File(dataFolder, "Potions.yml"));
         configEffects = new ConfigManager(new File(dataFolder, "Effects.yml"));
@@ -106,10 +105,6 @@ public class MagicLootConfig {
         for (Enchantment e : Enchantment.values()) {
             configEnch.setDefaultValue(e.getKey().getKey() + ".max-level", 10);
         }
-
-        configNames.setDefaultValue("prefixes", prefixes);
-        configNames.setDefaultValue("suffixes", suffixes);
-        configNames.setDefaultValue("colors", colors);
 
         for (org.bukkit.potion.PotionEffectType e : org.bukkit.potion.PotionEffectType.values()) {
             if (e != null) {
