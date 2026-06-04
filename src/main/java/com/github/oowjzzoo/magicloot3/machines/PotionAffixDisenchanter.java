@@ -51,14 +51,21 @@ public class PotionAffixDisenchanter extends AContainer {
 
     @Override
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
-        ItemStack equipment = menu.getItemInSlot(getInputSlots()[0]); // slot 19
-        ItemStack book = menu.getItemInSlot(getInputSlots()[1]);      // slot 20
+        ItemStack s19 = menu.getItemInSlot(getInputSlots()[0]);
+        ItemStack s20 = menu.getItemInSlot(getInputSlots()[1]);
+        if (s19 == null || s20 == null) return null;
 
-        if (equipment == null || book == null) return null;
-        if (book.getType() != Material.BOOK) return null;
-        if (!AffixTransferUtil.hasPotionAffixes(equipment)) return null;
+        // Identify which slot holds equipment (has effects PDC) and which holds a book
+        ItemStack equipment;
+        ItemStack plainBook;
+        if (AffixTransferUtil.hasPotionAffixes(s19) && s20.getType() == Material.BOOK) {
+            equipment = s19; plainBook = s20;
+        } else if (AffixTransferUtil.hasPotionAffixes(s20) && s19.getType() == Material.BOOK) {
+            equipment = s20; plainBook = s19;
+        } else {
+            return null;
+        }
 
-        // Parse effects from equipment
         ItemMeta eqMeta = equipment.getItemMeta();
         String pdcData = eqMeta.getPersistentDataContainer().get(
                 ItemKeys.EFFECTS, PersistentDataType.STRING);
@@ -71,8 +78,13 @@ public class PotionAffixDisenchanter extends AContainer {
         int ticks = (MagicLoot3.getInstance() != null && MagicLoot3.isDebug())
                 ? DEBUG_TICKS : NORMAL_TICKS;
 
+        // Recipe inputs must correspond to slot 19 / slot 20 by index.
+        // Clone the actual slot contents so AContainer.isSimilar matches for consumption.
+        ItemStack in0 = s19.clone(); in0.setAmount(1);
+        ItemStack in1 = s20.clone(); in1.setAmount(1);
+
         return new MachineRecipe(ticks,
-                new ItemStack[]{equipment.clone(), book.clone()},
+                new ItemStack[]{in0, in1},
                 new ItemStack[]{outputEquipment, outputBook});
     }
 }

@@ -52,12 +52,22 @@ public class PotionAffixEnchanter extends AContainer {
 
     @Override
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
-        ItemStack equipment = menu.getItemInSlot(getInputSlots()[0]); // slot 19
-        ItemStack affixBook = menu.getItemInSlot(getInputSlots()[1]); // slot 20
+        ItemStack s19 = menu.getItemInSlot(getInputSlots()[0]);
+        ItemStack s20 = menu.getItemInSlot(getInputSlots()[1]);
+        if (s19 == null || s20 == null) return null;
 
-        if (equipment == null || affixBook == null) return null;
-        if (affixBook.getType() != Material.ENCHANTED_BOOK) return null;
-        if (!AffixTransferUtil.hasPotionAffixes(affixBook)) return null;
+        // Identify which slot holds equipment and which holds the affix enchanted book
+        ItemStack equipment;
+        ItemStack affixBook;
+        if (s19.getType() == Material.ENCHANTED_BOOK && AffixTransferUtil.hasPotionAffixes(s19)
+                && s20.getType() != Material.ENCHANTED_BOOK) {
+            affixBook = s19; equipment = s20;
+        } else if (s20.getType() == Material.ENCHANTED_BOOK && AffixTransferUtil.hasPotionAffixes(s20)
+                && s19.getType() != Material.ENCHANTED_BOOK) {
+            affixBook = s20; equipment = s19;
+        } else {
+            return null;
+        }
 
         ItemMeta bookMeta = affixBook.getItemMeta();
         String pdcData = bookMeta.getPersistentDataContainer().get(
@@ -71,8 +81,11 @@ public class PotionAffixEnchanter extends AContainer {
         int ticks = (MagicLoot3.getInstance() != null && MagicLoot3.isDebug())
                 ? DEBUG_TICKS : NORMAL_TICKS;
 
+        ItemStack in0 = s19.clone(); in0.setAmount(1);
+        ItemStack in1 = s20.clone(); in1.setAmount(1);
+
         return new MachineRecipe(ticks,
-                new ItemStack[]{equipment.clone(), affixBook.clone()},
+                new ItemStack[]{in0, in1},
                 new ItemStack[]{outputEquipment, outputBook});
     }
 
@@ -80,15 +93,11 @@ public class PotionAffixEnchanter extends AContainer {
         book = AffixTransferUtil.stripAffixes(book);
         if (book.getItemMeta() instanceof EnchantmentStorageMeta esm
                 && esm.getStoredEnchants().isEmpty()) {
-            // Only potion affixes (no vanilla enchants) → convert to plain BOOK
             ItemStack normalBook = new ItemStack(Material.BOOK);
             ItemMeta meta = esm;
-            if (meta.hasLore()) {
-                normalBook.setItemMeta(meta);
-            }
+            if (meta.hasLore()) normalBook.setItemMeta(meta);
             return normalBook;
         }
-        // Vanilla enchants remain → keep as ENCHANTED_BOOK
         return book;
     }
 }
