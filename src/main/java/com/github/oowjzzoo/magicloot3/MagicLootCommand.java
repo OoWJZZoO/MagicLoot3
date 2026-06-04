@@ -47,7 +47,6 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
             case "version" -> {
                 sender.sendMessage(Messages.get("cmd.header",
                         plugin.getDescription().getVersion(), buildNumber));
-                sender.sendMessage(Messages.get("cmd.struct_mode"));
                 sender.sendMessage(Messages.get("cmd.lang_current", Messages.getCurrentLang()));
                 sender.sendMessage(Messages.get(MagicLoot3.isDebug() ? "cmd.debug_on" : "cmd.debug_off"));
             }
