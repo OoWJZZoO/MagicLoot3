@@ -22,12 +22,21 @@ public final class LostLibrarian {
     }
 
     public static void examineTier(Player player, LootTier tier, boolean isDesk) {
-        int cost = Bukkit.getPluginManager().getPlugin("MagicLoot3")
-                .getConfig().getInt("costs." + tier.toString());
+        int cost;
+        LootTier actualTier;
+        if (tier == null) {
+            cost = Bukkit.getPluginManager().getPlugin("MagicLoot3")
+                    .getConfig().getInt("costs.RANDOM");
+            actualTier = LootTier.getRandomApplicable();
+        } else {
+            cost = Bukkit.getPluginManager().getPlugin("MagicLoot3")
+                    .getConfig().getInt("costs." + tier.toString());
+            actualTier = tier;
+        }
 
         if (player.getLevel() >= cost) {
             ItemStack item = player.getInventory().getItemInMainHand();
-            player.getInventory().setItemInMainHand(ItemManager.applyTier(item, tier));
+            player.getInventory().setItemInMainHand(ItemManager.applyTier(item, actualTier));
             player.updateInventory();
             player.setLevel(player.getLevel() - cost);
             player.sendMessage(isDesk ? Messages.get("desk.success") : Messages.get("npc.success"));

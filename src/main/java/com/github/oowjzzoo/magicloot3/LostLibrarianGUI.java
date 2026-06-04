@@ -34,21 +34,14 @@ public final class LostLibrarianGUI {
         inv.setItem(9, border);
         inv.setItem(17, border);
 
-        // Random option (slot 4) — show min/max cost across all tiers
+        // Random option (slot 4) — fixed cost from config
         ItemStack randomIcon = SkullCreator.createSkull(
                 "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzk3OTU1NDYyZTRlNTc2NjY0NDk5YWM0YTFjNTcyZjYxNDNmMTlhZDJkNjE5NDc3NjE5OGY4ZDEzNmZkYjIifX19",
                 Messages.get("gui.random"));
         ItemMeta randomMeta = randomIcon.getItemMeta();
         List<String> randomLore = new ArrayList<>();
         randomLore.add("");
-        int minCost = Integer.MAX_VALUE, maxCost = 0;
-        for (LootTier t : LootTier.values()) {
-            if (t == LootTier.NONE || t == LootTier.UNKNOWN) continue;
-            int c = getCost(t);
-            if (c < minCost) minCost = c;
-            if (c > maxCost) maxCost = c;
-        }
-        randomLore.add("§7Cost: §b" + minCost + "~" + maxCost + " XP Level");
+        randomLore.add(Messages.get("gui.cost", getCost("RANDOM")));
         randomMeta.setLore(randomLore);
         randomIcon.setItemMeta(randomMeta);
         inv.setItem(4, randomIcon);
@@ -74,7 +67,7 @@ public final class LostLibrarianGUI {
 
     public static boolean handleClick(Player player, int slot, boolean isDesk) {
         switch (slot) {
-            case 4:  LostLibrarian.examineTier(player, LootTier.getRandomApplicable(), isDesk); break;
+            case 4:  LostLibrarian.examineTier(player, null, isDesk); break;
             case 11: LostLibrarian.examineTier(player, LootTier.COMMON, isDesk); break;
             case 12: LostLibrarian.examineTier(player, LootTier.UNCOMMON, isDesk); break;
             case 13: LostLibrarian.examineTier(player, LootTier.RARE, isDesk); break;
@@ -88,6 +81,11 @@ public final class LostLibrarianGUI {
     private static int getCost(LootTier tier) {
         return Bukkit.getPluginManager().getPlugin("MagicLoot3")
                 .getConfig().getInt("costs." + tier.toString());
+    }
+
+    private static int getCost(String key) {
+        return Bukkit.getPluginManager().getPlugin("MagicLoot3")
+                .getConfig().getInt("costs." + key);
     }
 
     private static Material getPaneMaterial(int colorId) {
