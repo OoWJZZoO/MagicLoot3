@@ -74,6 +74,9 @@ public class MagicLootConfig {
         }
 
         for (LootTier tier : LootTier.values()) {
+            if (tier == LootTier.NONE || tier == LootTier.UNKNOWN) continue;
+            configTiers.setDefaultValue(tier.toString() + ".weight", getDefaultWeight(tier));
+            configTiers.setDefaultValue(tier.toString() + ".applicable-weight", getDefaultAppWeight(tier));
             configTiers.setDefaultValue(tier.toString() + ".enchantments.min", 1 + (tier.getLevel() / 2));
             configTiers.setDefaultValue(tier.toString() + ".enchantments.max", 1 + tier.getLevel());
             configTiers.setDefaultValue(tier.toString() + ".effects.min", tier.getLevel() / 2);
@@ -188,6 +191,27 @@ public class MagicLootConfig {
             }
         }
 
+        LootTier.loadWeights();
+    }
+
+    private static int getDefaultWeight(LootTier tier) {
+        return switch (tier) {
+            case COMMON -> 11;
+            case UNCOMMON -> 7;
+            case RARE -> 4;
+            case EPIC -> 3;
+            case LEGENDARY -> 1;
+            default -> 0;
+        };
+    }
+
+    private static int getDefaultAppWeight(LootTier tier) {
+        return switch (tier) {
+            case COMMON, UNCOMMON -> 3;
+            case RARE, EPIC -> 2;
+            case LEGENDARY -> 1;
+            default -> 0;
+        };
     }
 
     // Getters for max levels (used by ItemManager)

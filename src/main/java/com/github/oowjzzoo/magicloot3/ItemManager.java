@@ -67,7 +67,10 @@ public class ItemManager {
                 case TREASURE -> {
                     if (!TREASURE.isEmpty()) {
                         item.setType(TREASURE.get(random.nextInt(TREASURE.size())));
-                        item.setAmount(random.nextInt(8) + 2); // 2-9 items
+                        var cfg = MagicLoot3.getInstance().getConfig();
+                        int tMin = cfg.getInt("chest.treasure-stack.min", 2);
+                        int tMax = cfg.getInt("chest.treasure-stack.max", 9);
+                        item.setAmount(tMin + random.nextInt(Math.max(1, tMax - tMin + 1)));
                     }
                 }
                 case POTION -> {
@@ -99,13 +102,16 @@ public class ItemManager {
                         item.setType(TOOLS.get(random.nextInt(TOOLS.size())));
                         if (item.getType().getMaxDurability() == 0) break;
                         item = applyTier(item, LootTier.getRandom());
-                        applyDamage(item, (item.getType().getMaxDurability() / 4) * 3);
+                        damageRandomPercent(item);
                     }
                 }
                 case SLIMEFUN -> {
                     if (!SLIMEFUN.isEmpty()) {
                         item = SLIMEFUN.get(random.nextInt(SLIMEFUN.size())).clone();
-                        item.setAmount(random.nextInt(5) + 2); // 2-6 items
+                        var cfg = MagicLoot3.getInstance().getConfig();
+                        int sMin = cfg.getInt("chest.slimefun-stack.min", 2);
+                        int sMax = cfg.getInt("chest.slimefun-stack.max", 6);
+                        item.setAmount(sMin + random.nextInt(Math.max(1, sMax - sMin + 1)));
                         if (item.getType() != Material.PLAYER_HEAD
                                 && item.getType().getMaxStackSize() < item.getAmount()) {
                             item.setAmount(item.getType().getMaxStackSize());
@@ -125,7 +131,7 @@ public class ItemManager {
                             org.bukkit.persistence.PersistentDataType.STRING, "UNKNOWN");
                     item.setItemMeta(im);
                     if (item.getType().getMaxDurability() > 0) {
-                        applyDamage(item, (item.getType().getMaxDurability() / 4) * 3);
+                        damageRandomPercent(item);
                     }
                 }
                 default -> {}
@@ -231,6 +237,17 @@ public class ItemManager {
         }
     }
 
+    private static void damageRandomPercent(ItemStack item) {
+        int maxDura = item.getType().getMaxDurability();
+        if (maxDura <= 0) return;
+        var cfg = MagicLoot3.getInstance().getConfig();
+        int lossMin = cfg.getInt("durability.min", 10);
+        int lossMax = cfg.getInt("durability.max", 90);
+        int percent = lossMin + ThreadLocalRandom.current().nextInt(Math.max(1, lossMax - lossMin + 1));
+        int damage = maxDura - (maxDura * percent / 100);
+        applyDamage(item, Math.max(0, damage));
+    }
+
     /** Returns " " if prefix ends with a letter and suffix starts with one, else "". */
     private static String needsSpace(String prefix, String suffix) {
         char last = prefix.charAt(prefix.length() - 1);
@@ -242,8 +259,12 @@ public class ItemManager {
     public static void fillChest(Block block) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         if (block.getState() instanceof Chest chest) {
+            var cfg = MagicLoot3.getInstance().getConfig();
+            int min = cfg.getInt("chest.items.min", 2);
+            int max = cfg.getInt("chest.items.max", 9);
+            int count = min + random.nextInt(Math.max(1, max - min + 1));
             Inventory inv = chest.getInventory();
-            for (int i = 0; i < random.nextInt(8) + 2; i++) {
+            for (int i = 0; i < count; i++) {
                 inv.setItem(random.nextInt(inv.getSize()), createItem(LootType.RANDOM));
             }
         }

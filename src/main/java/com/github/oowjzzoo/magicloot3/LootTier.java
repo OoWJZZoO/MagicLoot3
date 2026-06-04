@@ -40,18 +40,19 @@ public enum LootTier {
     private static final List<LootTier> tiers = new ArrayList<>();
     private static final List<LootTier> applicable = new ArrayList<>();
 
-    static {
-        for (int i = 0; i < 11; i++) tiers.add(LootTier.COMMON);
-        for (int i = 0; i < 7; i++) tiers.add(LootTier.UNCOMMON);
-        for (int i = 0; i < 4; i++) tiers.add(LootTier.RARE);
-        for (int i = 0; i < 3; i++) tiers.add(LootTier.EPIC);
-        tiers.add(LootTier.LEGENDARY);
+    /** Load weights from loot_tiers.yml. Must be called after config is ready. */
+    public static void loadWeights() {
+        tiers.clear();
+        applicable.clear();
+        ConfigManager cfg = MagicLootConfig.getConfig(ConfigType.LOOT_TIER);
 
-        for (int i = 0; i < 3; i++) applicable.add(LootTier.COMMON);
-        for (int i = 0; i < 3; i++) applicable.add(LootTier.UNCOMMON);
-        for (int i = 0; i < 2; i++) applicable.add(LootTier.RARE);
-        for (int i = 0; i < 2; i++) applicable.add(LootTier.EPIC);
-        applicable.add(LootTier.LEGENDARY);
+        for (LootTier tier : values()) {
+            if (tier == NONE || tier == UNKNOWN) continue;
+            int weight = Math.max(1, cfg.getInt(tier.name() + ".weight"));
+            for (int i = 0; i < weight; i++) tiers.add(tier);
+            int appWeight = Math.max(1, cfg.getInt(tier.name() + ".applicable-weight"));
+            for (int i = 0; i < appWeight; i++) applicable.add(tier);
+        }
     }
 
     public static LootTier getRandom() {
