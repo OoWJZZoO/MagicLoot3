@@ -99,22 +99,6 @@ public class MagicLootConfig {
             configTiers.setDefaultValue(tier.toString() + ".effects.max", tier.getLevel());
         }
 
-        for (Material m : Material.values()) {
-            if (!m.isBlock()) {
-                for (Enchantment e : Enchantment.values()) {
-                    if (e.canEnchantItem(new ItemStack(m)) && !m.toString().contains("BOOK")) {
-                        configItems.setDefaultValue("item-weight." + m.toString(), 10);
-                    }
-                }
-            }
-        }
-
-        if (Slimefun.instance() != null) {
-            for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
-                configItems.setDefaultValue("item-weight." + item.getId(), 10);
-            }
-        }
-
         for (Enchantment e : Enchantment.values()) {
             configEnch.setDefaultValue(e.getKey().getKey() + ".max-level", 10);
         }
