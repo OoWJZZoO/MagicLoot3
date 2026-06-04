@@ -272,10 +272,6 @@ public class MagicLootConfig {
         return getConfig(ConfigType.EFFECTS).getInt(e + ".max-level");
     }
 
-    public static boolean isSlimefunItemEnabled(String item) {
-        return getConfig(ConfigType.ITEMS).getBoolean("Slimefun-Item." + item);
-    }
-
     // Helper: format effect name for display (e.g. "fire_resistance" -> "Fire Resistance")
 
     public static String formatEffectName(String key) {
