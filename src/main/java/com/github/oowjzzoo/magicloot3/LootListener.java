@@ -173,8 +173,16 @@ public class LootListener implements Listener {
     }
 
     private void applyArmorEffects(LivingEntity wearer, ItemStack armor, EntityDamageEvent event) {
-        applyEffectsFromItem(armor, wearer,
-                event instanceof EntityDamageByEntityEvent dmg ? (LivingEntity) dmg.getDamager() : null);
+        LivingEntity attacker = null;
+        if (event instanceof EntityDamageByEntityEvent dmg) {
+            if (dmg.getDamager() instanceof LivingEntity le) {
+                attacker = le;
+            } else if (dmg.getDamager() instanceof Projectile proj
+                    && proj.getShooter() instanceof LivingEntity shooter) {
+                attacker = shooter;
+            }
+        }
+        applyEffectsFromItem(armor, wearer, attacker);
     }
 
     /** Reads effects from PDC and applies them. Language-independent. */
