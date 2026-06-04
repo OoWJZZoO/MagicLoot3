@@ -214,7 +214,7 @@ public class MagicLootConfig {
             }
         }
         ItemManager.weightedSlimefun.clear();
-        if (sfSec != null) {
+        if (sfSec != null && Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
             for (String key : sfSec.getKeys(false)) {
                 int w = sfSec.getInt(key, 0);
                 if (w <= 0) continue;
