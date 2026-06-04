@@ -196,9 +196,9 @@ public class LootListener implements Listener {
             if (type == null) continue;
 
             if (isPositive) {
-                wearer.addPotionEffect(new PotionEffect(type, level * 3 * 20, level - 1));
+                wearer.addPotionEffect(new PotionEffect(type, (level + 1) * 3 * 20, level));
             } else if (attacker != null) {
-                attacker.addPotionEffect(new PotionEffect(type, level * 3 * 20, level - 1));
+                attacker.addPotionEffect(new PotionEffect(type, (level + 1) * 3 * 20, level));
             }
         }
     }
