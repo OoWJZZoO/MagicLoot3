@@ -16,7 +16,7 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
-import io.github.thebusybiscuit.slimefun4.core.handlers.ItemUseHandler;
+import io.github.thebusybiscuit.slimefun4.core.handlers.BlockUseHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
 
@@ -93,15 +93,18 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
     }
 
     private void registerSlimefunItems() {
+        SlimefunItemStack iconStack = new SlimefunItemStack(
+                "MAGICLOOT_ICON", Material.BOOKSHELF,
+                "§5魔法战利品");
         ItemGroup itemGroup = new ItemGroup(
-                new NamespacedKey(this, "magicloot"),
-                new ItemStack(Material.BOOKSHELF));
+                new NamespacedKey(this, "magicloot"), iconStack);
 
         SlimefunItemStack lostBookshelfStack = new SlimefunItemStack(
                 "LOST_BOOKSHELF", Material.BOOKSHELF,
                 "§d旧日书架", "",
-                "§7残破的古老书页",
-                "§7似乎来自一座失落的图书馆……");
+                "§7装满了过气老书，充斥着狗血剧情",
+                "§7但是屎里淘金的话...",
+                "§7说不定真能找到有用的旧书(存疑)");
 
         ItemStack[] bookshelfRecipe = {
                 new ItemStack(Material.BOOKSHELF), null, new ItemStack(Material.BOOKSHELF),
@@ -118,7 +121,9 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
         SlimefunItemStack lostDeskStack = new SlimefunItemStack(
                 "LOST_LIBRARIANS_DESK", Material.CRAFTING_TABLE,
                 "§d遗物鉴定桌", "",
-                "§7与无魂鉴定师本人无异");
+                "§7其实那几个旧书架没什么用",
+                "§7只不过因为看起来旧所以显得雅致",
+                "§7有助于进入状态研究装备");
 
         ItemStack[] deskRecipe = {
                 lostBookshelfStack, null, lostBookshelfStack,
@@ -128,7 +133,7 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
         SlimefunItem lostDesk = new SlimefunItem(
                 itemGroup, lostDeskStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, deskRecipe);
-        lostDesk.addItemHandler((ItemUseHandler) event -> {
+        lostDesk.addItemHandler((BlockUseHandler) event -> {
             event.cancel();
             LostLibrarian.openMenu(event.getPlayer());
         });
