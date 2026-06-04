@@ -1,5 +1,8 @@
 package com.github.oowjzzoo.magicloot3;
 
+import java.io.InputStream;
+import java.util.Properties;
+
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -15,10 +18,14 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockUseHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
 
 /**
- * Slimefun integration. This class is never loaded unless Slimefun
- * is actually installed (guarded by isPluginEnabled check in onEnable).
+ * Slimefun integration. SF item names are bound to the build language
+ * and never change at runtime. This class is only loaded when Slimefun
+ * is installed (guarded by isPluginEnabled check).
  */
 final class SlimefunHook implements SlimefunAddon {
+
+    /** Build-time language. Read from filtered build-info.properties. */
+    private static final String LANG = loadBuildLang();
 
     private final JavaPlugin plugin;
 
@@ -29,18 +36,27 @@ final class SlimefunHook implements SlimefunAddon {
     }
 
     private void doRegister() {
+        boolean zh = "zh".equals(LANG);
+
         SlimefunItemStack iconStack = new SlimefunItemStack(
-                "MAGICLOOT_ICON", Material.BOOKSHELF, "§5魔法战利品");
+                "MAGICLOOT_ICON", Material.BOOKSHELF,
+                zh ? "§5魔法战利品" : "§5MagicLoot");
         ItemGroup itemGroup = new ItemGroup(
                 new NamespacedKey(plugin, "magicloot"), iconStack);
 
         // Lost Bookshelf
+        String shelfName = zh ? "§d旧日书架" : "§dLost Bookshelf";
+        String[] shelfLore = zh
+                ? new String[]{"", "§7装满了过气老书，充斥着狗血剧情",
+                        "§7但是屎里淘金的话...",
+                        "§7说不定真能找到有用的旧书(存疑)"}
+                : new String[]{"", "§7Scrambled parts of an ancient library",
+                        "§7Who knows what useful (or useless)",
+                        "§7knowledge lies within..."};
+
         SlimefunItemStack bookshelfStack = new SlimefunItemStack(
                 "LOST_BOOKSHELF", Material.BOOKSHELF,
-                "§d旧日书架", "",
-                "§7装满了过气老书，充斥着狗血剧情",
-                "§7但是屎里淘金的话...",
-                "§7说不定真能找到有用的旧书(存疑)");
+                shelfName, shelfLore);
 
         ItemStack[] bookshelfRecipe = {
                 new ItemStack(Material.BOOKSHELF), null, new ItemStack(Material.BOOKSHELF),
@@ -53,12 +69,18 @@ final class SlimefunHook implements SlimefunAddon {
         bookshelf.register(this);
 
         // Lost Librarian's Desk
+        String deskName = zh ? "§d遗物鉴定桌" : "§dLost Librarian's Desk";
+        String[] deskLore = zh
+                ? new String[]{"", "§7其实那几个旧书架没什么用",
+                        "§7只不过因为看起来旧所以显得雅致",
+                        "§7有助于进入状态研究装备"}
+                : new String[]{"", "§7Basically like a Lost Librarian",
+                        "§7Those old bookshelves just set the mood",
+                        "§7Perfect for examining mysterious relics"};
+
         SlimefunItemStack deskStack = new SlimefunItemStack(
                 "LOST_LIBRARIANS_DESK", Material.CRAFTING_TABLE,
-                "§d遗物鉴定桌", "",
-                "§7其实那几个旧书架没什么用",
-                "§7只不过因为看起来旧所以显得雅致",
-                "§7有助于进入状态研究装备");
+                deskName, deskLore);
 
         ItemStack[] deskRecipe = {
                 bookshelfStack, null, bookshelfStack,
@@ -82,5 +104,16 @@ final class SlimefunHook implements SlimefunAddon {
     @Override
     public String getBugTrackerURL() {
         return "https://github.com/OoWJZZoO/MagicLoot3/issues";
+    }
+
+    private static String loadBuildLang() {
+        try (InputStream in = SlimefunHook.class.getResourceAsStream("/build-info.properties")) {
+            if (in != null) {
+                Properties p = new Properties();
+                p.load(in);
+                return p.getProperty("lang", "zh");
+            }
+        } catch (Exception ignored) {}
+        return "zh";
     }
 }

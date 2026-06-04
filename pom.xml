@@ -17,7 +17,32 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <plugin.lang>zh</plugin.lang>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>zh</id>
+            <activation><activeByDefault>true</activeByDefault></activation>
+            <properties><plugin.lang>zh</plugin.lang></properties>
+        </profile>
+        <profile>
+            <id>en</id>
+            <properties>
+                <plugin.lang>en</plugin.lang>
+                <config.resources>src/main/resources-en</config.resources>
+            </properties>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources-en</directory>
+                        <filtering>true</filtering>
+                        <includes><include>config.yml</include></includes>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+    </profiles>
 
     <repositories>
         <repository>
@@ -43,6 +68,7 @@
     </dependencies>
 
     <build>
+        <finalName>MagicLoot3-${project.version}-${plugin.lang}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -95,6 +121,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>plugin.yml</include>
+                    <include>config.yml</include>
                     <include>build-info.properties</include>
                 </includes>
             </resource>
@@ -105,6 +132,11 @@
                     <include>**/*.yml</include>
                     <include>**/*.nbt</include>
                 </includes>
+                <excludes>
+                    <exclude>config.yml</exclude>
+                    <exclude>plugin.yml</exclude>
+                    <exclude>build-info.properties</exclude>
+                </excludes>
             </resource>
         </resources>
     </build>

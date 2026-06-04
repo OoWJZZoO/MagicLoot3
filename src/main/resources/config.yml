@@ -1,6 +1,6 @@
 # ====== MagicLoot3 主配置 ======
 # 语言：zh（中文）/ en（英文）
-language: zh
+language: ${plugin.lang}
 
 # ====== 生成概率 ======
 chances:

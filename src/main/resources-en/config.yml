@@ -1,0 +1,61 @@
+# ====== MagicLoot3 Main Configuration ======
+# Language: zh (Chinese) / en (English)
+language: ${plugin.lang}
+
+# ====== Spawn Chances ======
+chances:
+  mobs: 15 # Chance for mobs to wear random gear (percent per mob)
+
+# ====== World Configuration ======
+# Each world has its own generation settings. Only listed worlds get ruins.
+# ruin-chance: chance for a new chunk to spawn a ruin (0-100)
+# building-chance: chance for a ruin to be a special building (0-100, e.g. Lost Library)
+worlds:
+  world:
+    ruin-chance: 8
+    building-chance: 12
+  world_the_end:
+    ruin-chance: 35
+    building-chance: 5
+
+# ====== Chest Loot Count ======
+chest:
+  items:
+    min: 3
+    max: 11     # Items per chest
+  treasure-stack:
+    min: 2
+    max: 9      # Treasure stack size
+  slimefun-stack:
+    min: 1
+    max: 3      # Slimefun item stack size
+
+# ====== Equipment Durability Damage (percent of max) ======
+durability:
+  min: 10       # Minimum remaining durability 10%
+  max: 90       # Maximum remaining durability 90%
+
+# ====== Appraisal Cost (XP Levels) ======
+costs:
+  RANDOM: 10
+  COMMON: 2
+  UNCOMMON: 5
+  RARE: 10
+  EPIC: 25
+  LEGENDARY: 50
+
+# ====== Enabled Loot Types ======
+enable:
+  TREASURE: true
+  TOOL: true
+  SLIMEFUN: true
+  BOOK: true
+  POTION: true
+  UNANALIZED: true
+
+# ====== Spawner Mob Pool ======
+spawners:
+- ZOMBIE
+- SPIDER
+- CAVE_SPIDER
+- VEX
