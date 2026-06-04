@@ -175,7 +175,7 @@ public class ItemManager {
                 effectData.add(enKey + ":" + apply + ":" + level);
                 String displayName = ItemManager.effectNames.getOrDefault(enKey, enKey);
                 lore.add(ChatColor.translateAlternateColorCodes('&',
-                        colorCodes.get(random.nextInt(colorCodes.size())) + apply + " " + displayName + " " + level));
+                        colorCodes.get(random.nextInt(colorCodes.size())) + apply + " " + displayName + " " + (level + 1)));
             }
         }
 
