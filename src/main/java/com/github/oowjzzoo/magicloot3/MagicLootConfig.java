@@ -1,6 +1,8 @@
 package com.github.oowjzzoo.magicloot3;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +51,14 @@ public class MagicLootConfig {
 
         dataFolder = plugin.getDataFolder();
         if (!dataFolder.exists()) dataFolder.mkdirs();
+
+        // Save defaults from jar (only if file doesn't exist on disk)
+        saveDefaultConfig("Items.yml");
+        saveDefaultConfig("Enchantments.yml");
+        saveDefaultConfig("Potions.yml");
+        saveDefaultConfig("Effects.yml");
+        saveDefaultConfig("loot_tiers.yml");
+
         configItems = new ConfigManager(new File(dataFolder, "Items.yml"));
         configItems.setHeader("""
                 物品权重配置
@@ -270,6 +280,15 @@ public class MagicLootConfig {
 
     public static int getMaxLevel(String e) {
         return getConfig(ConfigType.EFFECTS).getInt(e + ".max-level");
+    }
+
+    private static void saveDefaultConfig(String name) {
+        File dest = new File(dataFolder, name);
+        if (!dest.exists()) {
+            try (InputStream in = MagicLootConfig.class.getResourceAsStream("/" + name)) {
+                if (in != null) java.nio.file.Files.copy(in, dest.toPath());
+            } catch (IOException ignored) {}
+        }
     }
 
     // Helper: format effect name for display (e.g. "fire_resistance" -> "Fire Resistance")
