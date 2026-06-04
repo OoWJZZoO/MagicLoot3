@@ -28,8 +28,8 @@ public class PotionAffixEnchanter extends AContainer {
     public PotionAffixEnchanter(ItemGroup itemGroup, SlimefunItemStack item,
                                  RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
-        setEnergyConsumption(9);
         setCapacity(128);
+        setEnergyConsumption(9);
         setProcessingSpeed(1);
     }
 
