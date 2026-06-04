@@ -66,14 +66,14 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
     @Override
     public void onDisable() {
         instance = null;
-        ItemManager.ENCHANTMENTS = null;
-        ItemManager.POTIONEFFECTS = null;
-        ItemManager.PREFIX = null;
-        ItemManager.SUFFIX = null;
-        ItemManager.COLOR = null;
-        ItemManager.EFFECTS = null;
-        ItemManager.types = null;
-        ItemManager.potion = null;
+        ItemManager.enchantments = null;
+        ItemManager.potionEffectTypes = null;
+        ItemManager.prefixes = null;
+        ItemManager.suffixes = null;
+        ItemManager.colorCodes = null;
+        ItemManager.effectDisplayNames = null;
+        ItemManager.enabledLootTypes = null;
+        ItemManager.potionEffectMap = null;
         MagicLootConfig.prefixes.clear();
         MagicLootConfig.suffixes.clear();
         MagicLootConfig.colors.clear();

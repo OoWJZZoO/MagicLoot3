@@ -194,7 +194,7 @@ public class LootListener implements Listener {
             int level;
             try { level = Integer.parseInt(parts[2]); } catch (NumberFormatException e) { continue; }
 
-            PotionEffectType type = ItemManager.potion.get(enKey);
+            PotionEffectType type = ItemManager.potionEffectMap.get(enKey);
             if (type == null) continue;
 
             if (isPositive) {

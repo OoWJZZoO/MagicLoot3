@@ -135,20 +135,20 @@ public class MagicLootConfig {
     }
 
     public static void loadSettings() {
-        ItemManager.ENCHANTMENTS.clear();
-        ItemManager.POTIONEFFECTS.clear();
-        ItemManager.potion.clear();
-        ItemManager.types.clear();
+        ItemManager.enchantments.clear();
+        ItemManager.potionEffectTypes.clear();
+        ItemManager.potionEffectMap.clear();
+        ItemManager.enabledLootTypes.clear();
 
         for (Enchantment e : Enchantment.values()) {
-            if (getMaxLevel(e) > 0) ItemManager.ENCHANTMENTS.add(e);
+            if (getMaxLevel(e) > 0) ItemManager.enchantments.add(e);
         }
 
         for (org.bukkit.potion.PotionEffectType e : org.bukkit.potion.PotionEffectType.values()) {
             if (e != null) {
                 if (getMaxLevel(e) > 0) {
-                    ItemManager.POTIONEFFECTS.add(e);
-                    ItemManager.potion.put(e.getKey().getKey(), e);
+                    ItemManager.potionEffectTypes.add(e);
+                    ItemManager.potionEffectMap.put(e.getKey().getKey(), e);
                 }
             }
         }
@@ -166,12 +166,12 @@ public class MagicLootConfig {
             }
         }
 
-        ItemManager.PREFIX = prefixes;
-        ItemManager.SUFFIX = suffixes;
-        ItemManager.COLOR = colors;
+        ItemManager.prefixes = prefixes;
+        ItemManager.suffixes = suffixes;
+        ItemManager.colorCodes = colors;
 
-        ItemManager.EFFECTS.clear();
-        ItemManager.EFFECTS.addAll(ItemManager.effectNames.values());
+        ItemManager.effectDisplayNames.clear();
+        ItemManager.effectDisplayNames.addAll(ItemManager.effectNames.values());
 
         // Read config sections (used by weighted pool building below)
         var toolsSec = getConfig(ConfigType.ITEMS).getYaml()
@@ -184,7 +184,7 @@ public class MagicLootConfig {
         ConfigManager cfg = new ConfigManager(new File(dataFolder, "config.yml"));
         for (LootType type : LootType.values()) {
             if (cfg.contains("enable." + type.toString())) {
-                if (cfg.getBoolean("enable." + type.toString())) ItemManager.types.add(type);
+                if (cfg.getBoolean("enable." + type.toString())) ItemManager.enabledLootTypes.add(type);
             }
         }
 

@@ -34,14 +34,14 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 
 public class ItemManager {
 
-    public static List<Enchantment> ENCHANTMENTS = new ArrayList<>();
-    public static List<PotionEffectType> POTIONEFFECTS = new ArrayList<>();
-    public static List<String> PREFIX = new ArrayList<>();
-    public static List<String> SUFFIX = new ArrayList<>();
-    public static List<String> COLOR = new ArrayList<>();
-    public static List<String> EFFECTS = new ArrayList<>();
-    public static List<LootType> types = new ArrayList<>();
-    public static Map<String, PotionEffectType> potion = new HashMap<>();
+    public static List<Enchantment> enchantments = new ArrayList<>();
+    public static List<PotionEffectType> potionEffectTypes = new ArrayList<>();
+    public static List<String> prefixes = new ArrayList<>();
+    public static List<String> suffixes = new ArrayList<>();
+    public static List<String> colorCodes = new ArrayList<>();
+    public static List<String> effectDisplayNames = new ArrayList<>();
+    public static List<LootType> enabledLootTypes = new ArrayList<>();
+    public static Map<String, PotionEffectType> potionEffectMap = new HashMap<>();
     public static Map<String, String> effectNames = new HashMap<>();
     public static final List<Material> weightedTools = new ArrayList<>();
     public static final List<Material> weightedTreasure = new ArrayList<>();
@@ -50,8 +50,8 @@ public class ItemManager {
     public static ItemStack createItem(LootType type) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
-        if (type == LootType.RANDOM && !types.isEmpty()) {
-            type = types.get(random.nextInt(types.size()));
+        if (type == LootType.RANDOM && !enabledLootTypes.isEmpty()) {
+            type = enabledLootTypes.get(random.nextInt(enabledLootTypes.size()));
         }
         if (type == LootType.SLIMEFUN && Slimefun.instance() == null) {
             type = LootType.TREASURE;
@@ -76,16 +76,16 @@ public class ItemManager {
                 case POTION -> {
                     boolean isSplash = random.nextBoolean();
                     item.setType(isSplash ? Material.SPLASH_POTION : Material.LINGERING_POTION);
-                    String pPrefix = PREFIX.get(random.nextInt(PREFIX.size()));
-                    String pSuffix = SUFFIX.get(random.nextInt(SUFFIX.size()));
-                    String name = COLOR.get(random.nextInt(COLOR.size()))
+                    String pPrefix = prefixes.get(random.nextInt(prefixes.size()));
+                    String pSuffix = suffixes.get(random.nextInt(suffixes.size()));
+                    String name = colorCodes.get(random.nextInt(colorCodes.size()))
                             + pPrefix + needsSpace(pPrefix, pSuffix) + pSuffix;
                     PotionMeta meta = (PotionMeta) item.getItemMeta();
                     meta.setBasePotionType(isSplash ? PotionType.AWKWARD : PotionType.AWKWARD);
                     meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
                     for (int i = 0; i < random.nextInt(2) + 1; i++) {
-                        if (!POTIONEFFECTS.isEmpty()) {
-                            PotionEffectType e = POTIONEFFECTS.get(random.nextInt(POTIONEFFECTS.size()));
+                        if (!potionEffectTypes.isEmpty()) {
+                            PotionEffectType e = potionEffectTypes.get(random.nextInt(potionEffectTypes.size()));
                             int maxLvl = MagicLootConfig.getMaxLevel(e);
                             meta.addCustomEffect(new PotionEffect(e, (random.nextInt(8) + 2) * 10 * 20,
                                     random.nextInt(maxLvl)), true);
@@ -145,9 +145,9 @@ public class ItemManager {
     public static ItemStack applyTier(ItemStack item, LootTier tier) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
-        String prefix = PREFIX.get(random.nextInt(PREFIX.size()));
-        String suffix = SUFFIX.get(random.nextInt(SUFFIX.size()));
-        String name = COLOR.get(random.nextInt(COLOR.size())) + prefix
+        String prefix = prefixes.get(random.nextInt(prefixes.size()));
+        String suffix = suffixes.get(random.nextInt(suffixes.size()));
+        String name = colorCodes.get(random.nextInt(colorCodes.size())) + prefix
                 + needsSpace(prefix, suffix) + suffix;
 
         // Clear existing enchantments
@@ -165,10 +165,10 @@ public class ItemManager {
         int effectsMax = MagicLootConfig.getConfig(ConfigType.LOOT_TIER).getInt(tier.toString() + ".effects.max");
         int effectsMin = MagicLootConfig.getConfig(ConfigType.LOOT_TIER).getInt(tier.toString() + ".effects.min");
 
-        if (effectsMax > 0 && !POTIONEFFECTS.isEmpty()) {
+        if (effectsMax > 0 && !potionEffectTypes.isEmpty()) {
             int range = Math.max(effectsMax - effectsMin, 1);
             for (int i = 0; i < random.nextInt(range) + effectsMin; i++) {
-                PotionEffectType e = POTIONEFFECTS.get(random.nextInt(POTIONEFFECTS.size()));
+                PotionEffectType e = potionEffectTypes.get(random.nextInt(potionEffectTypes.size()));
                 String enKey = e.getKey().getKey();
                 int maxLvl = MagicLootConfig.getMaxLevel(e);
                 if (maxLvl <= 0) continue;
@@ -177,7 +177,7 @@ public class ItemManager {
                 effectData.add(enKey + ":" + apply + ":" + level);
                 String displayName = ItemManager.effectNames.getOrDefault(enKey, enKey);
                 lore.add(ChatColor.translateAlternateColorCodes('&',
-                        COLOR.get(random.nextInt(COLOR.size())) + apply + " " + displayName + " " + level));
+                        colorCodes.get(random.nextInt(colorCodes.size())) + apply + " " + displayName + " " + level));
             }
         }
 
@@ -203,10 +203,10 @@ public class ItemManager {
         int enchMin = MagicLootConfig.getConfig(ConfigType.LOOT_TIER).getInt(tier.toString() + ".enchantments.min");
 
         if (im instanceof EnchantmentStorageMeta storageMeta) {
-            if (enchMax > 0 && !ENCHANTMENTS.isEmpty()) {
+            if (enchMax > 0 && !enchantments.isEmpty()) {
                 int range = Math.max(enchMax - enchMin, 1);
                 for (int i = 0; i < random.nextInt(range) + enchMin; i++) {
-                    Enchantment e = ENCHANTMENTS.get(random.nextInt(ENCHANTMENTS.size()));
+                    Enchantment e = enchantments.get(random.nextInt(enchantments.size()));
                     int maxLvl = MagicLootConfig.getMaxLevel(e);
                     if (maxLvl > 0) {
                         storageMeta.addStoredEnchant(e, random.nextInt(maxLvl) + 1, true);
@@ -217,10 +217,10 @@ public class ItemManager {
         item.setItemMeta(im);
 
         // Enchantments for non-book items only
-        if (!(im instanceof EnchantmentStorageMeta) && enchMax > 0 && !ENCHANTMENTS.isEmpty()) {
+        if (!(im instanceof EnchantmentStorageMeta) && enchMax > 0 && !enchantments.isEmpty()) {
             int range = Math.max(enchMax - enchMin, 1);
             for (int i = 0; i < random.nextInt(range) + enchMin; i++) {
-                Enchantment e = ENCHANTMENTS.get(random.nextInt(ENCHANTMENTS.size()));
+                Enchantment e = enchantments.get(random.nextInt(enchantments.size()));
                 int maxLvl = MagicLootConfig.getMaxLevel(e);
                 if (maxLvl > 0) {
                     item.addUnsafeEnchantment(e, random.nextInt(maxLvl) + 1);
