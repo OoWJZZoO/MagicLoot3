@@ -27,7 +27,6 @@ public class MagicLootConfig {
     private static File dataFolder;
     private static ConfigManager configItems;
     private static ConfigManager configEnch;
-    private static ConfigManager configPotions;
     private static ConfigManager configEffects;
     private static ConfigManager configTiers;
 
@@ -36,7 +35,6 @@ public class MagicLootConfig {
             case EFFECTS: return configEffects;
             case ENCHANTMENTS: return configEnch;
             case ITEMS: return configItems;
-            case POTIONS: return configPotions;
             case LOOT_TIER: return configTiers;
             default: return null;
         }
@@ -55,7 +53,6 @@ public class MagicLootConfig {
         // Save defaults from jar (only if file doesn't exist on disk)
         saveDefaultConfig("Items.yml");
         saveDefaultConfig("Enchantments.yml");
-        saveDefaultConfig("Potions.yml");
         saveDefaultConfig("Effects.yml");
         saveDefaultConfig("loot_tiers.yml");
 
@@ -67,7 +64,6 @@ public class MagicLootConfig {
                 - 修改后 /magicloot reload 生效
                 """);
         configEnch = new ConfigManager(new File(dataFolder, "Enchantments.yml"));
-        configPotions = new ConfigManager(new File(dataFolder, "Potions.yml"));
         configEffects = new ConfigManager(new File(dataFolder, "Effects.yml"));
         configTiers = new ConfigManager(new File(dataFolder, "loot_tiers.yml"));
 
@@ -115,8 +111,7 @@ public class MagicLootConfig {
 
         for (org.bukkit.potion.PotionEffectType e : org.bukkit.potion.PotionEffectType.values()) {
             if (e != null) {
-                configPotions.setDefaultValue(e.getKey().getKey() + ".max-level", 5);
-                configEffects.setDefaultValue(formatEffectName(e.getKey().getKey()) + ".max-level", 10);
+                configEffects.setDefaultValue(e.getKey().getKey() + ".max-level", 5);
             }
         }
 
@@ -144,25 +139,14 @@ public class MagicLootConfig {
             if (getMaxLevel(e) > 0) ItemManager.enchantments.add(e);
         }
 
-        for (org.bukkit.potion.PotionEffectType e : org.bukkit.potion.PotionEffectType.values()) {
-            if (e != null) {
-                if (getMaxLevel(e) > 0) {
-                    ItemManager.potionEffectTypes.add(e);
-                    ItemManager.potionEffectMap.put(e.getKey().getKey(), e);
-                }
-            }
-        }
-
-        // Rebuild EFFNAME map from language file for display
         ItemManager.effectNames.clear();
         for (org.bukkit.potion.PotionEffectType e : org.bukkit.potion.PotionEffectType.values()) {
-            if (e != null) {
+            if (e != null && getMaxLevel(e) > 0) {
+                ItemManager.potionEffectTypes.add(e);
+                ItemManager.potionEffectMap.put(e.getKey().getKey(), e);
                 String enKey = e.getKey().getKey();
-                String enName = formatEffectName(enKey);
-                if (getMaxLevel(enName) > 0) {
-                    ItemManager.effectNames.put(enKey,
-                            Messages.get("effects." + enKey, enName));
-                }
+                ItemManager.effectNames.put(enKey,
+                        Messages.get("effects." + enKey, formatEffectName(enKey)));
             }
         }
 
@@ -234,11 +218,7 @@ public class MagicLootConfig {
     }
 
     public static int getMaxLevel(org.bukkit.potion.PotionEffectType e) {
-        return getConfig(ConfigType.POTIONS).getInt(e.getKey().getKey() + ".max-level");
-    }
-
-    public static int getMaxLevel(String e) {
-        return getConfig(ConfigType.EFFECTS).getInt(e + ".max-level");
+        return getConfig(ConfigType.EFFECTS).getInt(e.getKey().getKey() + ".max-level");
     }
 
     private static void saveDefaultConfig(String name) {

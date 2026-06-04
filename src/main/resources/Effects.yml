@@ -1,80 +1,80 @@
-Fire Resistance:
+# 装备词缀效果等级上限（使用 Bukkit 键名）
+# max-level: N — 效果等级 I~N，设为 0 即禁用
+speed:
   max-level: 10
-Water Breathing:
+slowness:
   max-level: 10
-Jump Boost:
+haste:
   max-level: 10
-Saturation:
+mining_fatigue:
   max-level: 10
-Health Boost:
+strength:
   max-level: 10
-Night Vision:
-  max-level: 10
-Weakness:
-  max-level: 5
-Wind Charged:
-  max-level: 10
-Breath Of The Nautilus:
-  max-level: 10
-Wither:
-  max-level: 10
-Mining Fatigue:
-  max-level: 10
-Slow Falling:
-  max-level: 10
-Raid Omen:
-  max-level: 10
-Luck:
-  max-level: 10
-Strength:
-  max-level: 10
-Infested:
-  max-level: 10
-Poison:
-  max-level: 10
-Hero Of The Village:
-  max-level: 10
-Unluck:
-  max-level: 10
-Invisibility:
-  max-level: 10
-Absorption:
-  max-level: 10
-Slowness:
-  max-level: 10
-Haste:
-  max-level: 10
-Weaving:
-  max-level: 10
-Glowing:
-  max-level: 10
-Bad Omen:
-  max-level: 10
-Dolphins Grace:
-  max-level: 10
-Levitation:
-  max-level: 10
-Conduit Power:
-  max-level: 10
-Blindness:
-  max-level: 10
-Instant Damage:
-  max-level: 2
-Nausea:
-  max-level: 10
-Instant Health:
+instant_health:
   max-level: 1
-Regeneration:
+instant_damage:
+  max-level: 2
+jump_boost:
+  max-level: 10
+nausea:
+  max-level: 10
+regeneration:
   max-level: 5
-Hunger:
-  max-level: 10
-Speed:
-  max-level: 10
-Trial Omen:
-  max-level: 10
-Darkness:
-  max-level: 10
-Oozing:
-  max-level: 10
-Resistance:
+resistance:
   max-level: 3
+fire_resistance:
+  max-level: 10
+water_breathing:
+  max-level: 10
+invisibility:
+  max-level: 10
+blindness:
+  max-level: 10
+night_vision:
+  max-level: 10
+hunger:
+  max-level: 10
+weakness:
+  max-level: 5
+poison:
+  max-level: 10
+wither:
+  max-level: 10
+health_boost:
+  max-level: 10
+absorption:
+  max-level: 10
+saturation:
+  max-level: 10
+glowing:
+  max-level: 10
+levitation:
+  max-level: 10
+luck:
+  max-level: 10
+unluck:
+  max-level: 10
+slow_falling:
+  max-level: 10
+conduit_power:
+  max-level: 10
+dolphins_grace:
+  max-level: 10
+bad_omen:
+  max-level: 10
+raid_omen:
+  max-level: 10
+trial_omen:
+  max-level: 10
+hero_of_the_village:
+  max-level: 10
+darkness:
+  max-level: 10
+infested:
+  max-level: 10
+oozing:
+  max-level: 10
+weaving:
+  max-level: 10
+wind_charged:
+  max-level: 10
