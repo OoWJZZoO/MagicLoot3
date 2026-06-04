@@ -73,9 +73,6 @@ public class MagicLoot3 extends JavaPlugin implements SlimefunAddon, Listener {
         ItemManager.SUFFIX = null;
         ItemManager.COLOR = null;
         ItemManager.EFFECTS = null;
-        ItemManager.TOOLS = null;
-        ItemManager.TREASURE = null;
-        ItemManager.SLIMEFUN = null;
         ItemManager.types = null;
         ItemManager.potion = null;
         MagicLootConfig.prefixes.clear();

@@ -138,9 +138,6 @@ public class MagicLootConfig {
         ItemManager.ENCHANTMENTS.clear();
         ItemManager.POTIONEFFECTS.clear();
         ItemManager.potion.clear();
-        ItemManager.TOOLS.clear();
-        ItemManager.TREASURE.clear();
-        ItemManager.SLIMEFUN.clear();
         ItemManager.types.clear();
 
         for (Enchantment e : Enchantment.values()) {
@@ -176,39 +173,13 @@ public class MagicLootConfig {
         ItemManager.EFFECTS.clear();
         ItemManager.EFFECTS.addAll(ItemManager.effectNames.values());
 
-        // Tools pool — explicit config section
+        // Read config sections (used by weighted pool building below)
         var toolsSec = getConfig(ConfigType.ITEMS).getYaml()
                 .getConfigurationSection("tools");
-        if (toolsSec != null) {
-            for (String key : toolsSec.getKeys(false)) {
-                int w = toolsSec.getInt(key, 0);
-                if (w <= 0) continue;
-                try { ItemManager.TOOLS.add(Material.valueOf(key)); }
-                catch (IllegalArgumentException ignored) {}
-            }
-        }
-        // Treasure pool
         var treasSec = getConfig(ConfigType.ITEMS).getYaml()
                 .getConfigurationSection("treasure");
-        if (treasSec != null) {
-            for (String key : treasSec.getKeys(false)) {
-                int w = treasSec.getInt(key, 0);
-                if (w <= 0) continue;
-                try { ItemManager.TREASURE.add(Material.valueOf(key)); }
-                catch (IllegalArgumentException ignored) {}
-            }
-        }
-        // Slimefun pool
         var sfSec = getConfig(ConfigType.ITEMS).getYaml()
                 .getConfigurationSection("slimefun");
-        if (sfSec != null && Slimefun.instance() != null) {
-            for (String key : sfSec.getKeys(false)) {
-                int w = sfSec.getInt(key, 0);
-                if (w <= 0) continue;
-                SlimefunItem sfItem = SlimefunItem.getById(key);
-                if (sfItem != null) ItemManager.SLIMEFUN.add(sfItem.getItem());
-            }
-        }
 
         ConfigManager cfg = new ConfigManager(new File(dataFolder, "config.yml"));
         for (LootType type : LootType.values()) {

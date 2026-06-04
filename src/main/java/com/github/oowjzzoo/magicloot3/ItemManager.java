@@ -40,14 +40,9 @@ public class ItemManager {
     public static List<String> SUFFIX = new ArrayList<>();
     public static List<String> COLOR = new ArrayList<>();
     public static List<String> EFFECTS = new ArrayList<>();
-    public static List<Material> TOOLS = new ArrayList<>();
-    public static List<Material> TREASURE = new ArrayList<>();
-    public static List<ItemStack> SLIMEFUN = new ArrayList<>();
     public static List<LootType> types = new ArrayList<>();
     public static Map<String, PotionEffectType> potion = new HashMap<>();
     public static Map<String, String> effectNames = new HashMap<>();
-
-    // Weighted selection pools
     public static final List<Material> weightedTools = new ArrayList<>();
     public static final List<Material> weightedTreasure = new ArrayList<>();
     public static final List<ItemStack> weightedSlimefun = new ArrayList<>();
@@ -111,7 +106,7 @@ public class ItemManager {
                     }
                 }
                 case SLIMEFUN -> {
-                    if (!SLIMEFUN.isEmpty()) {
+                    if (!weightedSlimefun.isEmpty()) {
                         item = weightedSlimefun.get(random.nextInt(weightedSlimefun.size())).clone();
                         var cfg = MagicLoot3.getInstance().getConfig();
                         int sMin = cfg.getInt("chest.slimefun-stack.min", 2);
