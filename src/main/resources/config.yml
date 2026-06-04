@@ -4,8 +4,19 @@ language: zh
 
 # ====== 生成概率 ======
 chances:
-  ruin: 30       # 遗迹生成概率（百分比，每个新区块触发一次判定）
-  mobs: 40       # 怪物穿戴随机装备的概率（百分比）
+  mobs: 40       # 怪物穿戴随机装备的概率（百分比，每个怪物独立判定）
+
+# ====== 世界配置 ======
+# 每个世界单独配置生成概率。只有在此处列出的世界才会生成遗迹。
+# ruin-chance: 新区块生成遗迹的概率（百分比，0-100）
+# building-chance: 遗迹中特殊建筑的概率（百分比，0-100，如迷失图书馆）
+worlds:
+  world:
+    ruin-chance: 30
+    building-chance: 4
+  world_the_end:
+    ruin-chance: 30
+    building-chance: 4
 
 # ====== 宝箱战利品数量 ======
 chest:
@@ -41,11 +52,6 @@ enable:
   BOOK: true
   POTION: true
   UNANALIZED: true
-
-# ====== 世界白名单（仅这些世界会生成遗迹） ======
-world-whitelist:
-- world
-- world_the_end
 
 # ====== 刷怪笼生物池 ======
 spawners:

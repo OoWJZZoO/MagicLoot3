@@ -58,7 +58,8 @@ public class RuinBuilder {
         if (ruinNames.isEmpty() && buildingNames.isEmpty()) return;
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
-        if (random.nextInt(100) < 4 && !buildingNames.isEmpty()) {
+        int buildingChance = plugin.getConfig().getInt("worlds." + l.getWorld().getName() + ".building-chance", 4);
+        if (random.nextInt(100) < buildingChance && !buildingNames.isEmpty()) {
             String name = buildingNames.get(random.nextInt(buildingNames.size()));
             if (l.getBlock().isLiquid()) return;
             StructurePlacer.place(plugin, l, name, true);
