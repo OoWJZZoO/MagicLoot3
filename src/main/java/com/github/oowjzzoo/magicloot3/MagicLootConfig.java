@@ -88,14 +88,19 @@ public class MagicLootConfig {
                 for (Enchantment e : Enchantment.values()) {
                     if (e.canEnchantItem(new ItemStack(m)) && !m.toString().contains("BOOK")) {
                         configItems.setDefaultValue("loot." + m.toString(), true);
+                        configItems.setDefaultValue("item-weight." + m.toString(), 10);
                     }
                 }
             }
+        }
+        for (String t : new String[]{"DIAMOND", "GOLD_INGOT", "IRON_INGOT", "EMERALD", "QUARTZ"}) {
+            configItems.setDefaultValue("item-weight." + t, 10);
         }
 
         if (Slimefun.instance() != null) {
             for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
                 configItems.setDefaultValue("Slimefun-Item." + item.getId(), true);
+                configItems.setDefaultValue("item-weight." + item.getId(), 10);
             }
         }
 
