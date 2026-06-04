@@ -221,8 +221,8 @@ public class ItemManager {
         }
         item.setItemMeta(im);
 
-        // Enchantments for non-book items
-        if (enchMax > 0 && !ENCHANTMENTS.isEmpty()) {
+        // Enchantments for non-book items only
+        if (!(im instanceof EnchantmentStorageMeta) && enchMax > 0 && !ENCHANTMENTS.isEmpty()) {
             int range = Math.max(enchMax - enchMin, 1);
             for (int i = 0; i < random.nextInt(range) + enchMin; i++) {
                 Enchantment e = ENCHANTMENTS.get(random.nextInt(ENCHANTMENTS.size()));

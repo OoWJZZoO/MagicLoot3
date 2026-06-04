@@ -135,6 +135,14 @@ public class MagicLootConfig {
     }
 
     public static void loadSettings() {
+        ItemManager.ENCHANTMENTS.clear();
+        ItemManager.POTIONEFFECTS.clear();
+        ItemManager.potion.clear();
+        ItemManager.TOOLS.clear();
+        ItemManager.TREASURE.clear();
+        ItemManager.SLIMEFUN.clear();
+        ItemManager.types.clear();
+
         for (Enchantment e : Enchantment.values()) {
             if (getMaxLevel(e) > 0) ItemManager.ENCHANTMENTS.add(e);
         }
