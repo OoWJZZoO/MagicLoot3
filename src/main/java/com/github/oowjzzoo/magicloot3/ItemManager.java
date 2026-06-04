@@ -260,17 +260,12 @@ public class ItemManager {
             player.sendMessage("§cYou must hold an item.");
             return;
         }
-        int maxLvl = MagicLootConfig.getMaxLevel(type);
-        if (maxLvl <= 0) {
-            player.sendMessage("§cThis effect is disabled (max-level: 0).");
-            return;
-        }
         ThreadLocalRandom r = ThreadLocalRandom.current();
         String apply = (polarity != null) ? polarity
                 : (r.nextInt(10) > 5 ? "+" : "-");
-        int level = (levelArg != null) ? levelArg : r.nextInt(maxLvl);
-        if (level < 0 || level >= maxLvl) {
-            player.sendMessage("§cLevel must be 0~" + (maxLvl - 1) + " (game level I~" + maxLvl + ").");
+        int level = (levelArg != null) ? levelArg : r.nextInt(256);
+        if (level < 0 || level > 255) {
+            player.sendMessage("§cLevel must be 0~255.");
             return;
         }
         String displayName = effectNames.getOrDefault(enKey, enKey);
