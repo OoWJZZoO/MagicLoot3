@@ -93,7 +93,7 @@ public class MagicLootConfig {
             configItems.setDefaultValue("treasure." + t, 10);
         }
         // Slimefun pool
-        if (Slimefun.instance() != null) {
+        if (Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
             for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
                 configItems.setDefaultValue("slimefun." + item.getId(), 10);
             }
