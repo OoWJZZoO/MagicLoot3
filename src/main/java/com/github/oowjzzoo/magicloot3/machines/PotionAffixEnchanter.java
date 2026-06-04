@@ -81,12 +81,20 @@ public class PotionAffixEnchanter extends AContainer {
         int ticks = (MagicLoot3.getInstance() != null && MagicLoot3.isDebug())
                 ? DEBUG_TICKS : NORMAL_TICKS;
 
-        ItemStack in0 = s19.clone(); in0.setAmount(1);
-        ItemStack in1 = s20.clone(); in1.setAmount(1);
-
-        return new MachineRecipe(ticks,
-                new ItemStack[]{in0, in1},
+        MachineRecipe recipe = new MachineRecipe(ticks,
+                new ItemStack[]{s19.clone(), s20.clone()},
                 new ItemStack[]{outputEquipment, outputBook});
+
+        // Check output slots have room before consuming inputs
+        if (!menu.fits(outputEquipment, getOutputSlots())) return null;
+        if (!menu.fits(outputBook, getOutputSlots())) return null;
+
+        // Consume one item from each input slot (mirrors SF AutoEnchanter/Disenchanter)
+        for (int slot : getInputSlots()) {
+            menu.consumeItem(slot);
+        }
+
+        return recipe;
     }
 
     private ItemStack buildResultBook(ItemStack book) {
