@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -16,6 +17,7 @@ import org.bukkit.persistence.PersistentDataType;
 import com.github.oowjzzoo.magicloot3.ItemKeys;
 import com.github.oowjzzoo.magicloot3.ItemManager;
 import com.github.oowjzzoo.magicloot3.LootTier;
+import com.github.oowjzzoo.magicloot3.MagicLoot3;
 import com.github.oowjzzoo.magicloot3.Messages;
 
 public final class AffixTransferUtil {
@@ -96,7 +98,8 @@ public final class AffixTransferUtil {
 
         // Write merged PDC
         List<EffectEntry> mergedList = new ArrayList<>(merged.values());
-        meta.getPersistentDataContainer().set(ItemKeys.EFFECTS, PersistentDataType.STRING, serializeEffects(mergedList));
+        String serialized = serializeEffects(mergedList);
+        meta.getPersistentDataContainer().set(ItemKeys.EFFECTS, PersistentDataType.STRING, serialized);
 
         // Rebuild lore: strip old effect lines, insert new ones before tier line
         List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
@@ -106,6 +109,15 @@ public final class AffixTransferUtil {
         meta.setLore(lore.isEmpty() ? null : lore);
 
         item.setItemMeta(meta);
+
+        // Verify PDC was actually written
+        ItemMeta verify = item.getItemMeta();
+        String verifyPdc = verify != null ? verify.getPersistentDataContainer()
+                .get(ItemKeys.EFFECTS, PersistentDataType.STRING) : null;
+        debug("appendAffixes: wrote PDC=" + serialized
+                + " | verify after setItemMeta=" + verifyPdc
+                + " | loreLines=" + (verify != null && verify.hasLore() ? verify.getLore().size() : 0));
+
         return item;
     }
 
@@ -213,6 +225,12 @@ public final class AffixTransferUtil {
             if (strippedLine.contains(ChatColor.stripColor(name))) return true;
         }
         return false;
+    }
+
+    private static void debug(String msg) {
+        if (MagicLoot3.getInstance() != null && MagicLoot3.isDebug()) {
+            MagicLoot3.getInstance().getLogger().log(Level.INFO, "[DEBUG] " + msg);
+        }
     }
 
     private static boolean endsWithNumber(String s) {
