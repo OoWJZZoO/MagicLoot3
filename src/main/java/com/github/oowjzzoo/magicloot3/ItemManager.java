@@ -247,9 +247,9 @@ public class ItemManager {
         applyDamage(item, Math.max(0, damage));
     }
 
-    /** Adds a random potion effect affix to the player's held item. */
+    /** Adds a potion effect affix to the player's held item. */
     @SuppressWarnings("deprecation")
-    public static void addEffectToItem(Player player, String enKey) {
+    public static void addEffectToItem(Player player, String enKey, String polarity, Integer levelArg) {
         PotionEffectType type = potionEffectMap.get(enKey);
         if (type == null) {
             player.sendMessage("§cUnknown effect: " + enKey);
@@ -266,8 +266,13 @@ public class ItemManager {
             return;
         }
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        int level = r.nextInt(maxLvl);
-        String apply = r.nextInt(10) > 5 ? "+" : "-";
+        String apply = (polarity != null) ? polarity
+                : (r.nextInt(10) > 5 ? "+" : "-");
+        int level = (levelArg != null) ? levelArg : r.nextInt(maxLvl);
+        if (level < 0 || level >= maxLvl) {
+            player.sendMessage("§cLevel must be 0~" + (maxLvl - 1) + " (game level I~" + maxLvl + ").");
+            return;
+        }
         String displayName = effectNames.getOrDefault(enKey, enKey);
 
         // Update PDC effects

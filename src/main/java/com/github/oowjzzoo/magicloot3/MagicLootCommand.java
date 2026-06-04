@@ -107,11 +107,31 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 if (args.length < 2) {
-                    sender.sendMessage("§cUsage: /magicloot add_effect <effect_id>");
+                    sender.sendMessage("§cUsage: /magicloot add_effect <id> [+|-] [0~N]");
                     return true;
                 }
                 String key = args[1].toLowerCase();
-                ItemManager.addEffectToItem(player, key);
+                String pol = null;
+                Integer lvl = null;
+                if (args.length >= 3) {
+                    String p = args[2];
+                    if ("+".equals(p) || "-".equals(p)) pol = p;
+                    else {
+                        try { lvl = Integer.parseInt(p); }
+                        catch (NumberFormatException e) {
+                            sender.sendMessage("§cPolarity must be + or -");
+                            return true;
+                        }
+                    }
+                }
+                if (args.length >= 4) {
+                    try { lvl = Integer.parseInt(args[3]); }
+                    catch (NumberFormatException e) {
+                        sender.sendMessage("§cLevel must be a number.");
+                        return true;
+                    }
+                }
+                ItemManager.addEffectToItem(player, key, pol, lvl);
             }
             default -> sender.sendMessage(Messages.get("log.unknown_command"));
         }
