@@ -17,7 +17,7 @@ import org.bukkit.plugin.Plugin;
 
 public class MagicLootCommand implements CommandExecutor, TabCompleter {
 
-    private static final List<String> SUBCOMMANDS = List.of("version", "debug", "reload", "generate", "language");
+    private static final List<String> SUBCOMMANDS = List.of("version", "debug", "reload", "generate", "language", "add_effect");
 
     private final Plugin plugin;
     private String buildNumber;
@@ -101,6 +101,18 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(Messages.get(ok
                         ? "log.structure_generated" : "log.structure_failed", name));
             }
+            case "add_effect" -> {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(Messages.get("cmd.player_only"));
+                    return true;
+                }
+                if (args.length < 2) {
+                    sender.sendMessage("§cUsage: /magicloot add_effect <effect_id>");
+                    return true;
+                }
+                String key = args[1].toLowerCase();
+                ItemManager.addEffectToItem(player, key);
+            }
             default -> sender.sendMessage(Messages.get("log.unknown_command"));
         }
         return true;
@@ -126,6 +138,14 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("language")) {
             return List.of("zh", "en");
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("add_effect")) {
+            String prefix = args[1].toLowerCase();
+            List<String> matches = new ArrayList<>();
+            for (String key : ItemManager.potionEffectMap.keySet()) {
+                if (key.startsWith(prefix)) matches.add(key);
+            }
+            return matches;
         }
         return List.of();
     }

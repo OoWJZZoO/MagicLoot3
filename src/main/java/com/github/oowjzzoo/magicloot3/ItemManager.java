@@ -17,6 +17,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -244,6 +245,52 @@ public class ItemManager {
         int percent = lossMin + ThreadLocalRandom.current().nextInt(Math.max(1, lossMax - lossMin + 1));
         int damage = maxDura - (maxDura * percent / 100);
         applyDamage(item, Math.max(0, damage));
+    }
+
+    /** Adds a random potion effect affix to the player's held item. */
+    @SuppressWarnings("deprecation")
+    public static void addEffectToItem(Player player, String enKey) {
+        PotionEffectType type = potionEffectMap.get(enKey);
+        if (type == null) {
+            player.sendMessage("§cUnknown effect: " + enKey);
+            return;
+        }
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item.getType().isAir()) {
+            player.sendMessage("§cYou must hold an item.");
+            return;
+        }
+        int maxLvl = MagicLootConfig.getMaxLevel(type);
+        if (maxLvl <= 0) {
+            player.sendMessage("§cThis effect is disabled (max-level: 0).");
+            return;
+        }
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        int level = r.nextInt(maxLvl);
+        String apply = r.nextInt(10) > 5 ? "+" : "-";
+        String displayName = effectNames.getOrDefault(enKey, enKey);
+
+        // Update PDC effects
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        String existing = meta.getPersistentDataContainer().get(ItemKeys.EFFECTS,
+                org.bukkit.persistence.PersistentDataType.STRING);
+        String newData = (existing != null && !existing.isEmpty())
+                ? existing + "," + enKey + ":" + apply + ":" + level
+                : enKey + ":" + apply + ":" + level;
+        meta.getPersistentDataContainer().set(ItemKeys.EFFECTS,
+                org.bukkit.persistence.PersistentDataType.STRING, newData);
+
+        // Update lore
+        List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+        lore.add(ChatColor.translateAlternateColorCodes('&',
+                (colorCodes.isEmpty() ? "&e" : colorCodes.get(r.nextInt(colorCodes.size())))
+                        + apply + " " + displayName + " " + (level + 1)));
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+
+        player.sendMessage("§aAdded " + apply + displayName + " " + (level + 1)
+                + " to your item.");
     }
 
     /** Returns " " if prefix ends with a letter and suffix starts with one, else "". */
