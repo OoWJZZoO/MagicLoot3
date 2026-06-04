@@ -30,8 +30,6 @@ import org.bukkit.potion.PotionType;
 
 import com.github.oowjzzoo.magicloot3.util.SkullCreator;
 
-import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
-
 public class ItemManager {
 
     public static List<Enchantment> enchantments = new ArrayList<>();
@@ -53,7 +51,7 @@ public class ItemManager {
         if (type == LootType.RANDOM && !enabledLootTypes.isEmpty()) {
             type = enabledLootTypes.get(random.nextInt(enabledLootTypes.size()));
         }
-        if (type == LootType.SLIMEFUN && Slimefun.instance() == null) {
+        if (type == LootType.SLIMEFUN && !Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
             type = LootType.TREASURE;
         }
 
