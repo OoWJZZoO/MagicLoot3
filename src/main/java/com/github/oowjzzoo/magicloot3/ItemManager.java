@@ -252,7 +252,9 @@ public class ItemManager {
     private static String needsSpace(String prefix, String suffix) {
         char last = prefix.charAt(prefix.length() - 1);
         char first = suffix.charAt(0);
-        if (Character.isLetter(last) && Character.isLetter(first)) return " ";
+        if ((last >= 'A' && last <= 'Z') || (last >= 'a' && last <= 'z'))
+            if ((first >= 'A' && first <= 'Z') || (first >= 'a' && first <= 'z'))
+                return " ";
         return "";
     }
 
