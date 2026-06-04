@@ -52,25 +52,29 @@ public class MagicLootConfig {
         dataFolder = plugin.getDataFolder();
         if (!dataFolder.exists()) dataFolder.mkdirs();
         configItems = new ConfigManager(new File(dataFolder, "Items.yml"));
+        configItems.setHeader("""
+                物品权重配置
+                权重越大，生成时被抽中的概率越高
+                设为 0 意味着禁用该物品，不会出现在战利品中
+                修改后需执行 /magicloot reload 或重启服务器生效
+                """);
         configNames = new ConfigManager(new File(dataFolder, "Names.yml"));
         configEnch = new ConfigManager(new File(dataFolder, "Enchantments.yml"));
         configPotions = new ConfigManager(new File(dataFolder, "Potions.yml"));
         configEffects = new ConfigManager(new File(dataFolder, "Effects.yml"));
         configTiers = new ConfigManager(new File(dataFolder, "loot_tiers.yml"));
 
-        configItems.setDefaultValue("treasure.DIAMOND", true);
-        configItems.setDefaultValue("treasure.GOLD_INGOT", true);
-        configItems.setDefaultValue("treasure.IRON_INGOT", true);
-        configItems.setDefaultValue("treasure.EMERALD", true);
-        configItems.setDefaultValue("treasure.QUARTZ", true);
+        // Treasure defaults: weight 10
+        for (String t : new String[]{"DIAMOND", "GOLD_INGOT", "IRON_INGOT", "EMERALD", "QUARTZ"}) {
+            configItems.setDefaultValue("item-weight." + t, 10);
+        }
 
-        // Disable non-weapon items from being generated as random equipment
-        String[] toolDefaults = {"FLINT_AND_STEEL", "SHEARS", "FISHING_ROD",
+        // Non-weapon items: weight 0 = disabled
+        for (String t : new String[]{"FLINT_AND_STEEL", "SHEARS", "FISHING_ROD",
                 "CARROT_ON_A_STICK", "WARPED_FUNGUS_ON_A_STICK", "COMPASS",
                 "CLOCK", "NAME_TAG", "LEAD", "SADDLE", "SHIELD", "BOW",
-                "CROSSBOW", "TRIDENT", "ELYTRA"};
-        for (String t : toolDefaults) {
-            configItems.setDefaultValue("loot." + t, false);
+                "CROSSBOW", "TRIDENT", "ELYTRA"}) {
+            configItems.setDefaultValue("item-weight." + t, 0);
         }
 
         for (LootTier tier : LootTier.values()) {
@@ -87,19 +91,14 @@ public class MagicLootConfig {
             if (!m.isBlock()) {
                 for (Enchantment e : Enchantment.values()) {
                     if (e.canEnchantItem(new ItemStack(m)) && !m.toString().contains("BOOK")) {
-                        configItems.setDefaultValue("loot." + m.toString(), true);
                         configItems.setDefaultValue("item-weight." + m.toString(), 10);
                     }
                 }
             }
         }
-        for (String t : new String[]{"DIAMOND", "GOLD_INGOT", "IRON_INGOT", "EMERALD", "QUARTZ"}) {
-            configItems.setDefaultValue("item-weight." + t, 10);
-        }
 
         if (Slimefun.instance() != null) {
             for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
-                configItems.setDefaultValue("Slimefun-Item." + item.getId(), true);
                 configItems.setDefaultValue("item-weight." + item.getId(), 10);
             }
         }
@@ -168,22 +167,30 @@ public class MagicLootConfig {
         ItemManager.EFFECTS.addAll(ItemManager.effectNames.values());
 
         for (Material m : Material.values()) {
-            if (getConfig(ConfigType.ITEMS).contains("treasure." + m.toString())) {
-                if (getConfig(ConfigType.ITEMS).getBoolean("treasure." + m.toString())) {
-                    ItemManager.TREASURE.add(m);
+            int w = getConfig(ConfigType.ITEMS).getInt("item-weight." + m.toString(), 0);
+            if (w <= 0) continue;
+            boolean canEnchant = false;
+            for (Enchantment e : Enchantment.values()) {
+                if (e.canEnchantItem(new ItemStack(m)) && !m.toString().contains("BOOK")) {
+                    canEnchant = true; break;
                 }
             }
-            if (getConfig(ConfigType.ITEMS).contains("loot." + m.toString())) {
-                if (getConfig(ConfigType.ITEMS).getBoolean("loot." + m.toString())) {
-                    ItemManager.TOOLS.add(m);
-                }
+            if (!m.isBlock() && canEnchant) {
+                ItemManager.TOOLS.add(m);
+            }
+        }
+        // Treasure pool: materials with weight > 0 that aren't in TOOLS
+        for (Material m : Material.values()) {
+            int w = getConfig(ConfigType.ITEMS).getInt("item-weight." + m.toString(), 0);
+            if (w <= 0) continue;
+            if (!m.isBlock() && !ItemManager.TOOLS.contains(m)) {
+                ItemManager.TREASURE.add(m);
             }
         }
         if (Slimefun.instance() != null) {
             for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
-                String key = "Slimefun-Item." + item.getId();
-                if (getConfig(ConfigType.ITEMS).contains(key)
-                        && getConfig(ConfigType.ITEMS).getBoolean(key)) {
+                int w = getConfig(ConfigType.ITEMS).getInt("item-weight." + item.getId(), 0);
+                if (w > 0) {
                     ItemManager.SLIMEFUN.add(item.getItem());
                 }
             }

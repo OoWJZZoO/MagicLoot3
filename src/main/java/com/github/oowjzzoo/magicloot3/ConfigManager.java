@@ -46,6 +46,10 @@ public class ConfigManager {
         return yaml.getStringList(path);
     }
 
+    public void setHeader(String header) {
+        yaml.options().header(header);
+    }
+
     public void save() {
         try {
             yaml.save(file);
