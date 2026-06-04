@@ -17,6 +17,9 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockUseHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
 
+import com.github.oowjzzoo.magicloot3.machines.PotionAffixDisenchanter;
+import com.github.oowjzzoo.magicloot3.machines.PotionAffixEnchanter;
+
 /**
  * Slimefun integration. SF item names are bound to the build language
  * and never change at runtime. This class is only loaded when Slimefun
@@ -94,6 +97,46 @@ final class SlimefunHook implements SlimefunAddon {
             LostLibrarian.openMenu(event.getPlayer(), true);
         });
         desk.register(this);
+
+        // Potion Affix Disenchanter
+        String disName = zh ? "§d药水词缀祛魔机" : "§dPotion Affix Disenchanter";
+        String[] disLore = zh
+                ? new String[]{"", "§7提取装备上的药水词缀到附魔书",
+                        "§7保留装备的其他所有数据"}
+                : new String[]{"", "§7Extracts potion affixes from equipment",
+                        "§7into an enchanted book. Preserves all other data"};
+
+        SlimefunItemStack disStack = new SlimefunItemStack(
+                "POTION_AFFIX_DISENCHANTER", Material.CHISELED_BOOKSHELF,
+                disName, disLore);
+
+        ItemStack[] disRecipe = {null, null, null,
+                null, SlimefunItems.AUTO_DISENCHANTER, null,
+                null, null, null};
+
+        new PotionAffixDisenchanter(itemGroup, disStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, disRecipe)
+                .register(this);
+
+        // Potion Affix Enchanter
+        String enchName = zh ? "§d药水词缀附魔机" : "§dPotion Affix Enchanter";
+        String[] enchLore = zh
+                ? new String[]{"", "§7将附魔书中的药水词缀应用到装备",
+                        "§7合并已有词缀，保留装备的其他数据"}
+                : new String[]{"", "§7Applies potion affixes from an enchanted book",
+                        "§7onto equipment. Merges with existing affixes"};
+
+        SlimefunItemStack enchStack = new SlimefunItemStack(
+                "POTION_AFFIX_ENCHANTER", Material.CHISELED_BOOKSHELF,
+                enchName, enchLore);
+
+        ItemStack[] enchRecipe = {null, null, null,
+                null, SlimefunItems.AUTO_ENCHANTER, null,
+                null, null, null};
+
+        new PotionAffixEnchanter(itemGroup, enchStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, enchRecipe)
+                .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));
     }
