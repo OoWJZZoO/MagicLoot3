@@ -73,9 +73,10 @@ public class ItemManager {
                 case POTION -> {
                     boolean isSplash = random.nextBoolean();
                     item.setType(isSplash ? Material.SPLASH_POTION : Material.LINGERING_POTION);
+                    String pPrefix = PREFIX.get(random.nextInt(PREFIX.size()));
+                    String pSuffix = SUFFIX.get(random.nextInt(SUFFIX.size()));
                     String name = COLOR.get(random.nextInt(COLOR.size()))
-                            + PREFIX.get(random.nextInt(PREFIX.size()))
-                            + SUFFIX.get(random.nextInt(SUFFIX.size()));
+                            + pPrefix + needsSpace(pPrefix, pSuffix) + pSuffix;
                     PotionMeta meta = (PotionMeta) item.getItemMeta();
                     meta.setBasePotionType(isSplash ? PotionType.AWKWARD : PotionType.AWKWARD);
                     meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
@@ -138,9 +139,10 @@ public class ItemManager {
     public static ItemStack applyTier(ItemStack item, LootTier tier) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
-        String name = COLOR.get(random.nextInt(COLOR.size()))
-                + PREFIX.get(random.nextInt(PREFIX.size()))
-                + SUFFIX.get(random.nextInt(SUFFIX.size()));
+        String prefix = PREFIX.get(random.nextInt(PREFIX.size()));
+        String suffix = SUFFIX.get(random.nextInt(SUFFIX.size()));
+        String name = COLOR.get(random.nextInt(COLOR.size())) + prefix
+                + needsSpace(prefix, suffix) + suffix;
 
         // Clear existing enchantments
         for (Enchantment e : item.getEnchantments().keySet()) {
@@ -227,6 +229,14 @@ public class ItemManager {
             damageable.setDamage(Math.min(damage, item.getType().getMaxDurability() - 1));
             item.setItemMeta(damageable);
         }
+    }
+
+    /** Returns " " if prefix ends with a letter and suffix starts with one, else "". */
+    private static String needsSpace(String prefix, String suffix) {
+        char last = prefix.charAt(prefix.length() - 1);
+        char first = suffix.charAt(0);
+        if (Character.isLetter(last) && Character.isLetter(first)) return " ";
+        return "";
     }
 
     public static void fillChest(Block block) {

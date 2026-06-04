@@ -64,6 +64,15 @@ public class MagicLootConfig {
         configItems.setDefaultValue("treasure.EMERALD", true);
         configItems.setDefaultValue("treasure.QUARTZ", true);
 
+        // Disable non-weapon items from being generated as random equipment
+        String[] toolDefaults = {"FLINT_AND_STEEL", "SHEARS", "FISHING_ROD",
+                "CARROT_ON_A_STICK", "WARPED_FUNGUS_ON_A_STICK", "COMPASS",
+                "CLOCK", "NAME_TAG", "LEAD", "SADDLE", "SHIELD", "BOW",
+                "CROSSBOW", "TRIDENT", "ELYTRA"};
+        for (String t : toolDefaults) {
+            configItems.setDefaultValue("loot." + t, false);
+        }
+
         for (LootTier tier : LootTier.values()) {
             configTiers.setDefaultValue(tier.toString() + ".enchantments.min", 1 + (tier.getLevel() / 2));
             configTiers.setDefaultValue(tier.toString() + ".enchantments.max", 1 + tier.getLevel());
@@ -179,12 +188,6 @@ public class MagicLootConfig {
             }
         }
 
-        // Remove blacklisted materials from tool pool
-        for (String name : cfg.getStringList("tool-blacklist")) {
-            try {
-                ItemManager.TOOLS.remove(Material.valueOf(name));
-            } catch (IllegalArgumentException ignored) {}
-        }
     }
 
     // Getters for max levels (used by ItemManager)
