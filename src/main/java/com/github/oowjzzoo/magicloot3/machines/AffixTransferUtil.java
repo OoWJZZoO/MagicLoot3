@@ -61,7 +61,7 @@ public final class AffixTransferUtil {
      * Preserves display name, tier, enchantments, and all other NBT.
      */
     public static ItemStack stripAffixes(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return item;
+        if (item == null) return item;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return item;
 
@@ -82,7 +82,7 @@ public final class AffixTransferUtil {
      * same key + same polarity → overwrites level; otherwise adds new entry.
      */
     public static ItemStack appendAffixes(ItemStack item, List<EffectEntry> newEffects) {
-        if (item == null || !item.hasItemMeta()) return item;
+        if (item == null) return item;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return item;
 
