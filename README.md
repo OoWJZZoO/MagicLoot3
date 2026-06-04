@@ -1,133 +1,138 @@
 # MagicLoot3
 
-**Slimefun 4 附属插件** — 为世界添加随机生成的遗迹建筑、ARPG 风格的随机装备系统、以及 NPC 装备鉴定机制。
+**A Slimefun 4 addon** — adds randomly generated ruins to your world, ARPG-style random equipment, and an NPC-based item appraisal system.
 
-由 [MagicLoot3](https://github.com/TheBusyBiscuit-plugin-archive/MagicLoot3)（2016，mrCookieSlime）翻新而来。
+Revived from [MagicLoot3](https://github.com/TheBusyBiscuit-plugin-archive/MagicLoot3) (2016, by mrCookieSlime).
 
 ---
 
-## 兼容性
+## Compatibility
 
-| 组件 | 最低版本 | 测试通过 |
-|------|---------|---------|
+| Component | Minimum | Tested |
+|-----------|---------|--------|
 | Paper | 1.21.1 | 1.21.11 |
 | Slimefun 4 | RC-37 | vb79ae49-Beta |
 | Java | 21 | 21.0.7 |
 
-Slimefun 为软依赖——没有 Slimefun 时插件仍可正常运行，仅不注册粘液科技物品。
+Slimefun is a soft dependency — the plugin runs without it, only skipping Slimefun item registration.
 
 ---
 
-## 玩法
+## Gameplay
 
-### 世界遗迹生成
+### World Ruin Generation
 
-插件在世界中自动生成废弃建筑（遗迹），建筑内包含战利品宝箱和随机刷怪笼。
+The plugin automatically spawns ruined structures in the world containing loot chests and randomized spawners.
 
-- 每个新区块触发一次判定，概率可配置
-- 支持白名单模式，每个世界独立配置生成概率
-- 建筑分两类：**普通遗迹** 和 **特殊建筑**（如迷失图书馆）
+- Each new chunk triggers one roll, with configurable probability
+- Whitelist-based world selection, each world has independent spawn chances
+- Two structure types: **regular ruins** and **special buildings** (i.e., Lost Library)
 
-### 迷失图书管理员（Lost Librarian）
+### Lost Librarian
 
-#### 出现方式
-- **自然生成**：迷失图书馆建筑中有概率出现，绿宝石块被替换为图书管理员村民
-- **粘液科技合成**：通过强化合成桌制作"遗物鉴定桌"，摆放后右键使用
+#### How to Find
+- **Natural generation**: always appears inside every Lost Library building
 
-#### 鉴定玩法
-手持"未鉴定"装备（物品名显示为乱码）右键图书管理员或鉴定桌，打开鉴定 GUI。可选择：
+#### Alternative
+- **Slimefun crafting**: craft a "Lost Librarian's Desk" via Enhanced Crafting Table, place it down, and right-click. Works identically to the Lost Librarian NPC.
 
-| 选项 | XP 花费 | 说明 |
-|------|--------|------|
-| 随机鉴定 | 固定费用 | 随机抽取一个品级进行鉴定 |
-| 普通 | 2 级 | Common 品级 |
-| 非凡 | 5 级 | Uncommon 品级 |
-| 稀有 | 10 级 | Rare 品级 |
-| 史诗 | 25 级 | Epic 品级 |
-| 传说 | 50 级 | Legendary 品级 |
+#### Appraisal
+Right-click the Librarian or Desk while holding "Unanalyzed" equipment (item name appears as garbled text). An appraisal GUI opens with these options:
 
-### ARPG 随机装备系统
+| Option | XP Cost | Description |
+|--------|---------|-------------|
+| Random | 10 levels | Picks a random tier |
+| Common | 2 levels | Common tier |
+| Uncommon | 5 levels | Uncommon tier |
+| Rare | 10 levels | Rare tier |
+| Epic | 25 levels | Epic tier |
+| Legendary | 50 levels | Legendary tier |
 
-生成的装备具有随机品级、名称、附魔和药水词缀。
+All costs and Random tier probabilities can be modified in the config files.
 
-**五个品级**（带权重抽奖机制）：
+### ARPG Random Equipment System
 
-| 品级 | 默认权重 | 附魔数量 | 药水词缀 |
-|------|---------|---------|---------|
-| 普通 Common | 11 | I ~ I | 无 |
-| 非凡 Uncommon | 7 | I ~ II | 0~1 |
-| 稀有 Rare | 4 | I ~ III | 0~2 |
-| 史诗 Epic | 3 | I ~ IV | 0~3 |
-| 传说 Legendary | 1 | I ~ V | 0~4 |
+Generated equipment has random tiers, names, enchantments, and potion affixes.
 
-**词缀系统**：
-- 装备 lore 中 `+ 属性名 等级` 表示攻击时给自身增益，`- 属性名 等级` 表示给目标减益
-- 皮革盔甲带随机染色
+**Five tiers** (weighted random):
 
-**战利品类型**（可在配置中单独开关）：
+| Tier | Default Weight | Enchantments | Potion Affixes |
+|------|---------------|-------------|----------------|
+| Common | 11 | 1 | 0 |
+| Uncommon | 7 | 1~2 | 0~1 |
+| Rare | 4 | 1~3 | 0~2 |
+| Epic | 3 | 1~4 | 0~3 |
+| Legendary | 1 | 1~5 | 0~4 |
 
-| 类型 | 产出 |
-|------|------|
-| TOOL | 随机武器/工具/盔甲，带品级词缀 |
-| TREASURE | 贵重物品（钻石、金锭等） |
-| BOOK | 附魔书，带品级词缀 |
-| POTION | 溅射/滞留药水，1~2 个随机效果 |
-| SLIMEFUN | 随机粘液科技物品 |
-| UNANALIZED | 未鉴定装备（乱码名），需找鉴定师鉴定 |
+**Potion Affix System**:
+- `+ effect_name level` in item lore grants a buff to the wearer on hit
+- `- effect_name level` inflicts a debuff on the target
+- Effect duration is `(level * 3)` seconds
 
-### 怪物装备系统
+**Loot Types** (individually toggleable in config):
 
-僵尸、骷髅、僵尸猪灵生成时有概率（默认 15%）穿戴随机魔法装备，可掉落。
+| Type | Produces |
+|------|----------|
+| TOOL | Random weapon/tool/armor with tier affixes |
+| TREASURE | Valuables (diamonds, gold ingots, etc.) |
+| BOOK | Enchanted book with tier affixes |
+| POTION | Splash/Lingering potion with 1~2 random effects |
+| SLIMEFUN | Random Slimefun item |
+| UNANALYZED | Unidentified equipment (garbled name), requires appraisal |
 
-### 圣诞彩蛋
+### Mob Equipment
 
-每年 12 月 22 日至 26 日，生物有概率戴圣诞帽、手持传说级武器。
+Zombies, Skeletons, and Zombified Piglins have a chance (default 15%) to spawn wearing random magic gear, which can drop on death.
 
----
+### Christmas Event
 
-## 自定义遗迹
-
-1. 在游戏中使用原版结构方块保存建筑为 `.nbt` 文件
-2. 文件命名为小写下划线格式（如 `my_tower.nbt`）
-3. 放入 `plugins/MagicLoot3/structures/` 文件夹
-4. 执行 `/magicloot reload` 或重启服务器
-5. 建筑自动作为普通遗迹在世界中生成
-
-> 特殊的"迷失图书馆"类建筑（内有绿宝石块 → 图书管理员村民）目前需要修改代码配置。
+Every year from December 22 to 26, mobs have a chance to spawn wearing Santa hats and wielding Legendary weapons.
 
 ---
 
-## 命令
+## Custom Ruins
 
-| 命令 | 权限 | 说明 |
-|------|------|------|
-| `/magicloot version` | 无 | 查看版本、构建号、语言、调试状态 |
-| `/magicloot debug` | `magicloot3.admin` (op) | 开关调试日志 |
-| `/magicloot reload` | `magicloot3.admin` (op) | 重载所有配置、重新扫描结构文件 |
-| `/magicloot generate <name>` | `magicloot3.admin` (op) | 在玩家位置生成指定结构 |
-| `/magicloot language <zh\|en>` | `magicloot3.admin` (op) | 切换语言 |
+1. Save your build as an `.nbt` file using a vanilla Structure Block in-game
+2. Name the file in `lowercase_underscore` format (e.g., `my_tower.nbt`)
+3. Place it in `plugins/MagicLoot3/structures/`
+4. Run `/magicloot reload` or restart the server
+5. The structure will automatically generate as a regular ruin in the world
 
-所有命令支持 Tab 补全。
+> "Lost Library" type buildings are not yet user-configurable.
 
 ---
 
-## 配置文件
+## Commands
 
-所有配置文件位于 `plugins/MagicLoot3/`。
+| Command | Permission | Description |
+|---------|-----------|-------------|
+| `/magicloot version` | None | View version, build, language, debug status |
+| `/magicloot debug` | `magicloot3.admin` (op) | Toggle debug logging |
+| `/magicloot reload` | `magicloot3.admin` (op) | Reload all configs and rescan structure files |
+| `/magicloot generate <name>` | `magicloot3.admin` (op) | Generate the named structure at your location |
+| `/magicloot language <zh\|en>` | `magicloot3.admin` (op) | Switch language |
 
-### config.yml — 主配置
+All commands support Tab completion.
+
+---
+
+## Configuration Files
+
+All config files are located in `plugins/MagicLoot3/`.
+
+### config.yml — Main Configuration
 
 ```yaml
-language: zh          # 默认语言（zh / en）
+language: en          # Default language (zh / en)
 
 chances:
-  mobs: 15            # 怪物穿戴装备概率（百分比）
+  mobs: 15            # Chance for mobs to wear random gear (percent)
 
-# 世界配置：每个世界独立设置生成概率
+# World config: each world has independent spawn rates
 worlds:
   world:
-    ruin-chance: 8       # 遗迹生成概率
-    building-chance: 12  # 遗迹为特殊建筑的概率
+    ruin-chance: 8       # Chance to generate a ruin per new chunk
+    building-chance: 12  # Chance a ruin is a special building
   world_the_end:
     ruin-chance: 35
     building-chance: 5
@@ -135,19 +140,19 @@ worlds:
 chest:
   items:
     min: 3
-    max: 11            # 每箱物品数量范围
+    max: 11            # Items per chest (random within range)
   treasure-stack:
     min: 2
-    max: 9             # 财宝堆叠数量范围
+    max: 9             # Treasure item stack size
   slimefun-stack:
     min: 1
-    max: 3             # 粘液科技物品堆叠数量范围
+    max: 3             # Slimefun item stack size
 
 durability:
-  min: 10              # 装备最低剩余耐久（百分比）
-  max: 90              # 装备最高剩余耐久（百分比）
+  min: 10              # Minimum remaining durability (percent)
+  max: 90              # Maximum remaining durability (percent)
 
-costs:                 # 鉴定费用（XP 等级）
+costs:                 # Appraisal cost in XP levels
   RANDOM: 10
   COMMON: 2
   UNCOMMON: 5
@@ -155,7 +160,7 @@ costs:                 # 鉴定费用（XP 等级）
   EPIC: 25
   LEGENDARY: 50
 
-enable:                # 启用的战利品类型
+enable:                # Enabled loot types
   TREASURE: true
   TOOL: true
   SLIMEFUN: true
@@ -163,21 +168,21 @@ enable:                # 启用的战利品类型
   POTION: true
   UNANALIZED: true
 
-spawners:              # 刷怪笼生物池
+spawners:              # Spawner mob pool
 - ZOMBIE
 - SPIDER
 - CAVE_SPIDER
 - VEX
 ```
 
-### Items.yml — 物品权重
+### Items.yml — Item Weights
 
-三个独立池子：`tools`（装备）、`treasure`（财宝）、`slimefun`（粘液物品）。
+Three independent pools: `tools`, `treasure`, `slimefun`.
 
 ```yaml
 tools:
-  DIAMOND_SWORD: 10    # 权重越大，抽中概率越高
-  FLINT_AND_STEEL: 0   # 设为 0 即禁用
+  DIAMOND_SWORD: 10    # Higher weight = more common
+  FLINT_AND_STEEL: 0   # Set to 0 to disable
   ...
 treasure:
   DIAMOND: 10
@@ -188,54 +193,54 @@ slimefun:
   ...
 ```
 
-### loot_tiers.yml — 品级参数
+### loot_tiers.yml — Tier Parameters
 
 ```yaml
 COMMON:
-  weight: 11            # 生成权重（越高越常见）
-  applicable-weight: 8  # 鉴定师"随机鉴定"权重
+  weight: 11            # Generation weight (higher = more common)
+  applicable-weight: 8  # "Random" appraisal weight
   enchantments:
-    min: 1              # 最少附魔数量
-    max: 1              # 最多附魔数量
+    min: 1              # Minimum enchantments
+    max: 1              # Maximum enchantments
   effects:
-    min: 0              # 最少药水词缀数
-    max: 0              # 最多药水词缀数
+    min: 0              # Minimum potion affixes
+    max: 0              # Maximum potion affixes
 ```
 
-### Enchantments.yml — 附魔等级上限
+### Enchantments.yml — Enchantment Level Caps
 
 ```yaml
 sharpness:
-  max-level: 5          # 锋利 I ~ V
+  max-level: 5          # Sharpness I ~ V
 protection:
   max-level: 4
 ```
 
-### Effects.yml — 药水效果等级上限
+### Effects.yml — Potion Effect Level Caps
 
 ```yaml
 speed:
-  max-level: 3          # 速度 I ~ III
+  max-level: 3          # Speed I ~ III
 instant_health:
-  max-level: 1          # 瞬间治疗 I
+  max-level: 1          # Instant Health I
 fire_resistance:
-  max-level: 1          # 抗火 I
+  max-level: 1          # Fire Resistance I
 ```
 
-### lang/zh.yml 和 lang/en.yml — 语言文件
+### lang/zh.yml and lang/en.yml — Language Files
 
-控制装备命名词池、NPC 对话、GUI 文本、日志提示等。可编辑以自定义装备名称风格。
+Controls equipment naming pools, NPC dialogue, GUI text, and log messages. Editable to customize equipment name styles.
 
-### ruin_settings/<name>.yml — 结构配置
+### ruin_settings/<name>.yml — Per-Structure Config
 
 ```yaml
-y-offset: 0             # 垂直偏移
-underwater: false       # 是否允许在水下生成
+y-offset: 0             # Vertical offset
+underwater: false       # Allow underwater generation
 ```
 
 ---
 
-## 数据文件夹结构
+## Data Folder Structure
 
 ```
 plugins/MagicLoot3/
@@ -247,36 +252,36 @@ plugins/MagicLoot3/
 ├── lang/
 │   ├── zh.yml
 │   └── en.yml
-├── structures/          # 自定义结构文件（.nbt）
+├── structures/          # Custom structure files (.nbt)
 │   ├── farm.nbt
 │   ├── house.nbt
 │   └── ...
-└── ruin_settings/       # 每个结构的独立配置
+└── ruin_settings/       # Per-structure settings
     ├── farm.yml
     └── ...
 ```
 
 ---
 
-## 构建
+## Building
 
-需要 Java 21 + Maven 3.9+。
+Requires Java 21 + Maven 3.9+.
 
 ```bash
-# 中文端（默认）
+# English build (default)
 mvn clean package
 
-# 英文端
-mvn clean package -P en
+# Chinese build
+mvn clean package -P zh
 ```
 
-产物：`target/MagicLoot3-3.5.0-zh.jar` 和 `target/MagicLoot3-3.5.0-en.jar`。
+Output: `target/MagicLoot3-3.5.0-en.jar` and `target/MagicLoot3-3.5.0-zh.jar`.
 
-两个 JAR 的区别仅在于粘液科技物品名/描述的出厂语言、config.yml 注释语言。运行时 `/magicloot language` 可以切换其他所有文本。
+The two JARs differ only in the default language of Slimefun item names/descriptions and config.yml comments. All other text can be switched at runtime via `/magicloot language`.
 
 ---
 
-## 致谢
+## Credits
 
-- 原作者 [mrCookieSlime / TheBusyBiscuit](https://github.com/TheBusyBiscuit) — MagicLoot3 原始版本
-- [Slimefun 4 社区](https://github.com/Slimefun/Slimefun4)
+- Original author [mrCookieSlime / TheBusyBiscuit](https://github.com/TheBusyBiscuit) — MagicLoot3 original
+- [Slimefun 4 Community](https://github.com/Slimefun/Slimefun4)
