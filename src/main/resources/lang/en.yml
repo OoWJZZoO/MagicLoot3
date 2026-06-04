@@ -121,7 +121,7 @@ effects:
   oozing: "Oozing"
   weaving: "Weaving"
   wind_charged: "Wind Charged"
-  root: "Rooted"
+  breath_of_the_nautilus: "Nautilus's Breath"
 
 suffixes:
   - Tool
