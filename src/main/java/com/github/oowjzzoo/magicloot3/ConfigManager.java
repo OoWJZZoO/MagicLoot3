@@ -30,6 +30,10 @@ public class ConfigManager {
         return yaml.getInt(path);
     }
 
+    public int getInt(String path, int def) {
+        return yaml.contains(path) ? yaml.getInt(path) : def;
+    }
+
     public boolean getBoolean(String path) {
         return yaml.getBoolean(path);
     }

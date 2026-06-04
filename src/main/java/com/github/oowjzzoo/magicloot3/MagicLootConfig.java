@@ -192,6 +192,25 @@ public class MagicLootConfig {
         }
 
         LootTier.loadWeights();
+
+        // Build weighted item pools (default weight 10)
+        ItemManager.weightedTreasure.clear();
+        for (Material m : ItemManager.TREASURE) {
+            int w = getConfig(ConfigType.ITEMS).getInt("item-weight." + m.name(), 10);
+            for (int i = 0; i < w; i++) ItemManager.weightedTreasure.add(m);
+        }
+        ItemManager.weightedTools.clear();
+        for (Material m : ItemManager.TOOLS) {
+            int w = getConfig(ConfigType.ITEMS).getInt("item-weight." + m.name(), 10);
+            for (int i = 0; i < w; i++) ItemManager.weightedTools.add(m);
+        }
+        ItemManager.weightedSlimefun.clear();
+        for (ItemStack item : ItemManager.SLIMEFUN) {
+            String id = SlimefunItem.getByItem(item) != null
+                    ? SlimefunItem.getByItem(item).getId() : item.getType().name();
+            int w = getConfig(ConfigType.ITEMS).getInt("item-weight." + id, 10);
+            for (int i = 0; i < w; i++) ItemManager.weightedSlimefun.add(item);
+        }
     }
 
     private static int getDefaultWeight(LootTier tier) {

@@ -47,6 +47,11 @@ public class ItemManager {
     public static Map<String, PotionEffectType> potion = new HashMap<>();
     public static Map<String, String> effectNames = new HashMap<>();
 
+    // Weighted selection pools
+    public static final List<Material> weightedTools = new ArrayList<>();
+    public static final List<Material> weightedTreasure = new ArrayList<>();
+    public static final List<ItemStack> weightedSlimefun = new ArrayList<>();
+
     public static ItemStack createItem(LootType type) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
@@ -65,8 +70,8 @@ public class ItemManager {
                     item = applyTier(item, LootTier.getRandom());
                 }
                 case TREASURE -> {
-                    if (!TREASURE.isEmpty()) {
-                        item.setType(TREASURE.get(random.nextInt(TREASURE.size())));
+                    if (!weightedTreasure.isEmpty()) {
+                        item.setType(weightedTreasure.get(random.nextInt(weightedTreasure.size())));
                         var cfg = MagicLoot3.getInstance().getConfig();
                         int tMin = cfg.getInt("chest.treasure-stack.min", 2);
                         int tMax = cfg.getInt("chest.treasure-stack.max", 9);
@@ -94,12 +99,12 @@ public class ItemManager {
                     item.setItemMeta(meta);
                 }
                 case TOOL -> {
-                    if (TOOLS.isEmpty()) break;
+                    if (weightedTools.isEmpty()) break;
                     if (random.nextInt(100) < 10) {
                         item.setType(Material.ARROW);
                         item.setAmount(4 + random.nextInt(20));
                     } else {
-                        item.setType(TOOLS.get(random.nextInt(TOOLS.size())));
+                        item.setType(weightedTools.get(random.nextInt(weightedTools.size())));
                         if (item.getType().getMaxDurability() == 0) break;
                         item = applyTier(item, LootTier.getRandom());
                         damageRandomPercent(item);
@@ -107,7 +112,7 @@ public class ItemManager {
                 }
                 case SLIMEFUN -> {
                     if (!SLIMEFUN.isEmpty()) {
-                        item = SLIMEFUN.get(random.nextInt(SLIMEFUN.size())).clone();
+                        item = weightedSlimefun.get(random.nextInt(weightedSlimefun.size())).clone();
                         var cfg = MagicLoot3.getInstance().getConfig();
                         int sMin = cfg.getInt("chest.slimefun-stack.min", 2);
                         int sMax = cfg.getInt("chest.slimefun-stack.max", 6);
@@ -119,8 +124,8 @@ public class ItemManager {
                     }
                 }
                 case UNANALIZED -> {
-                    if (TOOLS.isEmpty()) break;
-                    item.setType(TOOLS.get(random.nextInt(TOOLS.size())));
+                    if (weightedTools.isEmpty()) break;
+                    item.setType(weightedTools.get(random.nextInt(weightedTools.size())));
                     ItemMeta im = item.getItemMeta();
                     im.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&7&kMEH WANNA BE EXAMINED"));
                     List<String> lore = new ArrayList<>();
