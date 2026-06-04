@@ -61,7 +61,9 @@ public class RuinBuilder {
         int buildingChance = plugin.getConfig().getInt("worlds." + l.getWorld().getName() + ".building-chance", 4);
         if (random.nextInt(100) < buildingChance && !buildingNames.isEmpty()) {
             String name = buildingNames.get(random.nextInt(buildingNames.size()));
-            if (l.getBlock().isLiquid()) return;
+            ConfigManager bcfg = configs.get(name);
+            if (bcfg != null && l.getBlock().isLiquid() && !bcfg.getBoolean("underwater")) return;
+            if (bcfg != null) l.setY(l.getY() + bcfg.getInt("y-offset"));
             StructurePlacer.place(plugin, l, name, true);
         } else if (!ruinNames.isEmpty()) {
             String name = ruinNames.get(random.nextInt(ruinNames.size()));

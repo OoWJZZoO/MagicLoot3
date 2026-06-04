@@ -34,14 +34,21 @@ public final class LostLibrarianGUI {
         inv.setItem(9, border);
         inv.setItem(17, border);
 
-        // Random option (slot 4)
+        // Random option (slot 4) — show min/max cost across all tiers
         ItemStack randomIcon = SkullCreator.createSkull(
                 "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzk3OTU1NDYyZTRlNTc2NjY0NDk5YWM0YTFjNTcyZjYxNDNmMTlhZDJkNjE5NDc3NjE5OGY4ZDEzNmZkYjIifX19",
                 Messages.get("gui.random"));
         ItemMeta randomMeta = randomIcon.getItemMeta();
         List<String> randomLore = new ArrayList<>();
         randomLore.add("");
-        randomLore.add(Messages.get("gui.cost", getCost(LootTier.getRandomApplicable())));
+        int minCost = Integer.MAX_VALUE, maxCost = 0;
+        for (LootTier t : LootTier.values()) {
+            if (t == LootTier.NONE || t == LootTier.UNKNOWN) continue;
+            int c = getCost(t);
+            if (c < minCost) minCost = c;
+            if (c > maxCost) maxCost = c;
+        }
+        randomLore.add("§7Cost: §b" + minCost + "~" + maxCost + " XP Level");
         randomMeta.setLore(randomLore);
         randomIcon.setItemMeta(randomMeta);
         inv.setItem(4, randomIcon);
