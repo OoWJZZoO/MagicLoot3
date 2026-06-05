@@ -172,7 +172,7 @@ log:
   slimefun_enabled: "Slimefun integration enabled!"
   slimefun_not_found: "Slimefun not found - SF items will not be registered."
   loaded: "MagicLoot3 loaded successfully!"
-  items_registered: "Registered Slimefun items: LOST_BOOKSHELF, LOST_LIBRARIANS_DESK, POTION_AFFIX_DISENCHANTER, POTION_AFFIX_ENCHANTER, ANCIENT_RUNE_PAST"
+  items_registered: "Registered Slimefun items: LOST_BOOKSHELF, LOST_LIBRARIANS_DESK, POTION_AFFIX_DISENCHANTER, POTION_AFFIX_ENCHANTER, ANCIENT_RUNE_PAST, TIME_OF_EXPLORATION"
   config_reloaded: "Config reloaded — {0} ruins, {1} buildings"
   structure_generated: "Generated {0} at your location."
   structure_failed: "Failed to generate {0}."

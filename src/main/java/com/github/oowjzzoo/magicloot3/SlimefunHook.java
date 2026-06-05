@@ -170,6 +170,22 @@ final class SlimefunHook implements SlimefunAddon {
                 new SlimefunItemStack(runeStack, 3))
                 .register(this);
 
+        // Time of Exploration (探索的时光) — crafting material
+        String timeName = zh ? "&b&l探索的时光" : "&b&lAdventuring Time";
+        String[] timeLore = zh
+                ? new String[]{"", "&7一缕光阴"}
+                : new String[]{"", "&7A sliver of time"};
+        SlimefunItemStack timeStack = new SlimefunItemStack(
+                "TIME_OF_EXPLORATION", Material.NETHER_STAR, timeName, timeLore);
+        ItemStack[] timeRecipe = {
+                runeStack, new ItemStack(Material.DRAGON_HEAD), runeStack,
+                new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
+                new ItemStack(Material.NETHER_STAR),
+                new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
+                runeStack, new ItemStack(Material.DRAGON_HEAD), runeStack};
+        new SlimefunItem(itemGroup, timeStack, RecipeType.ANCIENT_ALTAR, timeRecipe)
+                .register(this);
+
         plugin.getLogger().info(Messages.get("log.items_registered"));
     }
 

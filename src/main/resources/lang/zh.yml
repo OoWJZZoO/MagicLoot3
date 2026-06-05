@@ -160,7 +160,7 @@ log:
   slimefun_enabled: "粘液科技集成已启用！"
   slimefun_not_found: "未检测到粘液科技 - SF 物品将不会注册。"
   loaded: "MagicLoot3 加载成功！"
-  items_registered: "已注册粘液科技物品：旧日书架、遗物鉴定桌、药水词缀祛魔机、药水词缀附魔机、古代符文(往日)"
+  items_registered: "已注册粘液科技物品：旧日书架、遗物鉴定桌、药水词缀祛魔机、药水词缀附魔机、古代符文(往日)、探索的时光"
   config_reloaded: "配置已重载 — {0} 个遗迹，{1} 个特殊建筑"
   structure_generated: "已在当前位置生成 {0}。"
   structure_failed: "生成 {0} 失败。"
