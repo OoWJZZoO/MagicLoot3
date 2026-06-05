@@ -1,11 +1,9 @@
 package com.github.oowjzzoo.magicloot3.machines;
 
 import java.util.List;
-import java.util.logging.Level;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.github.oowjzzoo.magicloot3.ItemKeys;
@@ -14,6 +12,7 @@ import com.github.oowjzzoo.magicloot3.MagicLoot3;
 import com.github.oowjzzoo.magicloot3.machines.AffixTransferUtil.EffectEntry;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.AContainer;
@@ -22,9 +21,6 @@ import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 
 public class PotionAffixDisenchanter extends AContainer {
 
-    private static final int NORMAL_TICKS = 60;
-    private static final int DEBUG_TICKS = 1;
-
     public PotionAffixDisenchanter(ItemGroup itemGroup, SlimefunItemStack item,
                                     RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -32,12 +28,6 @@ public class PotionAffixDisenchanter extends AContainer {
         setEnergyConsumption(9);
         setProcessingSpeed(1);
     }
-
-    @Override
-    public int[] getInputSlots() { return new int[]{19, 20}; }
-
-    @Override
-    public int[] getOutputSlots() { return new int[]{24, 25}; }
 
     @Override
     public String getMachineIdentifier() { return "POTION_AFFIX_DISENCHANTER"; }
@@ -50,72 +40,87 @@ public class PotionAffixDisenchanter extends AContainer {
 
     @Override
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
-        ItemStack s19 = menu.getItemInSlot(getInputSlots()[0]);
-        ItemStack s20 = menu.getItemInSlot(getInputSlots()[1]);
-        if (s19 == null || s20 == null) return null;
+        for (int slot : getInputSlots()) {
+            ItemStack equipment = menu.getItemInSlot(slot);
+            if (!isDisenchantable(equipment)) continue;
+            if (!AffixTransferUtil.hasPotionAffixes(equipment)) continue;
 
-        // Identify which slot holds equipment (has EFFECTS PDC) and which holds a plain BOOK
-        ItemStack equipment;
-        ItemStack plainBook;
-        boolean s19isEquip = AffixTransferUtil.hasPotionAffixes(s19) && s19.getType() != Material.BOOK;
-        boolean s20isEquip = AffixTransferUtil.hasPotionAffixes(s20) && s20.getType() != Material.BOOK;
-        boolean s19isBook = s19.getType() == Material.BOOK;
-        boolean s20isBook = s20.getType() == Material.BOOK;
+            ItemStack book = menu.getItemInSlot(
+                    slot == getInputSlots()[0] ? getInputSlots()[1] : getInputSlots()[0]);
+            if (book == null || book.getType() != Material.BOOK) continue;
 
-        debug("Disenchanter: s19=" + s19.getType() + " hasAffix=" + AffixTransferUtil.hasPotionAffixes(s19)
-                + " | s20=" + s20.getType() + " hasAffix=" + AffixTransferUtil.hasPotionAffixes(s20));
-
-        if (s19isEquip && s20isBook) {
-            equipment = s19; plainBook = s20;
-        } else if (s20isEquip && s19isBook) {
-            equipment = s20; plainBook = s19;
-        } else {
-            debug("Disenchanter: no valid equipment + book pair found");
-            return null;
+            return createRecipe(menu, equipment, book);
         }
+        return null;
+    }
 
-        ItemMeta eqMeta = equipment.getItemMeta();
-        String pdcData = eqMeta.getPersistentDataContainer().get(
-                ItemKeys.EFFECTS, PersistentDataType.STRING);
-        debug("Disenchanter: equipment PDC EFFECTS = " + pdcData);
-
+    private MachineRecipe createRecipe(BlockMenu menu, ItemStack equipment, ItemStack book) {
+        String pdcData = equipment.getItemMeta().getPersistentDataContainer()
+                .get(ItemKeys.EFFECTS, PersistentDataType.STRING);
         List<EffectEntry> effects = AffixTransferUtil.parseEffects(pdcData);
-        if (effects.isEmpty()) {
-            debug("Disenchanter: parsed effects is empty");
-            return null;
-        }
-        debug("Disenchanter: parsed " + effects.size() + " effect(s)");
+        if (effects.isEmpty()) return null;
 
         ItemStack outputEquipment = AffixTransferUtil.stripAffixes(equipment.clone());
         ItemStack outputBook = AffixTransferUtil.createAffixBook(effects, LootTier.get(equipment));
 
-        int ticks = (MagicLoot3.getInstance() != null && MagicLoot3.isDebug())
-                ? DEBUG_TICKS : NORMAL_TICKS;
+        int ticks = 90 * effects.size() / getSpeed();
+        if (ticks < 1) ticks = 1;
+        if (MagicLoot3.getInstance() != null && MagicLoot3.isDebug()) ticks = 1;
 
         MachineRecipe recipe = new MachineRecipe(ticks,
-                new ItemStack[]{s19.clone(), s20.clone()},
+                new ItemStack[]{equipment.clone(), book.clone()},
                 new ItemStack[]{outputEquipment, outputBook});
 
-        if (!menu.fits(outputEquipment, getOutputSlots())) {
-            debug("Disenchanter: output equipment doesn't fit");
-            return null;
-        }
-        if (!menu.fits(outputBook, getOutputSlots())) {
-            debug("Disenchanter: output book doesn't fit");
+        if (!fitsAll(menu, recipe.getOutput())) {
             return null;
         }
 
-        for (int slot : getInputSlots()) {
-            menu.consumeItem(slot);
+        for (int inputSlot : getInputSlots()) {
+            menu.consumeItem(inputSlot);
         }
 
-        debug("Disenchanter: recipe created, ticks=" + ticks);
         return recipe;
     }
 
-    private static void debug(String msg) {
-        if (MagicLoot3.getInstance() != null && MagicLoot3.isDebug()) {
-            MagicLoot3.getInstance().getLogger().log(Level.INFO, "[DEBUG] " + msg);
+    /** Equivalent to {@code InvUtils.fitAll(inv, items, slots)} — simulates pushes. */
+    private boolean fitsAll(BlockMenu menu, ItemStack[] items) {
+        org.bukkit.inventory.Inventory copy = org.bukkit.Bukkit.createInventory(
+                null, menu.toInventory().getSize());
+        copy.setContents(menu.toInventory().getContents());
+        for (ItemStack item : items) {
+            if (item == null) continue;
+            int remaining = item.getAmount();
+            for (int s : getOutputSlots()) {
+                ItemStack existing = copy.getItem(s);
+                if (existing == null || existing.getType().isAir()) {
+                    copy.setItem(s, item.clone());
+                    remaining = 0;
+                    break;
+                } else if (existing.isSimilar(item)
+                        && existing.getAmount() < existing.getMaxStackSize()) {
+                    int space = existing.getMaxStackSize() - existing.getAmount();
+                    if (space >= remaining) {
+                        existing.setAmount(existing.getAmount() + remaining);
+                        remaining = 0;
+                        break;
+                    } else {
+                        existing.setAmount(existing.getMaxStackSize());
+                        remaining -= space;
+                    }
+                }
+            }
+            if (remaining > 0) return false;
         }
+        return true;
+    }
+
+    /** Mirrors {@code AutoDisenchanter.isDisenchantable()}. */
+    private boolean isDisenchantable(ItemStack item) {
+        if (item != null && !item.getType().isAir()
+                && item.getType() != Material.BOOK) {
+            SlimefunItem sfItem = SlimefunItem.getByItem(item);
+            return sfItem == null || sfItem.isDisenchantable();
+        }
+        return false;
     }
 }

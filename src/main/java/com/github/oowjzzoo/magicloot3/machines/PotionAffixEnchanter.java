@@ -1,12 +1,10 @@
 package com.github.oowjzzoo.magicloot3.machines;
 
 import java.util.List;
-import java.util.logging.Level;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.github.oowjzzoo.magicloot3.ItemKeys;
@@ -15,6 +13,7 @@ import com.github.oowjzzoo.magicloot3.MagicLoot3;
 import com.github.oowjzzoo.magicloot3.machines.AffixTransferUtil.EffectEntry;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.AContainer;
@@ -23,9 +22,6 @@ import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 
 public class PotionAffixEnchanter extends AContainer {
 
-    private static final int NORMAL_TICKS = 60;
-    private static final int DEBUG_TICKS = 1;
-
     public PotionAffixEnchanter(ItemGroup itemGroup, SlimefunItemStack item,
                                  RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -33,12 +29,6 @@ public class PotionAffixEnchanter extends AContainer {
         setEnergyConsumption(9);
         setProcessingSpeed(1);
     }
-
-    @Override
-    public int[] getInputSlots() { return new int[]{19, 20}; }
-
-    @Override
-    public int[] getOutputSlots() { return new int[]{24, 25}; }
 
     @Override
     public String getMachineIdentifier() { return "POTION_AFFIX_ENCHANTER"; }
@@ -51,79 +41,50 @@ public class PotionAffixEnchanter extends AContainer {
 
     @Override
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
-        ItemStack s19 = menu.getItemInSlot(getInputSlots()[0]);
-        ItemStack s20 = menu.getItemInSlot(getInputSlots()[1]);
-        if (s19 == null || s20 == null) return null;
+        for (int slot : getInputSlots()) {
+            ItemStack book = menu.getItemInSlot(slot);
+            if (book == null || book.getType() != Material.ENCHANTED_BOOK
+                    || !AffixTransferUtil.hasPotionAffixes(book)) continue;
 
-        // Identify which slot holds the affix book and which holds equipment.
-        // An affix book is ENCHANTED_BOOK with EFFECTS PDC. Equipment is anything else.
-        ItemStack equipment;
-        ItemStack affixBook;
-        boolean s19isBook = s19.getType() == Material.ENCHANTED_BOOK;
-        boolean s20isBook = s20.getType() == Material.ENCHANTED_BOOK;
-        boolean s19hasAffix = s19isBook && AffixTransferUtil.hasPotionAffixes(s19);
-        boolean s20hasAffix = s20isBook && AffixTransferUtil.hasPotionAffixes(s20);
+            ItemStack equipment = menu.getItemInSlot(
+                    slot == getInputSlots()[0] ? getInputSlots()[1] : getInputSlots()[0]);
+            if (!isEnchantable(equipment)) continue;
 
-        debug("Enchanter: s19=" + s19.getType() + " isBook=" + s19isBook + " hasAffix=" + s19hasAffix
-                + " | s20=" + s20.getType() + " isBook=" + s20isBook + " hasAffix=" + s20hasAffix);
-
-        if (s19hasAffix && !s20isBook) {
-            affixBook = s19; equipment = s20;
-        } else if (s20hasAffix && !s19isBook) {
-            affixBook = s20; equipment = s19;
-        } else {
-            debug("Enchanter: no valid equipment + affix-book pair found");
-            return null;
+            return createRecipe(menu, equipment, book);
         }
+        return null;
+    }
 
-        ItemMeta bookMeta = affixBook.getItemMeta();
-        if (bookMeta == null) {
-            debug("Enchanter: book meta is null");
-            return null;
-        }
-
-        String pdcData = bookMeta.getPersistentDataContainer().get(
-                ItemKeys.EFFECTS, PersistentDataType.STRING);
-        debug("Enchanter: book PDC EFFECTS = " + pdcData);
-
+    private MachineRecipe createRecipe(BlockMenu menu, ItemStack equipment, ItemStack affixBook) {
+        String pdcData = affixBook.getItemMeta().getPersistentDataContainer()
+                .get(ItemKeys.EFFECTS, PersistentDataType.STRING);
         List<EffectEntry> effects = AffixTransferUtil.parseEffects(pdcData);
-        if (effects.isEmpty()) {
-            debug("Enchanter: parsed effects is empty");
-            return null;
-        }
-        debug("Enchanter: parsed " + effects.size() + " effect(s)");
+        if (effects.isEmpty()) return null;
 
         ItemStack outputEquipment = AffixTransferUtil.appendAffixes(equipment.clone(), effects);
 
-        // Tier transfer: output tier = max(equipment tier, book tier)
         LootTier equipTier = LootTier.get(equipment);
         LootTier bookTier = LootTier.get(affixBook);
-        debug("Enchanter: equipTier=" + equipTier + " bookTier=" + bookTier);
         outputEquipment = AffixTransferUtil.applyTierTransfer(outputEquipment, equipTier, bookTier);
 
         ItemStack outputBook = buildResultBook(affixBook.clone());
 
-        int ticks = (MagicLoot3.getInstance() != null && MagicLoot3.isDebug())
-                ? DEBUG_TICKS : NORMAL_TICKS;
+        int ticks = 75 * effects.size() / getSpeed();
+        if (ticks < 1) ticks = 1;
+        if (MagicLoot3.getInstance() != null && MagicLoot3.isDebug()) ticks = 1;
 
         MachineRecipe recipe = new MachineRecipe(ticks,
-                new ItemStack[]{s19.clone(), s20.clone()},
+                new ItemStack[]{equipment.clone(), affixBook.clone()},
                 new ItemStack[]{outputEquipment, outputBook});
 
-        if (!menu.fits(outputEquipment, getOutputSlots())) {
-            debug("Enchanter: output equipment doesn't fit");
-            return null;
-        }
-        if (!menu.fits(outputBook, getOutputSlots())) {
-            debug("Enchanter: output book doesn't fit");
+        if (!fitsAll(menu, recipe.getOutput())) {
             return null;
         }
 
-        for (int slot : getInputSlots()) {
-            menu.consumeItem(slot);
+        for (int inputSlot : getInputSlots()) {
+            menu.consumeItem(inputSlot);
         }
 
-        debug("Enchanter: recipe created, ticks=" + ticks);
         return recipe;
     }
 
@@ -136,9 +97,45 @@ public class PotionAffixEnchanter extends AContainer {
         return book;
     }
 
-    private static void debug(String msg) {
-        if (MagicLoot3.getInstance() != null && MagicLoot3.isDebug()) {
-            MagicLoot3.getInstance().getLogger().log(Level.INFO, "[DEBUG] " + msg);
+    /** Equivalent to {@code InvUtils.fitAll(inv, items, slots)} — simulates pushes. */
+    private boolean fitsAll(BlockMenu menu, ItemStack[] items) {
+        org.bukkit.inventory.Inventory copy = org.bukkit.Bukkit.createInventory(
+                null, menu.toInventory().getSize());
+        copy.setContents(menu.toInventory().getContents());
+        for (ItemStack item : items) {
+            if (item == null) continue;
+            int remaining = item.getAmount();
+            for (int s : getOutputSlots()) {
+                ItemStack existing = copy.getItem(s);
+                if (existing == null || existing.getType().isAir()) {
+                    copy.setItem(s, item.clone());
+                    remaining = 0;
+                    break;
+                } else if (existing.isSimilar(item)
+                        && existing.getAmount() < existing.getMaxStackSize()) {
+                    int space = existing.getMaxStackSize() - existing.getAmount();
+                    if (space >= remaining) {
+                        existing.setAmount(existing.getAmount() + remaining);
+                        remaining = 0;
+                        break;
+                    } else {
+                        existing.setAmount(existing.getMaxStackSize());
+                        remaining -= space;
+                    }
+                }
+            }
+            if (remaining > 0) return false;
         }
+        return true;
+    }
+
+    /** Mirrors {@code AutoEnchanter.isEnchantable()}. */
+    private boolean isEnchantable(ItemStack item) {
+        if (item != null && item.getType() != Material.ENCHANTED_BOOK
+                && !item.getType().isAir()) {
+            SlimefunItem sfItem = SlimefunItem.getByItem(item);
+            return sfItem == null || sfItem.isEnchantable();
+        }
+        return false;
     }
 }

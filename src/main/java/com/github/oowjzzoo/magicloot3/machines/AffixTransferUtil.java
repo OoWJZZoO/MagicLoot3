@@ -93,7 +93,11 @@ public final class AffixTransferUtil {
             merged.put(e.effectKey + ":" + (e.positive ? "+" : "-"), e);
         }
         for (EffectEntry e : newEffects) {
-            merged.put(e.effectKey + ":" + (e.positive ? "+" : "-"), e);
+            String key = e.effectKey + ":" + (e.positive ? "+" : "-");
+            EffectEntry existing = merged.get(key);
+            if (existing == null || e.level > existing.level) {
+                merged.put(key, e);
+            }
         }
 
         // Write merged PDC
