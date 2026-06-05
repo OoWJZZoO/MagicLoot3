@@ -46,7 +46,11 @@ public class PotionAffixDisenchanter extends AContainer {
                         if (p != null) drops.add(p.clone());
                     }
                 }
-                me.mrCookieSlime.Slimefun.api.BlockStorage.clearBlockInfo(e.getBlock());
+                // Delay clear so SF's internal cleanup doesn't re-save operation state over it
+                Location loc = e.getBlock().getLocation().clone();
+                org.bukkit.Bukkit.getScheduler().runTask(
+                        MagicLoot3.getInstance(),
+                        () -> me.mrCookieSlime.Slimefun.api.BlockStorage.clearBlockInfo(loc));
             }
         });
     }
