@@ -131,10 +131,7 @@ public class PotionAffixEnchanter extends AContainer {
         book = AffixTransferUtil.stripAffixes(book);
         if (book.getItemMeta() instanceof EnchantmentStorageMeta esm
                 && esm.getStoredEnchants().isEmpty()) {
-            ItemStack normalBook = new ItemStack(Material.BOOK);
-            ItemMeta meta = esm;
-            if (meta.hasLore()) normalBook.setItemMeta(meta);
-            return normalBook;
+            return new ItemStack(Material.BOOK);
         }
         return book;
     }
