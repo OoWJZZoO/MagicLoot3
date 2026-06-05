@@ -167,6 +167,12 @@ log:
   structure_not_found: "未找到结构：{0}"
   unknown_command: "未知指令。用法：/magicloot version|debug|reload|generate <名称>|language <zh|en>"
 
+rune:
+  past:
+    no_target: "&c附近没有可转换的装备。请确认：装备是原版物品，无附魔、无药水词缀、非粘液科技物品。"
+    stacked: "&c只能转换单个物品，不能是堆叠的物品。"
+    success: "&a符文已被消耗，装备已变为未鉴定状态！"
+
 cmd:
   header: "&6MagicLoot3 &7v{0} (build #{1})"
   usage: "&7/magicloot version|debug|reload|generate <名称>|language <zh|en>"

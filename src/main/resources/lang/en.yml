@@ -179,6 +179,12 @@ log:
   structure_not_found: "Structure not found: {0}"
   unknown_command: "Unknown. Use: /magicloot version|debug|reload|generate <name>|language <zh|en>"
 
+rune:
+  past:
+    no_target: "&cNo compatible equipment nearby. Requirements: vanilla item, no enchantments, no potion affixes, not a Slimefun item."
+    stacked: "&cCan only convert single items, not stacks."
+    success: "&aRune consumed, equipment is now unidentified!"
+
 cmd:
   header: "&6MagicLoot3 &7v{0} (build #{1})"
   usage: "&7/magicloot version|debug|reload|generate <name>|language <zh|en>"

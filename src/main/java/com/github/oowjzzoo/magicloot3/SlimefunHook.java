@@ -23,6 +23,7 @@ import io.github.thebusybiscuit.slimefun4.core.attributes.MachineType;
 import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
 import io.github.thebusybiscuit.slimefun4.utils.LoreBuilder;
 
+import com.github.oowjzzoo.magicloot3.items.PastRune;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixDisenchanter;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixEnchanter;
 
@@ -162,7 +163,7 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack(Material.WAXED_WEATHERED_COPPER_BULB),
                 new ItemStack(Material.ANCIENT_DEBRIS)};
 
-        new SlimefunItem(itemGroup, runeStack, RecipeType.ANCIENT_ALTAR, runeRecipe,
+        new PastRune(itemGroup, runeStack, RecipeType.ANCIENT_ALTAR, runeRecipe,
                 new SlimefunItemStack(runeStack, 3))
                 .register(this);
 
