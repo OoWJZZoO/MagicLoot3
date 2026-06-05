@@ -1,8 +1,10 @@
 package com.github.oowjzzoo.magicloot3.machines;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -30,6 +32,7 @@ public class PotionAffixDisenchanter extends AContainer {
     private static final int NORMAL_TICKS = 60;
     private static final int DEBUG_TICKS = 1;
     private static final Map<Location, ItemStack[]> pendingInputs = new HashMap<>();
+    private static final Set<Location> brokenLocations = new HashSet<>();
 
     public PotionAffixDisenchanter(ItemGroup itemGroup, SlimefunItemStack item,
                                     RecipeType recipeType, ItemStack[] recipe) {
@@ -47,15 +50,10 @@ public class PotionAffixDisenchanter extends AContainer {
                     for (ItemStack p : pending) {
                         if (p != null) drops.add(p.clone());
                     }
-                    log("BreakHandler fired: dropped " + pending[0].getType() + " + " + (pending[1] != null ? pending[1].getType() : "null"));
+                    log("BreakHandler: dropping " + pending[0].getType()
+                            + " + " + (pending[1] != null ? pending[1].getType() : "null"));
+                    brokenLocations.add(loc);
                 }
-                // Clear BlockStorage after a 1-tick delay so SF internal cleanup doesn't overwrite
-                org.bukkit.Bukkit.getScheduler().runTask(
-                        MagicLoot3.getInstance(),
-                        () -> {
-                            BlockStorage.clearBlockInfo(loc);
-                            log("Delayed clear: BlockStorage cleared for " + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ());
-                        });
             }
         });
     }
@@ -79,7 +77,11 @@ public class PotionAffixDisenchanter extends AContainer {
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
         Location loc = menu.getLocation();
 
-        // Clear any stale pending inputs (previous operation completed)
+        if (brokenLocations.remove(loc)) {
+            BlockStorage.clearBlockInfo(loc);
+            log("findNextRecipe: cleared stale operation at re-placed machine");
+        }
+
         pendingInputs.remove(loc);
 
         ItemStack s19 = menu.getItemInSlot(getInputSlots()[0]);
@@ -126,7 +128,6 @@ public class PotionAffixDisenchanter extends AContainer {
             menu.consumeItem(slot);
         }
 
-        log("findNextRecipe: recipe created, ticks=" + ticks);
         return recipe;
     }
 

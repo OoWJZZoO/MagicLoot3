@@ -1,8 +1,10 @@
 package com.github.oowjzzoo.magicloot3.machines;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,8 +24,8 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.AContainer;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
+import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 
 public class PotionAffixEnchanter extends AContainer {
@@ -31,6 +33,8 @@ public class PotionAffixEnchanter extends AContainer {
     private static final int NORMAL_TICKS = 60;
     private static final int DEBUG_TICKS = 1;
     private static final Map<Location, ItemStack[]> pendingInputs = new HashMap<>();
+    // Locations where a machine was broken mid-operation; BlockStorage stale ops must be cleared
+    private static final Set<Location> brokenLocations = new HashSet<>();
 
     public PotionAffixEnchanter(ItemGroup itemGroup, SlimefunItemStack item,
                                  RecipeType recipeType, ItemStack[] recipe) {
@@ -48,14 +52,11 @@ public class PotionAffixEnchanter extends AContainer {
                     for (ItemStack p : pending) {
                         if (p != null) drops.add(p.clone());
                     }
-                    log("BreakHandler: dropping " + pending[0].getType() + " + " + (pending[1] != null ? pending[1].getType() : "null"));
+                    log("BreakHandler: dropping " + pending[0].getType()
+                            + " + " + (pending[1] != null ? pending[1].getType() : "null"));
+                    // Mark for cleanup — a stale operation will be stored in BlockStorage
+                    brokenLocations.add(loc);
                 }
-                org.bukkit.Bukkit.getScheduler().runTask(
-                        MagicLoot3.getInstance(),
-                        () -> {
-                            BlockStorage.clearBlockInfo(loc);
-                            log("Delayed clear: BlockStorage cleared for " + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ());
-                        });
             }
         });
     }
@@ -79,7 +80,12 @@ public class PotionAffixEnchanter extends AContainer {
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
         Location loc = menu.getLocation();
 
-        // Clear any stale pending inputs (previous operation completed)
+        // Clean up stale operation state from a previously broken machine at this location
+        if (brokenLocations.remove(loc)) {
+            BlockStorage.clearBlockInfo(loc);
+            log("findNextRecipe: cleared stale operation at re-placed machine");
+        }
+
         pendingInputs.remove(loc);
 
         ItemStack s19 = menu.getItemInSlot(getInputSlots()[0]);
@@ -111,7 +117,6 @@ public class PotionAffixEnchanter extends AContainer {
 
         ItemStack outputEquipment = AffixTransferUtil.appendAffixes(equipment.clone(), effects);
 
-        // Apply highest tier: if the affix book has a higher tier than the equipment, upgrade
         LootTier equipTier = LootTier.get(equipment);
         LootTier bookTier = LootTier.get(affixBook);
         outputEquipment = AffixTransferUtil.applyHighestTier(outputEquipment, equipTier, bookTier);
@@ -134,12 +139,7 @@ public class PotionAffixEnchanter extends AContainer {
             menu.consumeItem(slot);
         }
 
-        log("findNextRecipe: recipe created, ticks=" + ticks);
         return recipe;
-    }
-
-    private static void log(String msg) {
-        MagicLoot3.getInstance().getLogger().info("[Enchanter] " + msg);
     }
 
     private ItemStack buildResultBook(ItemStack book) {
@@ -152,5 +152,9 @@ public class PotionAffixEnchanter extends AContainer {
             return normalBook;
         }
         return book;
+    }
+
+    private static void log(String msg) {
+        MagicLoot3.getInstance().getLogger().info("[Enchanter] " + msg);
     }
 }
