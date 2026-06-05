@@ -3,9 +3,13 @@ package com.github.oowjzzoo.magicloot3;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.FireworkEffectMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -140,10 +144,16 @@ final class SlimefunHook implements SlimefunAddon {
                         "", "§7Past memories, you truly don't remember?",
                         "§7Past memories? Past...", "§7Are you talking about the past..."};
 
-        // Don't set FireworkEffect — the NBT-driven "Small Ball / Custom" text
-        // cannot be suppressed by ItemMeta lore. SF avoids this via texture packs.
+        // SF's ColoredFireworkStar: sets effect color + HIDE_ADDITIONAL_TOOLTIP flag
+        // to suppress the client-side "Small Ball / Custom" text from Firework NBT.
+        ItemStack runeBase = new ItemStack(Material.FIREWORK_STAR);
+        FireworkEffectMeta fwMeta = (FireworkEffectMeta) runeBase.getItemMeta();
+        fwMeta.setEffect(FireworkEffect.builder()
+                .with(FireworkEffect.Type.BURST).withColor(Color.YELLOW).build());
+        fwMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+        runeBase.setItemMeta(fwMeta);
         SlimefunItemStack runeStack = new SlimefunItemStack(
-                "ANCIENT_RUNE_PAST", Material.FIREWORK_STAR, runeName, runeLore);
+                "ANCIENT_RUNE_PAST", runeBase, runeName, runeLore);
 
         ItemStack[] runeRecipe = {
                 new ItemStack(Material.ANCIENT_DEBRIS),
