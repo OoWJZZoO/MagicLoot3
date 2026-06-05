@@ -58,7 +58,7 @@ public class LootListener implements Listener {
         e.setCancelled(true);
         if (e.getCurrentItem() == null) return;
         if (e.getClickedInventory() != e.getView().getTopInventory()) return;
-        LostLibrarianGUI.handleClick(player, e.getRawSlot(), false);
+        LostLibrarianGUI.handleClick(player, e.getRawSlot());
     }
 
     // --- Ruin generation ---

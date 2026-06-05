@@ -15,7 +15,7 @@ public final class LostLibrarian {
 
         if (tier == LootTier.UNKNOWN) {
             player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1F, 1F);
-            player.openInventory(LostLibrarianGUI.create(player));
+            player.openInventory(LostLibrarianGUI.create(player, isDesk));
         } else {
             player.sendMessage(isDesk ? Messages.get("desk.cannot_examine") : Messages.get("npc.cannot_examine"));
         }

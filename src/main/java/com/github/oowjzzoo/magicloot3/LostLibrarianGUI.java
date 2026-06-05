@@ -1,7 +1,10 @@
 package com.github.oowjzzoo.magicloot3;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -14,13 +17,16 @@ import com.github.oowjzzoo.magicloot3.util.SkullCreator;
 
 public final class LostLibrarianGUI {
 
+    private static final Map<UUID, Boolean> deskState = new HashMap<>();
+
     public static String getTitle() {
         return Messages.get("gui.title");
     }
 
     private LostLibrarianGUI() {}
 
-    public static Inventory create(Player player) {
+    public static Inventory create(Player player, boolean isDesk) {
+        deskState.put(player.getUniqueId(), isDesk);
         String title = getTitle();
         Inventory inv = Bukkit.createInventory(null, 18, title);
 
@@ -65,7 +71,8 @@ public final class LostLibrarianGUI {
         return inv;
     }
 
-    public static boolean handleClick(Player player, int slot, boolean isDesk) {
+    public static boolean handleClick(Player player, int slot) {
+        boolean isDesk = deskState.getOrDefault(player.getUniqueId(), false);
         switch (slot) {
             case 4:  LostLibrarian.examineTier(player, null, isDesk); break;
             case 11: LostLibrarian.examineTier(player, LootTier.COMMON, isDesk); break;
