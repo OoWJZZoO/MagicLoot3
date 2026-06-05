@@ -62,9 +62,7 @@ public class PotionAffixDisenchanter extends AContainer {
         }
         hint.setItemMeta(hm);
         preset.addItem(4, hint, ChestMenuUtils.getEmptyClickHandler());
-
-        preset.addItem(FUEL_SLOT, ChestMenuUtils.getInputSlotTexture(),
-                ChestMenuUtils.getEmptyClickHandler());
+        preset.addItem(FUEL_SLOT, null); // clear default border preset, make it a usable slot
     }
 
     @Override
