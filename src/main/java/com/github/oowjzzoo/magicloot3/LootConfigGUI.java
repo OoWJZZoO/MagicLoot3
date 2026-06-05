@@ -171,12 +171,18 @@ public final class LootConfigGUI {
             return false;
         });
 
+        // Compute total weight across all slimefun items for probability display
+        int totalWeight = 0;
+        for (int w : cache.values()) {
+            if (w > 0) totalWeight += w;
+        }
+
         int start = MAX_ITEMS * (cur - 1);
         int slot = 9;
         for (int i = start; i < items.size() && slot < 45; i++, slot++) {
             SlimefunItem sfItem = items.get(i);
             int weight = cache.getOrDefault(sfItem.getId(), 0);
-            menu.addItem(slot, buildDisplayItem(sfItem, weight));
+            menu.addItem(slot, buildDisplayItem(sfItem, weight, totalWeight));
             final int itemPage = cur;
             menu.addMenuClickHandler(slot, makeHandler(player, sfItem, group, itemPage));
         }
@@ -299,7 +305,7 @@ public final class LootConfigGUI {
 
     // ── Display ──
 
-    private static ItemStack buildDisplayItem(SlimefunItem sfItem, int weight) {
+    private static ItemStack buildDisplayItem(SlimefunItem sfItem, int weight, int totalWeight) {
         ItemStack original = sfItem.getItem().clone();
         ItemMeta meta = original.getItemMeta();
         if (meta == null) return original;
@@ -310,8 +316,15 @@ public final class LootConfigGUI {
         if (weight == -1) {
             lore.add(ChatColor.translateAlternateColorCodes('&', m("multiblock")));
         } else {
-            lore.add(ChatColor.translateAlternateColorCodes('&',
-                    weight > 0 ? m("enabled", String.valueOf(weight)) : m("disabled")));
+            if (weight > 0) {
+                String pct = totalWeight > 0
+                        ? String.format("%.1f%%", 100.0 * weight / totalWeight)
+                        : "0%";
+                lore.add(ChatColor.translateAlternateColorCodes('&',
+                        m("enabled", String.valueOf(weight), pct)));
+            } else {
+                lore.add(ChatColor.translateAlternateColorCodes('&', m("disabled")));
+            }
             lore.add(ChatColor.translateAlternateColorCodes('&', m("help")));
         }
         meta.setLore(lore);

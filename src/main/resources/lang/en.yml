@@ -194,7 +194,7 @@ gui:
     title: "Loot Config"
     categories: "Categories"
     back: "&7← Back to Categories"
-    enabled: "&a✔ Enabled (weight: {0})"
+    enabled: "&a✔ Enabled (weight: {0}, probability: {1})"
     disabled: "&c✘ Disabled"
     multiblock: "&8🚫 Multi-block, cannot be looted"
     help: "&7Left: enable(100) | Right: disable(0) | Shift+click: custom"
