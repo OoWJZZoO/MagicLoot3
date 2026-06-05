@@ -177,6 +177,21 @@ machine:
     - "&f请在下面的格子里放入 &b&l探索的时光"
     - "&f每次使用机器都有40%的概率消耗一个"
 
+gui:
+  loot_config:
+    title: "战利品配置"
+    categories: "分类"
+    back: "&7← 返回分类"
+    enabled: "&a✔ 已启用（权重: {0}）"
+    disabled: "&c✘ 已禁用"
+    help: "&7左键启用(10) | 右键禁用(0) | Shift+点击自定义"
+    input_prompt: "&e请在聊天栏输入 {0} &e的权重 (1-999999)："
+    invalid_number: "&c无效数字。配置已保存。"
+    invalid_range: "&c权重必须在 1-999999 之间。配置已保存。"
+    input_timeout: "&c输入超时，配置已保存。待设置的物品未修改。"
+    saved: "&a战利品配置已保存并重载。"
+    set_weight: "&a已将 {0} &a设为 {1}。"
+
 cmd:
   header: "&6MagicLoot3 &7v{0} (build #{1})"
   usage: "&7/magicloot version|debug|reload|generate <名称>|language <zh|en>|loot_config"
