@@ -214,6 +214,7 @@ public final class LootConfigGUI {
             Map<String, Integer> cache = caches.get(pl.getUniqueId());
             if (cache == null) return false;
             String id = sfItem.getId();
+            if (cache.getOrDefault(id, 0) == -1) return false;
             if (action.isShiftClicked()) {
                 startPendingInput(pl, id, group, page);
                 pl.closeInventory();
@@ -306,9 +307,13 @@ public final class LootConfigGUI {
         List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
         lore.add("");
         lore.add(ChatColor.DARK_GRAY + "───────────────");
-        lore.add(ChatColor.translateAlternateColorCodes('&',
-                weight > 0 ? m("enabled", String.valueOf(weight)) : m("disabled")));
-        lore.add(ChatColor.translateAlternateColorCodes('&', m("help")));
+        if (weight == -1) {
+            lore.add(ChatColor.translateAlternateColorCodes('&', m("multiblock")));
+        } else {
+            lore.add(ChatColor.translateAlternateColorCodes('&',
+                    weight > 0 ? m("enabled", String.valueOf(weight)) : m("disabled")));
+            lore.add(ChatColor.translateAlternateColorCodes('&', m("help")));
+        }
         meta.setLore(lore);
         original.setItemMeta(meta);
         return original;

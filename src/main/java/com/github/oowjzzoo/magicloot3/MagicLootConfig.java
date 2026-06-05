@@ -206,7 +206,10 @@ public class MagicLootConfig {
                 int w = sfSec.getInt(key, 0);
                 if (w <= 0) continue;
                 SlimefunItem sfItem = SlimefunItem.getById(key);
-                if (sfItem != null && !(sfItem instanceof MultiBlockMachine)) {
+                if (sfItem instanceof MultiBlockMachine) {
+                    configItems.getYaml().set("slimefun." + key, -1);
+                    configItems.save();
+                } else if (sfItem != null) {
                     ItemStack item = sfItem.getItem();
                     for (int i = 0; i < w; i++) ItemManager.weightedSlimefun.add(item);
                 }
