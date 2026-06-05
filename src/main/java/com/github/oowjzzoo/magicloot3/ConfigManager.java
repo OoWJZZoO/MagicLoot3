@@ -2,7 +2,7 @@ package com.github.oowjzzoo.magicloot3;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -50,7 +50,7 @@ public class ConfigManager {
     public YamlConfiguration getYaml() { return yaml; }
 
     public void setHeader(String header) {
-        yaml.options().setHeader(Collections.singletonList(header));
+        yaml.options().setHeader(Arrays.asList(header.split("\n")));
     }
 
     public void save() {
