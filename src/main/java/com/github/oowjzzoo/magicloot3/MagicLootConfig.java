@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import io.github.thebusybiscuit.slimefun4.core.multiblocks.MultiBlockMachine;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -72,7 +73,7 @@ public class MagicLootConfig {
             if (m.isBlock()) continue;
             for (Enchantment e : Enchantment.values()) {
                 if (e.canEnchantItem(new ItemStack(m)) && !m.toString().contains("BOOK")) {
-                    configItems.setDefaultValue("tools." + m.toString(), 10);
+                    configItems.setDefaultValue("tools." + m.toString(), 100);
                     break;
                 }
             }
@@ -86,12 +87,12 @@ public class MagicLootConfig {
         }
         // Treasure pool: default items
         for (String t : new String[]{"DIAMOND", "GOLD_INGOT", "IRON_INGOT", "EMERALD", "QUARTZ"}) {
-            configItems.setDefaultValue("treasure." + t, 10);
+            configItems.setDefaultValue("treasure." + t, 100);
         }
         // Slimefun pool
         if (Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
             for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
-                configItems.setDefaultValue("slimefun." + item.getId(), 10);
+                configItems.setDefaultValue("slimefun." + item.getId(), 100);
             }
         }
 
@@ -205,7 +206,7 @@ public class MagicLootConfig {
                 int w = sfSec.getInt(key, 0);
                 if (w <= 0) continue;
                 SlimefunItem sfItem = SlimefunItem.getById(key);
-                if (sfItem != null) {
+                if (sfItem != null && !(sfItem instanceof MultiBlockMachine)) {
                     ItemStack item = sfItem.getItem();
                     for (int i = 0; i < w; i++) ItemManager.weightedSlimefun.add(item);
                 }

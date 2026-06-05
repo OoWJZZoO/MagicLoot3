@@ -68,7 +68,7 @@ public final class LootConfigGUI {
         }
         if (Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
             for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
-                map.putIfAbsent(item.getId(), 10);
+                map.putIfAbsent(item.getId(), 100);
             }
         }
         return map;
@@ -219,7 +219,7 @@ public final class LootConfigGUI {
                 pl.closeInventory();
                 return false;
             }
-            cache.put(id, action.isRightClicked() ? 0 : 10);
+            cache.put(id, action.isRightClicked() ? 0 : 100);
             switching.add(pl.getUniqueId());
             openCategory(pl, group, page);
             return false;
