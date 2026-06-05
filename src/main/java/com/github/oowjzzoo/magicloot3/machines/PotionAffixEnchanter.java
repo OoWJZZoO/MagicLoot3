@@ -22,6 +22,7 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.AContainer;
+import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 
@@ -41,16 +42,20 @@ public class PotionAffixEnchanter extends AContainer {
         addItemHandler(new BlockBreakHandler(false, false) {
             @Override
             public void onPlayerBreak(BlockBreakEvent e, ItemStack tool, List<ItemStack> drops) {
-                ItemStack[] pending = pendingInputs.remove(e.getBlock().getLocation());
+                Location loc = e.getBlock().getLocation().clone();
+                ItemStack[] pending = pendingInputs.remove(loc);
                 if (pending != null) {
                     for (ItemStack p : pending) {
                         if (p != null) drops.add(p.clone());
                     }
+                    log("BreakHandler: dropping " + pending[0].getType() + " + " + (pending[1] != null ? pending[1].getType() : "null"));
                 }
-                Location loc = e.getBlock().getLocation().clone();
                 org.bukkit.Bukkit.getScheduler().runTask(
                         MagicLoot3.getInstance(),
-                        () -> me.mrCookieSlime.Slimefun.api.BlockStorage.clearBlockInfo(loc));
+                        () -> {
+                            BlockStorage.clearBlockInfo(loc);
+                            log("Delayed clear: BlockStorage cleared for " + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ());
+                        });
             }
         });
     }
@@ -129,7 +134,12 @@ public class PotionAffixEnchanter extends AContainer {
             menu.consumeItem(slot);
         }
 
+        log("findNextRecipe: recipe created, ticks=" + ticks);
         return recipe;
+    }
+
+    private static void log(String msg) {
+        MagicLoot3.getInstance().getLogger().info("[Enchanter] " + msg);
     }
 
     private ItemStack buildResultBook(ItemStack book) {
