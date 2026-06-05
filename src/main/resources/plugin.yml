@@ -11,7 +11,8 @@ website: https://github.com/OoWJZZoO/MagicLoot3
 commands:
   magicloot:
     description: MagicLoot3 commands
-    usage: /magicloot <version|debug|reload|generate <name>|language <zh|en>>
+    aliases: [ml]
+    usage: /ml <version|debug|reload|generate <name>|language <zh|en>|loot_config>
 
 permissions:
   magicloot3.admin:

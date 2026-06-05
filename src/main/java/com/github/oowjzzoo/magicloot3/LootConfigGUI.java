@@ -339,12 +339,12 @@ public final class LootConfigGUI {
     private static List<ItemGroup> getVisibleGroups(Player player) {
         List<ItemGroup> groups = new ArrayList<>();
         for (ItemGroup group : Slimefun.getRegistry().getAllItemGroups()) {
-            if (group.getItems().isEmpty()) continue;
             if (group instanceof FlexItemGroup flex) {
-                if (flex.isVisible(player, null, io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode.CHEAT_MODE)) {
+                if (flex.isVisible(player, null,
+                        io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode.CHEAT_MODE)) {
                     groups.add(group);
                 }
-            } else if (!group.isHidden(player)) {
+            } else if (!group.isHidden(player) && !group.getItems().isEmpty()) {
                 groups.add(group);
             }
         }
