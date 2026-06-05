@@ -196,7 +196,7 @@ gui:
     back: "&7← Back to Categories"
     enabled: "&a✔ Enabled (weight: {0})"
     disabled: "&c✘ Disabled"
-    help: "&7Left: enable(10) | Right: disable(0) | Shift+click: custom"
+    help: "&7Left: enable(100) | Right: disable(0) | Shift+click: custom"
     input_prompt: "&eEnter weight for {0} &ein chat (1-999999):"
     invalid_number: "&cInvalid number. Config saved."
     invalid_range: "&cWeight must be 1-999999. Config saved."
