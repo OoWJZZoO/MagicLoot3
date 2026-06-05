@@ -9,6 +9,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.SoundCategory;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -107,6 +108,12 @@ public class PastRune extends SimpleSlimefunItem<ItemDropHandler> {
         if (SlimefunItem.getByItem(item) != null) return false;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return false;
+        // Must be enchantable (excludes sand, planks, etc.)
+        boolean enchantable = false;
+        for (Enchantment e : Enchantment.values()) {
+            if (e.canEnchantItem(item)) { enchantable = true; break; }
+        }
+        if (!enchantable) return false;
         // No vanilla enchantments
         if (meta.hasEnchants()) return false;
         // No potion affix PDC
@@ -124,8 +131,9 @@ public class PastRune extends SimpleSlimefunItem<ItemDropHandler> {
 
         meta.getPersistentDataContainer().set(ItemKeys.TIER,
                 PersistentDataType.STRING, "UNKNOWN");
+        // Always use English garbled text — Chinese characters don't obfuscate properly
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
-                Messages.raw("unanalyzed_name")));
+                "&7&kMEH WANNA BE EXAMINED"));
 
         java.util.List<String> lore = meta.hasLore() ? new java.util.ArrayList<>(meta.getLore()) : new java.util.ArrayList<>();
         // Remove any existing tier lore line before appending
