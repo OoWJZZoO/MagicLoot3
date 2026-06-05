@@ -1,6 +1,7 @@
 package com.github.oowjzzoo.magicloot3;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -43,8 +44,21 @@ public class ItemManager {
     public static Map<String, PotionEffectType> potionEffectMap = new HashMap<>();
     public static Map<String, String> effectNames = new HashMap<>();
     public static final List<Material> weightedTools = new ArrayList<>();
+    static int[] weightedToolsCum = {};
+    static int weightedToolsTotal = 0;
     public static final List<Material> weightedTreasure = new ArrayList<>();
+    static int[] weightedTreasureCum = {};
+    static int weightedTreasureTotal = 0;
     public static final List<ItemStack> weightedSlimefun = new ArrayList<>();
+    static int[] weightedSlimefunCum = {};
+    static int weightedSlimefunTotal = 0;
+
+    /** Select an item by cumulative-weight binary search. O(log N). */
+    static <T> T pickWeighted(List<T> items, int[] cum, int total) {
+        if (total <= 0 || items.isEmpty()) return null;
+        int idx = Arrays.binarySearch(cum, ThreadLocalRandom.current().nextInt(total));
+        return items.get(idx < 0 ? -idx - 1 : idx + 1);
+    }
 
     public static ItemStack createItem(LootType type) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
@@ -64,8 +78,8 @@ public class ItemManager {
                     item = applyTier(item, LootTier.getRandom());
                 }
                 case TREASURE -> {
-                    if (!weightedTreasure.isEmpty()) {
-                        item.setType(weightedTreasure.get(random.nextInt(weightedTreasure.size())));
+                    if (weightedTreasureTotal > 0) {
+                        item.setType(pickWeighted(weightedTreasure, weightedTreasureCum, weightedTreasureTotal));
                         var cfg = MagicLoot3.getInstance().getConfig();
                         int tMin = cfg.getInt("chest.treasure-stack.min", 2);
                         int tMax = cfg.getInt("chest.treasure-stack.max", 9);
@@ -93,20 +107,20 @@ public class ItemManager {
                     item.setItemMeta(meta);
                 }
                 case TOOL -> {
-                    if (weightedTools.isEmpty()) break;
+                    if (weightedToolsTotal <= 0) break;
                     if (random.nextInt(100) < 10) {
                         item.setType(Material.ARROW);
                         item.setAmount(4 + random.nextInt(20));
                     } else {
-                        item.setType(weightedTools.get(random.nextInt(weightedTools.size())));
+                        item.setType(pickWeighted(weightedTools, weightedToolsCum, weightedToolsTotal));
                         if (item.getType().getMaxDurability() == 0) break;
                         item = applyTier(item, LootTier.getRandom());
                         damageRandomPercent(item);
                     }
                 }
                 case SLIMEFUN -> {
-                    if (!weightedSlimefun.isEmpty()) {
-                        item = weightedSlimefun.get(random.nextInt(weightedSlimefun.size())).clone();
+                    if (weightedSlimefunTotal > 0) {
+                        item = pickWeighted(weightedSlimefun, weightedSlimefunCum, weightedSlimefunTotal).clone();
                         var cfg = MagicLoot3.getInstance().getConfig();
                         int sMin = cfg.getInt("chest.slimefun-stack.min", 2);
                         int sMax = cfg.getInt("chest.slimefun-stack.max", 6);
@@ -118,8 +132,8 @@ public class ItemManager {
                     }
                 }
                 case UNANALIZED -> {
-                    if (weightedTools.isEmpty()) break;
-                    item.setType(weightedTools.get(random.nextInt(weightedTools.size())));
+                    if (weightedToolsTotal <= 0) break;
+                    item.setType(pickWeighted(weightedTools, weightedToolsCum, weightedToolsTotal));
                     ItemMeta im = item.getItemMeta();
                     im.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&7&kMEH WANNA BE EXAMINED"));
                     List<String> lore = new ArrayList<>();

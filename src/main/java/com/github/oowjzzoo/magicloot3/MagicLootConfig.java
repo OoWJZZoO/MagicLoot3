@@ -177,30 +177,20 @@ public class MagicLootConfig {
 
         LootTier.loadWeights();
 
-        // Build weighted item pools from config sections
+        // Build weighted item pools with cumulative weights for O(log N) selection
         ItemManager.weightedTools.clear();
-        if (toolsSec != null) {
-            for (String key : toolsSec.getKeys(false)) {
-                int w = toolsSec.getInt(key, 0);
-                if (w <= 0) continue;
-                try {
-                    Material m = Material.valueOf(key);
-                    for (int i = 0; i < w; i++) ItemManager.weightedTools.add(m);
-                } catch (IllegalArgumentException ignored) {}
-            }
-        }
+        ItemManager.weightedToolsCum = buildMaterialCum(ItemManager.weightedTools, toolsSec);
+        ItemManager.weightedToolsTotal = ItemManager.weightedToolsCum.length > 0
+                ? ItemManager.weightedToolsCum[ItemManager.weightedToolsCum.length - 1] : 0;
+
         ItemManager.weightedTreasure.clear();
-        if (treasSec != null) {
-            for (String key : treasSec.getKeys(false)) {
-                int w = treasSec.getInt(key, 0);
-                if (w <= 0) continue;
-                try {
-                    Material m = Material.valueOf(key);
-                    for (int i = 0; i < w; i++) ItemManager.weightedTreasure.add(m);
-                } catch (IllegalArgumentException ignored) {}
-            }
-        }
+        ItemManager.weightedTreasureCum = buildMaterialCum(ItemManager.weightedTreasure, treasSec);
+        ItemManager.weightedTreasureTotal = ItemManager.weightedTreasureCum.length > 0
+                ? ItemManager.weightedTreasureCum[ItemManager.weightedTreasureCum.length - 1] : 0;
+
         ItemManager.weightedSlimefun.clear();
+        List<ItemStack> sfItems = new ArrayList<>();
+        List<Integer> sfWeights = new ArrayList<>();
         if (sfSec != null && Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
             for (String key : sfSec.getKeys(false)) {
                 int w = sfSec.getInt(key, 0);
@@ -210,11 +200,20 @@ public class MagicLootConfig {
                     configItems.getYaml().set("slimefun." + key, -1);
                     configItems.save();
                 } else if (sfItem != null) {
-                    ItemStack item = sfItem.getItem();
-                    for (int i = 0; i < w; i++) ItemManager.weightedSlimefun.add(item);
+                    sfItems.add(sfItem.getItem());
+                    sfWeights.add(w);
                 }
             }
         }
+        ItemManager.weightedSlimefun.addAll(sfItems);
+        int sfTotal = 0;
+        int[] sfCum = new int[sfWeights.size()];
+        for (int i = 0; i < sfWeights.size(); i++) {
+            sfTotal += sfWeights.get(i);
+            sfCum[i] = sfTotal;
+        }
+        ItemManager.weightedSlimefunCum = sfCum;
+        ItemManager.weightedSlimefunTotal = sfTotal;
     }
 
     // Getters for max levels (used by ItemManager)
@@ -234,6 +233,29 @@ public class MagicLootConfig {
                 if (in != null) java.nio.file.Files.copy(in, dest.toPath());
             } catch (IOException ignored) {}
         }
+    }
+
+    /**
+     * Build cumulative weight array from a config section for Material-based items.
+     * Each material with weight > 0 is added to {@code items}, and the cumulative
+     * weight per item is returned. Last entry = total weight.
+     */
+    private static int[] buildMaterialCum(List<Material> items,
+                                           org.bukkit.configuration.ConfigurationSection sec) {
+        if (sec == null) return new int[0];
+        List<Integer> cumList = new ArrayList<>();
+        int total = 0;
+        for (String key : sec.getKeys(false)) {
+            int w = sec.getInt(key, 0);
+            if (w <= 0) continue;
+            try {
+                Material m = Material.valueOf(key);
+                items.add(m);
+                total += w;
+                cumList.add(total);
+            } catch (IllegalArgumentException ignored) {}
+        }
+        return cumList.stream().mapToInt(i -> i).toArray();
     }
 
     // Helper: format effect name for display (e.g. "fire_resistance" -> "Fire Resistance")
