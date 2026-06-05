@@ -135,8 +135,8 @@ final class SlimefunHook implements SlimefunAddon {
         String[] runeLore = zh
                 ? new String[]{"", "§e把符文丢向你已经丢出的装备物品",
                         "§e该物品会变为 §4未鉴定 §e的乱码装备",
-                        "", "§7往日种种，你当真不记得了？",
-                        "§7往日种种？往日…", "§7你说的可是往日…"}
+                        "", "§7往日种种，你当真不记得了?",
+                        "§7往日种种? 往日...", "§7你说的可是往日..."}
                 : new String[]{"", "§eDrop this rune onto an equipment item",
                         "§eThe item will become §4Unidentified §ewith garbled name",
                         "", "§7Past memories, you truly don't remember?",
@@ -146,6 +146,7 @@ final class SlimefunHook implements SlimefunAddon {
         FireworkEffectMeta fwMeta = (FireworkEffectMeta) fireworkStar.getItemMeta();
         fwMeta.setEffect(FireworkEffect.builder().withColor(Color.YELLOW).build());
         fwMeta.setDisplayName("§7Ancient Rune §8§l[§e§lPast§8§l]");
+        fwMeta.setLore(new java.util.ArrayList<>()); // suppress "Small Ball / Custom" lore
         fireworkStar.setItemMeta(fwMeta);
         SlimefunItemStack runeStack = new SlimefunItemStack(
                 "ANCIENT_RUNE_PAST", fireworkStar, runeName, runeLore);
@@ -161,7 +162,8 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack(Material.WAXED_WEATHERED_COPPER_BULB),
                 new ItemStack(Material.ANCIENT_DEBRIS)};
 
-        new SlimefunItem(itemGroup, runeStack, RecipeType.ANCIENT_ALTAR, runeRecipe)
+        new SlimefunItem(itemGroup, runeStack, RecipeType.ANCIENT_ALTAR, runeRecipe,
+                new SlimefunItemStack(runeStack, 3))
                 .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));
