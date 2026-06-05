@@ -52,10 +52,7 @@ public class PotionAffixDisenchanter extends AContainer {
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
         ItemStack s19 = menu.getItemInSlot(getInputSlots()[0]);
         ItemStack s20 = menu.getItemInSlot(getInputSlots()[1]);
-        if (s19 == null || s20 == null) {
-            debug("Disenchanter: one or both input slots are empty");
-            return null;
-        }
+        if (s19 == null || s20 == null) return null;
 
         // Identify which slot holds equipment (has EFFECTS PDC) and which holds a plain BOOK
         ItemStack equipment;

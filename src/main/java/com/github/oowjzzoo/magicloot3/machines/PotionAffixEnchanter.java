@@ -53,10 +53,7 @@ public class PotionAffixEnchanter extends AContainer {
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
         ItemStack s19 = menu.getItemInSlot(getInputSlots()[0]);
         ItemStack s20 = menu.getItemInSlot(getInputSlots()[1]);
-        if (s19 == null || s20 == null) {
-            debug("Enchanter: one or both input slots are empty");
-            return null;
-        }
+        if (s19 == null || s20 == null) return null;
 
         // Identify which slot holds the affix book and which holds equipment.
         // An affix book is ENCHANTED_BOOK with EFFECTS PDC. Equipment is anything else.

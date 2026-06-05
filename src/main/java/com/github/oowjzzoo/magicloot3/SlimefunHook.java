@@ -107,7 +107,7 @@ final class SlimefunHook implements SlimefunAddon {
                         "§7into an enchanted book. Preserves all other data"};
 
         SlimefunItemStack disStack = new SlimefunItemStack(
-                "POTION_AFFIX_DISENCHANTER", Material.CHISELED_BOOKSHELF,
+                "POTION_AFFIX_DISENCHANTER", Material.NOTE_BLOCK,
                 disName, disLore);
 
         ItemStack[] disRecipe = {null, null, null,
@@ -127,7 +127,7 @@ final class SlimefunHook implements SlimefunAddon {
                         "§7onto equipment. Merges with existing affixes"};
 
         SlimefunItemStack enchStack = new SlimefunItemStack(
-                "POTION_AFFIX_ENCHANTER", Material.CHISELED_BOOKSHELF,
+                "POTION_AFFIX_ENCHANTER", Material.JUKEBOX,
                 enchName, enchLore);
 
         ItemStack[] enchRecipe = {null, null, null,
