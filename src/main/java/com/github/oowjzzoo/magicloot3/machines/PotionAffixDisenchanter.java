@@ -109,11 +109,24 @@ public class PotionAffixDisenchanter extends AContainer {
                     inv.replaceExistingItem(22, pane);
 
                     for (ItemStack output : op.getResults()) {
-                        ItemStack clone = output.clone();
-                        if (fitsAll(inv, new ItemStack[]{clone})) {
-                            inv.pushItem(clone, getOutputSlots());
-                        } else {
-                            b.getWorld().dropItemNaturally(b.getLocation(), clone);
+                        ItemStack remaining = output.clone();
+                        for (int slot : getOutputSlots()) {
+                            ItemStack existing = inv.getItemInSlot(slot);
+                            if (existing == null || existing.getType().isAir()) {
+                                inv.replaceExistingItem(slot, remaining.clone());
+                                remaining = null;
+                                break;
+                            } else if (existing.isSimilar(remaining)
+                                    && existing.getAmount() < existing.getMaxStackSize()) {
+                                int space = existing.getMaxStackSize() - existing.getAmount();
+                                int fit = Math.min(space, remaining.getAmount());
+                                existing.setAmount(existing.getAmount() + fit);
+                                remaining.setAmount(remaining.getAmount() - fit);
+                                if (remaining.getAmount() <= 0) { remaining = null; break; }
+                            }
+                        }
+                        if (remaining != null && remaining.getAmount() > 0) {
+                            b.getWorld().dropItemNaturally(b.getLocation(), remaining);
                         }
                     }
                     getMachineProcessor().endOperation(b);
