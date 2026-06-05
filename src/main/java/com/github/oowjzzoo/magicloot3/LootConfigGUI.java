@@ -203,7 +203,9 @@ public final class LootConfigGUI {
         menu.addMenuCloseHandler(pl -> {
             if (!switching.remove(pl.getUniqueId())) trySave(pl);
         });
+        plugin.getLogger().info("[LootConfig] opening menu for " + player.getName() + " title=" + title);
         menu.open(player);
+        plugin.getLogger().info("[LootConfig] menu.open returned");
     }
 
     // ── Click handler ──
@@ -261,10 +263,13 @@ public final class LootConfigGUI {
             if (pi == null) return;
             e.setCancelled(true);
             Bukkit.getScheduler().cancelTask(pi.taskId);
+            plugin.getLogger().info("[LootConfig] onChat async — scheduling runTask");
 
-            // Entire post-chat logic on main thread — matching dough's ChatInputListener pattern
             Bukkit.getScheduler().runTask(plugin, () -> {
                 Player player = e.getPlayer();
+                plugin.getLogger().info("[LootConfig] runTask START — player=" + player.getName()
+                    + " item=" + pi.itemId + " page=" + pi.page);
+
                 try {
                     int w = Integer.parseInt(ChatColor.stripColor(e.getMessage()).trim());
                     if (w < 1 || w > WEIGHT_MAX) {
@@ -273,6 +278,7 @@ public final class LootConfigGUI {
                         return;
                     }
                     Map<String, Integer> cache = caches.get(player.getUniqueId());
+                    plugin.getLogger().info("[LootConfig] cache=" + (cache != null ? cache.size() : "null"));
                     if (cache != null) cache.put(pi.itemId, w);
                     player.sendMessage(m("set_weight", sfName(pi.itemId), String.valueOf(w)));
                 } catch (NumberFormatException ex) {
@@ -282,7 +288,9 @@ public final class LootConfigGUI {
                 }
 
                 switching.add(player.getUniqueId());
+                plugin.getLogger().info("[LootConfig] calling openCategory...");
                 openCategory(player, pi.group, pi.page);
+                plugin.getLogger().info("[LootConfig] openCategory returned");
             });
         }
 
