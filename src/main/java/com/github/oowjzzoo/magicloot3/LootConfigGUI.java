@@ -92,9 +92,9 @@ public final class LootConfigGUI {
         Map<String, Integer> cache = caches.get(player.getUniqueId());
         if (cache == null) return;
 
-        List<ItemGroup> groups = getVisibleGroups(player);
-        int pages = Math.max(1, (groups.size() - 1) / MAX_ITEMS + 1);
-        if (page > pages) page = pages;
+        final List<ItemGroup> groups = getVisibleGroups(player);
+        final int pages = Math.max(1, (groups.size() - 1) / MAX_ITEMS + 1);
+        final int cur = Math.min(page, pages);
 
         ChestMenu menu = new ChestMenu(TITLE + " - 分类");
         menu.setEmptySlotsClickable(false);
@@ -106,12 +106,12 @@ public final class LootConfigGUI {
         // slot 1: empty (SF puts settings button here, we don't have one)
         menu.addItem(1, ChestMenuUtils.getBackground(), ChestMenuUtils.getEmptyClickHandler());
 
-        int start = MAX_ITEMS * (page - 1);
+        int start = MAX_ITEMS * (cur - 1);
         int slot = 9;
         for (int i = start; i < groups.size() && slot < 45; i++, slot++) {
             ItemGroup group = groups.get(i);
             menu.addItem(slot, group.getItem(player));
-            int idx = i;
+            final int idx = i;
             menu.addMenuClickHandler(slot, (pl, s, item, action) -> {
                 switching.add(pl.getUniqueId());
                 openCategory(pl, groups.get(idx), 1);
@@ -123,19 +123,19 @@ public final class LootConfigGUI {
         for (int i = 45; i < 54; i++) {
             menu.addItem(i, ChestMenuUtils.getBackground(), ChestMenuUtils.getEmptyClickHandler());
         }
-        if (page > 1) {
-            menu.addItem(46, ChestMenuUtils.getPreviousButton(player, page, pages));
+        if (cur > 1) {
+            menu.addItem(46, ChestMenuUtils.getPreviousButton(player, cur, pages));
             menu.addMenuClickHandler(46, (pl, s, it, action) -> {
                 switching.add(pl.getUniqueId());
-                openMainMenu(pl, page - 1);
+                openMainMenu(pl, cur - 1);
                 return false;
             });
         }
-        if (page < pages) {
-            menu.addItem(52, ChestMenuUtils.getNextButton(player, page, pages));
+        if (cur < pages) {
+            menu.addItem(52, ChestMenuUtils.getNextButton(player, cur, pages));
             menu.addMenuClickHandler(52, (pl, s, it, action) -> {
                 switching.add(pl.getUniqueId());
-                openMainMenu(pl, page + 1);
+                openMainMenu(pl, cur + 1);
                 return false;
             });
         }
@@ -154,10 +154,10 @@ public final class LootConfigGUI {
 
         if (group instanceof FlexItemGroup) return; // flex groups have custom UI
 
-        List<SlimefunItem> items = new ArrayList<>(group.getItems());
+        final List<SlimefunItem> items = new ArrayList<>(group.getItems());
         items.removeIf(i -> i.isDisabledIn(player.getWorld()));
-        int pages = Math.max(1, (items.size() - 1) / MAX_ITEMS + 1);
-        if (page > pages) page = pages;
+        final int pages = Math.max(1, (items.size() - 1) / MAX_ITEMS + 1);
+        final int cur = Math.min(page, pages);
 
         String title = TITLE + " - " + ChatColor.stripColor(group.getDisplayName(player));
         ChestMenu menu = new ChestMenu(title);
@@ -175,33 +175,34 @@ public final class LootConfigGUI {
             return false;
         });
 
-        int start = MAX_ITEMS * (page - 1);
+        int start = MAX_ITEMS * (cur - 1);
         int slot = 9;
         for (int i = start; i < items.size() && slot < 45; i++, slot++) {
             SlimefunItem sfItem = items.get(i);
             int weight = cache.getOrDefault(sfItem.getId(), 0);
             ItemStack display = buildDisplayItem(sfItem, weight);
             menu.addItem(slot, display);
-            menu.addMenuClickHandler(slot, makeHandler(player, sfItem, group, page));
+            final int itemPage = cur;
+            menu.addMenuClickHandler(slot, makeHandler(player, sfItem, group, itemPage));
         }
 
         // Footer — matching SF pagination
         for (int i = 45; i < 54; i++) {
             menu.addItem(i, ChestMenuUtils.getBackground(), ChestMenuUtils.getEmptyClickHandler());
         }
-        if (page > 1) {
-            menu.addItem(46, ChestMenuUtils.getPreviousButton(player, page, pages));
+        if (cur > 1) {
+            menu.addItem(46, ChestMenuUtils.getPreviousButton(player, cur, pages));
             menu.addMenuClickHandler(46, (pl, s, it, action) -> {
                 switching.add(pl.getUniqueId());
-                openCategory(pl, group, page - 1);
+                openCategory(pl, group, cur - 1);
                 return false;
             });
         }
-        if (page < pages) {
-            menu.addItem(52, ChestMenuUtils.getNextButton(player, page, pages));
+        if (cur < pages) {
+            menu.addItem(52, ChestMenuUtils.getNextButton(player, cur, pages));
             menu.addMenuClickHandler(52, (pl, s, it, action) -> {
                 switching.add(pl.getUniqueId());
-                openCategory(pl, group, page + 1);
+                openCategory(pl, group, cur + 1);
                 return false;
             });
         }
