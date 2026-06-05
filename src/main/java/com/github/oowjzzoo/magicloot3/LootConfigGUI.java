@@ -217,8 +217,8 @@ public final class LootConfigGUI {
             if (cache == null) return false;
             String id = sfItem.getId();
             if (action.isShiftClicked()) {
-                pl.closeInventory();
                 startPendingInput(pl, id, group, page);
+                pl.closeInventory();
                 return false;
             }
             cache.put(id, action.isRightClicked() ? 0 : 10);
