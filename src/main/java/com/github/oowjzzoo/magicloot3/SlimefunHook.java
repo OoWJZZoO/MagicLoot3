@@ -3,12 +3,9 @@ package com.github.oowjzzoo.magicloot3;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.FireworkEffectMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -105,7 +102,7 @@ final class SlimefunHook implements SlimefunAddon {
         });
         desk.register(this);
 
-        String[] machineLore = {LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
+        String[] machineLore = {"", LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
                 LoreBuilder.speed(3), LoreBuilder.powerPerSecond(128)};
 
         // Potion Affix Disenchanter
@@ -134,23 +131,19 @@ final class SlimefunHook implements SlimefunAddon {
         String runeName = zh ? "§7古代符文 §8§l[§e§l往日§8§l]"
                 : "§7Ancient Rune §8§l[§e§lPast§8§l]";
         String[] runeLore = zh
-                ? new String[]{"", "§e把符文丢向你已经丢出的装备物品",
+                ? new String[]{"§e把符文丢向你已经丢出的装备物品",
                         "§e该物品会变为 §4未鉴定 §e的乱码装备",
                         "", "§7往日种种，你当真不记得了?",
                         "§7往日种种? 往日...", "§7你说的可是往日..."}
-                : new String[]{"", "§eDrop this rune onto an equipment item",
+                : new String[]{"§eDrop this rune onto an equipment item",
                         "§eThe item will become §4Unidentified §ewith garbled name",
                         "", "§7Past memories, you truly don't remember?",
                         "§7Past memories? Past...", "§7Are you talking about the past..."};
 
-        ItemStack fireworkStar = new ItemStack(Material.FIREWORK_STAR);
-        FireworkEffectMeta fwMeta = (FireworkEffectMeta) fireworkStar.getItemMeta();
-        fwMeta.setEffect(FireworkEffect.builder().withColor(Color.YELLOW).build());
-        fwMeta.setDisplayName("§7Ancient Rune §8§l[§e§lPast§8§l]");
-        fwMeta.setLore(new java.util.ArrayList<>()); // suppress "Small Ball / Custom" lore
-        fireworkStar.setItemMeta(fwMeta);
+        // Don't set FireworkEffect — the NBT-driven "Small Ball / Custom" text
+        // cannot be suppressed by ItemMeta lore. SF avoids this via texture packs.
         SlimefunItemStack runeStack = new SlimefunItemStack(
-                "ANCIENT_RUNE_PAST", fireworkStar, runeName, runeLore);
+                "ANCIENT_RUNE_PAST", Material.FIREWORK_STAR, runeName, runeLore);
 
         ItemStack[] runeRecipe = {
                 new ItemStack(Material.ANCIENT_DEBRIS),
