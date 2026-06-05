@@ -1,9 +1,12 @@
 package com.github.oowjzzoo.magicloot3.machines;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
@@ -34,6 +37,7 @@ public class PotionAffixDisenchanter extends AContainer {
 
     private static final int FUEL_SLOT = 13;
     private static final String FUEL_ID = "TIME_OF_EXPLORATION";
+    private static final Map<Location, ItemStack[]> pendingInputs = new ConcurrentHashMap<>();
 
     private static final int[] BORDER = { 0,1,2,3,4,5,6,7,8, 31, 36,37,38,39,40,41,42,43,44 };
     private static final int[] BORDER_IN = { 9,10,11,12, 18,21, 27,28,29,30 };
@@ -68,6 +72,13 @@ public class PotionAffixDisenchanter extends AContainer {
                     inv.dropItems(b.getLocation(), new int[]{FUEL_SLOT});
                 }
                 getMachineProcessor().endOperation(b);
+
+                ItemStack[] pending = pendingInputs.remove(b.getLocation());
+                if (pending != null) {
+                    for (ItemStack p : pending) {
+                        if (p != null) b.getWorld().dropItemNaturally(b.getLocation(), p);
+                    }
+                }
             }
         };
     }
@@ -124,6 +135,7 @@ public class PotionAffixDisenchanter extends AContainer {
                                 });
                     }
                     getMachineProcessor().endOperation(b);
+                    pendingInputs.remove(b.getLocation());
                 }
             }
         } else {
@@ -172,6 +184,9 @@ public class PotionAffixDisenchanter extends AContainer {
                 new ItemStack[]{outputEquipment, outputBook});
 
         if (!fitsAll(menu, recipe.getOutput())) return null;
+
+        pendingInputs.put(menu.getLocation(), new ItemStack[]{
+                equipment.clone(), book.clone()});
 
         for (int inputSlot : getInputSlots()) {
             menu.consumeItem(inputSlot);
