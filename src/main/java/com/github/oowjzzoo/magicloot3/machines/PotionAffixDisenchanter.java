@@ -47,23 +47,29 @@ public class PotionAffixDisenchanter extends AContainer {
     @Override
     protected void registerDefaultRecipes() {}
 
+    private static final int[] BORDER = { 0,1,2,3,4,5,6,7,8, 31, 36,37,38,39,40,41,42,43,44 };
+    private static final int[] BORDER_IN = { 9,10,11,12, 18,21, 27,28,29,30 };
+    private static final int[] BORDER_OUT = { 14,15,16,17, 23,26, 32,33,34,35 };
+
     @Override
     protected void constructMenu(BlockMenuPreset preset) {
-        super.constructMenu(preset);
-
-        preset.addItem(FUEL_SLOT, null, ChestMenuUtils.getEmptyClickHandler());
+        var empty = ChestMenuUtils.getEmptyClickHandler();
+        for (int i : BORDER) preset.addItem(i, ChestMenuUtils.getBackground(), empty);
+        for (int i : BORDER_IN) preset.addItem(i, ChestMenuUtils.getInputSlotTexture(), empty);
+        for (int i : BORDER_OUT) preset.addItem(i, ChestMenuUtils.getOutputSlotTexture(), empty);
+        ItemStack bg = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemMeta bgm = bg.getItemMeta(); bgm.setDisplayName(" "); bg.setItemMeta(bgm);
+        preset.addItem(22, bg, empty);
 
         List<String> lines = Messages.getList("machine.fuel_slot_hint");
         String name = lines.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', lines.get(0));
         ItemStack hint = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
         ItemMeta hm = hint.getItemMeta();
         hm.setDisplayName(name);
-        if (lines.size() > 1) {
-            hm.setLore(java.util.Collections.singletonList(
-                    ChatColor.translateAlternateColorCodes('&', lines.get(1))));
-        }
+        if (lines.size() > 1) hm.setLore(java.util.Collections.singletonList(
+                ChatColor.translateAlternateColorCodes('&', lines.get(1))));
         hint.setItemMeta(hm);
-        preset.addItem(4, hint, ChestMenuUtils.getEmptyClickHandler());
+        preset.addItem(4, hint, empty);
     }
 
     @Override
