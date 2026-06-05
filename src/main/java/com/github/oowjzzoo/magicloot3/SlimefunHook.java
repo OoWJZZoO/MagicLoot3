@@ -180,10 +180,11 @@ final class SlimefunHook implements SlimefunAddon {
         ItemStack[] timeRecipe = {
                 runeStack, new ItemStack(Material.DRAGON_HEAD), runeStack,
                 new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
-                new ItemStack(Material.NETHER_STAR),
+                new ItemStack(Material.BEACON),
                 new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
                 runeStack, new ItemStack(Material.DRAGON_HEAD), runeStack};
-        new SlimefunItem(itemGroup, timeStack, RecipeType.ANCIENT_ALTAR, timeRecipe)
+        new SlimefunItem(itemGroup, timeStack, RecipeType.ANCIENT_ALTAR, timeRecipe,
+                new SlimefunItemStack(timeStack, 4))
                 .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));
