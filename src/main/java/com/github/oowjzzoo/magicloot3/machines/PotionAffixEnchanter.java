@@ -47,6 +47,7 @@ public class PotionAffixEnchanter extends AContainer {
                         if (p != null) drops.add(p.clone());
                     }
                 }
+                me.mrCookieSlime.Slimefun.api.BlockStorage.clearBlockInfo(e.getBlock());
             }
         });
     }
