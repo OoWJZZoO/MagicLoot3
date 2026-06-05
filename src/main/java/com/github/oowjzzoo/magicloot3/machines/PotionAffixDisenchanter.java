@@ -114,9 +114,14 @@ public class PotionAffixDisenchanter extends AContainer {
                             inv.pushItem(output.clone(), getOutputSlots());
                         }
                     } else {
-                        for (ItemStack output : results) {
-                            b.getWorld().dropItemNaturally(b.getLocation(), output.clone());
-                        }
+                        ItemStack[] drops = new ItemStack[results.length];
+                        for (int i = 0; i < results.length; i++) drops[i] = results[i].clone();
+                        org.bukkit.Bukkit.getScheduler().runTask(MagicLoot3.getInstance(),
+                                () -> {
+                                    for (ItemStack drop : drops) {
+                                        b.getWorld().dropItemNaturally(b.getLocation(), drop);
+                                    }
+                                });
                     }
                     getMachineProcessor().endOperation(b);
                 }
