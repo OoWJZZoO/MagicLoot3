@@ -179,7 +179,7 @@ machine:
 
 cmd:
   header: "&6MagicLoot3 &7v{0} (build #{1})"
-  usage: "&7/magicloot version|debug|reload|generate <名称>|language <zh|en>"
+  usage: "&7/magicloot version|debug|reload|generate <名称>|language <zh|en>|loot_config"
   struct_mode: "&7结构模式：&avanilla (StructureManager)"
   debug_on: "&6MagicLoot3 调试模式：&a开"
   debug_off: "&6MagicLoot3 调试模式：&c关"
