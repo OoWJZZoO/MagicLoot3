@@ -108,25 +108,14 @@ public class PotionAffixDisenchanter extends AContainer {
                     ItemMeta pm = pane.getItemMeta(); pm.setDisplayName(" "); pane.setItemMeta(pm);
                     inv.replaceExistingItem(22, pane);
 
-                    for (ItemStack output : op.getResults()) {
-                        ItemStack remaining = output.clone();
-                        for (int slot : getOutputSlots()) {
-                            ItemStack existing = inv.getItemInSlot(slot);
-                            if (existing == null || existing.getType().isAir()) {
-                                inv.replaceExistingItem(slot, remaining.clone());
-                                remaining = null;
-                                break;
-                            } else if (existing.isSimilar(remaining)
-                                    && existing.getAmount() < existing.getMaxStackSize()) {
-                                int space = existing.getMaxStackSize() - existing.getAmount();
-                                int fit = Math.min(space, remaining.getAmount());
-                                existing.setAmount(existing.getAmount() + fit);
-                                remaining.setAmount(remaining.getAmount() - fit);
-                                if (remaining.getAmount() <= 0) { remaining = null; break; }
-                            }
+                    ItemStack[] results = op.getResults();
+                    if (fitsAll(inv, results)) {
+                        for (ItemStack output : results) {
+                            inv.pushItem(output.clone(), getOutputSlots());
                         }
-                        if (remaining != null && remaining.getAmount() > 0) {
-                            b.getWorld().dropItemNaturally(b.getLocation(), remaining);
+                    } else {
+                        for (ItemStack output : results) {
+                            b.getWorld().dropItemNaturally(b.getLocation(), output.clone());
                         }
                     }
                     getMachineProcessor().endOperation(b);
