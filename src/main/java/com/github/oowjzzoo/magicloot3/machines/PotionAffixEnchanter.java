@@ -22,6 +22,7 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
+import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu.MenuClickHandler;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.AContainer;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -49,10 +50,32 @@ public class PotionAffixEnchanter extends AContainer {
     @Override
     protected void registerDefaultRecipes() {}
 
+    // Border arrays copied from AContainer, with slot 13 removed from BORDER
+    private static final int[] BORDER = { 0,1,2,3,4,5,6,7,8, 31, 36,37,38,39,40,41,42,43,44 };
+    private static final int[] BORDER_IN = { 9,10,11,12, 18,21, 27,28,29,30 };
+    private static final int[] BORDER_OUT = { 14,15,16,17, 23,26, 32,33,34,35 };
+
     @Override
     protected void constructMenu(BlockMenuPreset preset) {
-        super.constructMenu(preset);
+        MenuClickHandler empty = ChestMenuUtils.getEmptyClickHandler();
+        for (int i : BORDER) {
+            preset.addItem(i, ChestMenuUtils.getBackground(), empty);
+        }
+        for (int i : BORDER_IN) {
+            preset.addItem(i, ChestMenuUtils.getInputSlotTexture(), empty);
+        }
+        for (int i : BORDER_OUT) {
+            preset.addItem(i, ChestMenuUtils.getOutputSlotTexture(), empty);
+        }
+        ItemStack bg = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemMeta bgm = bg.getItemMeta(); bgm.setDisplayName(" "); bg.setItemMeta(bgm);
+        preset.addItem(22, bg, empty);
 
+        for (int i : getOutputSlots()) {
+            preset.addMenuClickHandler(i, ChestMenuUtils.getDefaultOutputHandler());
+        }
+
+        // Slot 4: fuel hint
         List<String> lines = Messages.getList("machine.fuel_slot_hint");
         String name = lines.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', lines.get(0));
         ItemStack hint = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
@@ -63,8 +86,7 @@ public class PotionAffixEnchanter extends AContainer {
                     ChatColor.translateAlternateColorCodes('&', lines.get(1))));
         }
         hint.setItemMeta(hm);
-        preset.addItem(4, hint, ChestMenuUtils.getEmptyClickHandler());
-        preset.addItem(FUEL_SLOT, null);
+        preset.addItem(4, hint, empty);
     }
 
     @Override
