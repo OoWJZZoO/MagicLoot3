@@ -262,27 +262,28 @@ public final class LootConfigGUI {
             e.setCancelled(true);
             Bukkit.getScheduler().cancelTask(pi.taskId);
 
-            Player player = e.getPlayer();
-            try {
-                int w = Integer.parseInt(ChatColor.stripColor(e.getMessage()).trim());
-                if (w < 1 || w > WEIGHT_MAX) {
-                    player.sendMessage(m("invalid_range"));
+            // Entire post-chat logic on main thread — matching dough's ChatInputListener pattern
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                Player player = e.getPlayer();
+                try {
+                    int w = Integer.parseInt(ChatColor.stripColor(e.getMessage()).trim());
+                    if (w < 1 || w > WEIGHT_MAX) {
+                        player.sendMessage(m("invalid_range"));
+                        saveAndReload(player);
+                        return;
+                    }
+                    Map<String, Integer> cache = caches.get(player.getUniqueId());
+                    if (cache != null) cache.put(pi.itemId, w);
+                    player.sendMessage(m("set_weight", sfName(pi.itemId), String.valueOf(w)));
+                } catch (NumberFormatException ex) {
+                    player.sendMessage(m("invalid_number"));
                     saveAndReload(player);
                     return;
                 }
-                Map<String, Integer> cache = caches.get(player.getUniqueId());
-                if (cache != null) cache.put(pi.itemId, w);
-                player.sendMessage(m("set_weight", sfName(pi.itemId), String.valueOf(w)));
-            } catch (NumberFormatException ex) {
-                player.sendMessage(m("invalid_number"));
-                saveAndReload(player);
-                return;
-            }
 
-            switching.add(player.getUniqueId());
-            // Delay 1 tick so the async chat event fully completes before opening inventory
-            Bukkit.getScheduler().runTaskLater(plugin,
-                    () -> openCategory(player, pi.group, pi.page), 1L);
+                switching.add(player.getUniqueId());
+                openCategory(player, pi.group, pi.page);
+            });
         }
 
         @EventHandler
