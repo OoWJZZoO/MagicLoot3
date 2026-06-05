@@ -220,6 +220,76 @@ public final class AffixTransferUtil {
         return result;
     }
 
+    /**
+     * Apply tier transfer: output tier = max(equipTier, bookTier).
+     * Special handling for UNKNOWN equipment: replaces garbled name with a random
+     * name from the pools, and sets tier to the book's tier (or COMMON if the book
+     * has no tier). If neither item has a tier, the item is returned unchanged.
+     */
+    public static ItemStack applyTierTransfer(ItemStack item, LootTier equipTier, LootTier bookTier) {
+        boolean equipNone = equipTier == null || equipTier == LootTier.NONE;
+        boolean bookNone  = bookTier  == null || bookTier  == LootTier.NONE || bookTier == LootTier.UNKNOWN;
+        if (equipNone && bookNone) return item;
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+
+        if (equipTier == LootTier.UNKNOWN) {
+            String newName = generateRandomName();
+            meta.setDisplayName(newName);
+            LootTier target = bookNone ? LootTier.COMMON : bookTier;
+            meta.getPersistentDataContainer().set(ItemKeys.TIER, PersistentDataType.STRING, target.name());
+            List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+            meta.setLore(replaceTierLore(lore, target));
+        } else if (!bookNone && bookTier.getLevel() > equipTier.getLevel()) {
+            meta.getPersistentDataContainer().set(ItemKeys.TIER, PersistentDataType.STRING, bookTier.name());
+            List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+            meta.setLore(replaceTierLore(lore, bookTier));
+        } else {
+            return item;
+        }
+
+        item.setItemMeta(meta);
+
+        // Verify
+        ItemMeta verify = item.getItemMeta();
+        debug("applyTierTransfer: equipTier=" + equipTier + " bookTier=" + bookTier
+                + " → result PDC tier=" + (verify != null ? verify.getPersistentDataContainer()
+                        .get(ItemKeys.TIER, PersistentDataType.STRING) : "null"));
+
+        return item;
+    }
+
+    private static String generateRandomName() {
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        if (ItemManager.prefixes.isEmpty() || ItemManager.suffixes.isEmpty()
+                || ItemManager.colorCodes.isEmpty()) {
+            return ChatColor.translateAlternateColorCodes('&',
+                    "&7" + Messages.get("tiers.UNKNOWN"));
+        }
+        String prefix = ItemManager.prefixes.get(r.nextInt(ItemManager.prefixes.size()));
+        String suffix = ItemManager.suffixes.get(r.nextInt(ItemManager.suffixes.size()));
+        String color = ItemManager.colorCodes.get(r.nextInt(ItemManager.colorCodes.size()));
+        char last = prefix.charAt(prefix.length() - 1);
+        char first = suffix.charAt(0);
+        boolean space = ((last >= 'A' && last <= 'Z') || (last >= 'a' && last <= 'z'))
+                     && ((first >= 'A' && first <= 'Z') || (first >= 'a' && first <= 'z'));
+        return ChatColor.translateAlternateColorCodes('&',
+                color + prefix + (space ? " " : "") + suffix);
+    }
+
+    private static List<String> replaceTierLore(List<String> lore, LootTier newTier) {
+        String tierPrefix = ChatColor.stripColor(
+                ChatColor.translateAlternateColorCodes('&', Messages.get("tier_lore_prefix")));
+        lore.removeIf(line -> ChatColor.stripColor(line).startsWith(tierPrefix));
+        while (!lore.isEmpty() && lore.get(lore.size() - 1).isEmpty()) {
+            lore.remove(lore.size() - 1);
+        }
+        lore.add("");
+        lore.add(Messages.get("tier_lore_prefix") + newTier.getTag());
+        return lore;
+    }
+
     private static boolean matchesEffectDisplayName(String strippedLine) {
         for (String name : ItemManager.effectDisplayNames) {
             if (strippedLine.contains(ChatColor.stripColor(name))) return true;

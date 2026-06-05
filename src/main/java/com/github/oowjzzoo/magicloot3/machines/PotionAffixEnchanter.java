@@ -97,6 +97,13 @@ public class PotionAffixEnchanter extends AContainer {
         debug("Enchanter: parsed " + effects.size() + " effect(s)");
 
         ItemStack outputEquipment = AffixTransferUtil.appendAffixes(equipment.clone(), effects);
+
+        // Tier transfer: output tier = max(equipment tier, book tier)
+        LootTier equipTier = LootTier.get(equipment);
+        LootTier bookTier = LootTier.get(affixBook);
+        debug("Enchanter: equipTier=" + equipTier + " bookTier=" + bookTier);
+        outputEquipment = AffixTransferUtil.applyTierTransfer(outputEquipment, equipTier, bookTier);
+
         ItemStack outputBook = buildResultBook(affixBook.clone());
 
         int ticks = (MagicLoot3.getInstance() != null && MagicLoot3.isDebug())
