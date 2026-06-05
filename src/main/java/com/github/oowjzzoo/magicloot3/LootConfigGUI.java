@@ -167,8 +167,12 @@ public final class LootConfigGUI {
         for (int i = 0; i < 9; i++) {
             menu.addItem(i, ChestMenuUtils.getBackground(), ChestMenuUtils.getEmptyClickHandler());
         }
-        // Back button at slot 1 — matching SF's openItemGroup addBackButton
-        menu.addItem(1, ChestMenuUtils.getPreviousButton(player, 1, 1));
+        // Back button at slot 1
+        ItemStack backBtn = new ItemStack(Material.ARROW);
+        ItemMeta backMeta = backBtn.getItemMeta();
+        backMeta.setDisplayName(ChatColor.GRAY + "← 返回分类");
+        backBtn.setItemMeta(backMeta);
+        menu.addItem(1, backBtn);
         menu.addMenuClickHandler(1, (pl, s, it, action) -> {
             switching.add(pl.getUniqueId());
             openMainMenu(pl, 1);
@@ -249,7 +253,7 @@ public final class LootConfigGUI {
         pending.put(player.getUniqueId(), new PendingInput(itemId, group, page, taskId));
         ensureChatListener();
         player.sendMessage(ChatColor.YELLOW + "请在聊天栏输入 " + sfName(itemId) +
-                ChatColor.YELLOW + " 的权重 (1-999)：");
+                ChatColor.YELLOW + " 的权重 (1-999999)：");
     }
 
     private static void ensureChatListener() {
@@ -275,8 +279,8 @@ public final class LootConfigGUI {
             Player player = e.getPlayer();
             try {
                 int w = Integer.parseInt(ChatColor.stripColor(e.getMessage()).trim());
-                if (w < 1 || w > 999) {
-                    player.sendMessage(ChatColor.RED + "权重必须在 1-999 之间。配置已保存。");
+                if (w < 1 || w > 999999) {
+                    player.sendMessage(ChatColor.RED + "权重必须在 1-999999 之间。配置已保存。");
                     saveAndReload(player);
                     return;
                 }
@@ -291,7 +295,9 @@ public final class LootConfigGUI {
             }
 
             switching.add(player.getUniqueId());
-            openCategory(player, pi.group, pi.page);
+            // Must run on main thread — chat event is async
+            Bukkit.getScheduler().runTask(plugin,
+                    () -> openCategory(player, pi.group, pi.page));
         }
 
         @EventHandler
