@@ -1,9 +1,12 @@
 package com.github.oowjzzoo.magicloot3.machines;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.Map;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -17,6 +20,7 @@ import com.github.oowjzzoo.magicloot3.machines.AffixTransferUtil.EffectEntry;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
+import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.AContainer;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -25,6 +29,7 @@ public class PotionAffixEnchanter extends AContainer {
 
     private static final int NORMAL_TICKS = 60;
     private static final int DEBUG_TICKS = 1;
+    private static final Map<Location, ItemStack[]> pendingInputs = new HashMap<>();
 
     public PotionAffixEnchanter(ItemGroup itemGroup, SlimefunItemStack item,
                                  RecipeType recipeType, ItemStack[] recipe) {
@@ -32,6 +37,18 @@ public class PotionAffixEnchanter extends AContainer {
         setCapacity(128);
         setEnergyConsumption(9);
         setProcessingSpeed(1);
+
+        addItemHandler(new BlockBreakHandler(false, false) {
+            @Override
+            public void onPlayerBreak(BlockBreakEvent e, ItemStack tool, List<ItemStack> drops) {
+                ItemStack[] pending = pendingInputs.remove(e.getBlock().getLocation());
+                if (pending != null) {
+                    for (ItemStack p : pending) {
+                        if (p != null) drops.add(p.clone());
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -51,15 +68,15 @@ public class PotionAffixEnchanter extends AContainer {
 
     @Override
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
+        Location loc = menu.getLocation();
+
+        // Clear any stale pending inputs (previous operation completed)
+        pendingInputs.remove(loc);
+
         ItemStack s19 = menu.getItemInSlot(getInputSlots()[0]);
         ItemStack s20 = menu.getItemInSlot(getInputSlots()[1]);
-        if (s19 == null || s20 == null) {
-            debug("Enchanter: one or both input slots are empty");
-            return null;
-        }
+        if (s19 == null || s20 == null) return null;
 
-        // Identify which slot holds the affix book and which holds equipment.
-        // An affix book is ENCHANTED_BOOK with EFFECTS PDC. Equipment is anything else.
         ItemStack equipment;
         ItemStack affixBook;
         boolean s19isBook = s19.getType() == Material.ENCHANTED_BOOK;
@@ -67,36 +84,29 @@ public class PotionAffixEnchanter extends AContainer {
         boolean s19hasAffix = s19isBook && AffixTransferUtil.hasPotionAffixes(s19);
         boolean s20hasAffix = s20isBook && AffixTransferUtil.hasPotionAffixes(s20);
 
-        debug("Enchanter: s19=" + s19.getType() + " isBook=" + s19isBook + " hasAffix=" + s19hasAffix
-                + " | s20=" + s20.getType() + " isBook=" + s20isBook + " hasAffix=" + s20hasAffix);
-
         if (s19hasAffix && !s20isBook) {
             affixBook = s19; equipment = s20;
         } else if (s20hasAffix && !s19isBook) {
             affixBook = s20; equipment = s19;
         } else {
-            debug("Enchanter: no valid equipment + affix-book pair found");
             return null;
         }
 
         ItemMeta bookMeta = affixBook.getItemMeta();
-        if (bookMeta == null) {
-            debug("Enchanter: book meta is null");
-            return null;
-        }
+        if (bookMeta == null) return null;
 
         String pdcData = bookMeta.getPersistentDataContainer().get(
                 ItemKeys.EFFECTS, PersistentDataType.STRING);
-        debug("Enchanter: book PDC EFFECTS = " + pdcData);
-
         List<EffectEntry> effects = AffixTransferUtil.parseEffects(pdcData);
-        if (effects.isEmpty()) {
-            debug("Enchanter: parsed effects is empty");
-            return null;
-        }
-        debug("Enchanter: parsed " + effects.size() + " effect(s)");
+        if (effects.isEmpty()) return null;
 
         ItemStack outputEquipment = AffixTransferUtil.appendAffixes(equipment.clone(), effects);
+
+        // Apply highest tier: if the affix book has a higher tier than the equipment, upgrade
+        LootTier equipTier = LootTier.get(equipment);
+        LootTier bookTier = LootTier.get(affixBook);
+        outputEquipment = AffixTransferUtil.applyHighestTier(outputEquipment, equipTier, bookTier);
+
         ItemStack outputBook = buildResultBook(affixBook.clone());
 
         int ticks = (MagicLoot3.getInstance() != null && MagicLoot3.isDebug())
@@ -106,20 +116,15 @@ public class PotionAffixEnchanter extends AContainer {
                 new ItemStack[]{s19.clone(), s20.clone()},
                 new ItemStack[]{outputEquipment, outputBook});
 
-        if (!menu.fits(outputEquipment, getOutputSlots())) {
-            debug("Enchanter: output equipment doesn't fit");
-            return null;
-        }
-        if (!menu.fits(outputBook, getOutputSlots())) {
-            debug("Enchanter: output book doesn't fit");
-            return null;
-        }
+        if (!menu.fits(outputEquipment, getOutputSlots())) return null;
+        if (!menu.fits(outputBook, getOutputSlots())) return null;
+
+        pendingInputs.put(loc, new ItemStack[]{equipment.clone(), affixBook.clone()});
 
         for (int slot : getInputSlots()) {
             menu.consumeItem(slot);
         }
 
-        debug("Enchanter: recipe created, ticks=" + ticks);
         return recipe;
     }
 
@@ -133,11 +138,5 @@ public class PotionAffixEnchanter extends AContainer {
             return normalBook;
         }
         return book;
-    }
-
-    private static void debug(String msg) {
-        if (MagicLoot3.getInstance() != null && MagicLoot3.isDebug()) {
-            MagicLoot3.getInstance().getLogger().log(Level.INFO, "[DEBUG] " + msg);
-        }
     }
 }
