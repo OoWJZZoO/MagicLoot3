@@ -17,7 +17,7 @@ import org.bukkit.plugin.Plugin;
 
 public class MagicLootCommand implements CommandExecutor, TabCompleter {
 
-    private static final List<String> SUBCOMMANDS = List.of("version", "debug", "reload", "generate", "language", "add_effect");
+    private static final List<String> SUBCOMMANDS = List.of("version", "debug", "reload", "generate", "language", "add_effect", "loot_config");
 
     private final Plugin plugin;
     private String buildNumber;
@@ -132,6 +132,13 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                     }
                 }
                 ItemManager.addEffectToItem(player, key, pol, lvl);
+            }
+            case "loot_config" -> {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(Messages.get("cmd.player_only"));
+                    return true;
+                }
+                LootConfigGUI.open(player, plugin);
             }
             default -> sender.sendMessage(Messages.get("log.unknown_command"));
         }
