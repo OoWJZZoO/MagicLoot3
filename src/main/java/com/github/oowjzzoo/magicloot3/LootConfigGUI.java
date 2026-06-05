@@ -280,8 +280,9 @@ public final class LootConfigGUI {
             }
 
             switching.add(player.getUniqueId());
-            Bukkit.getScheduler().runTask(plugin,
-                    () -> openCategory(player, pi.group, pi.page));
+            // Delay 1 tick so the async chat event fully completes before opening inventory
+            Bukkit.getScheduler().runTaskLater(plugin,
+                    () -> openCategory(player, pi.group, pi.page), 1L);
         }
 
         @EventHandler
