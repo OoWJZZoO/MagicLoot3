@@ -28,7 +28,7 @@ public class PotionAffixEnchanter extends AContainer {
         super(itemGroup, item, recipeType, recipe);
         setCapacity(1024);
         setEnergyConsumption(64);
-        setProcessingSpeed(3);
+        setProcessingSpeed(5);
     }
 
     @Override

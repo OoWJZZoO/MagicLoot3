@@ -106,30 +106,7 @@ final class SlimefunHook implements SlimefunAddon {
         });
         desk.register(this);
 
-        String[] machineLore = {"", LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
-                LoreBuilder.speed(3), LoreBuilder.powerPerSecond(128)};
-
-        // Potion Affix Disenchanter
-        String disName = zh ? "§d药水词缀祛魔机" : "§dPotion Affix Disenchanter";
-        SlimefunItemStack disStack = new SlimefunItemStack(
-                "POTION_AFFIX_DISENCHANTER", Material.NOTE_BLOCK, disName, machineLore);
-        ItemStack[] disRecipe = {null, null, null,
-                null, SlimefunItems.AUTO_DISENCHANTER, null,
-                null, null, null};
-        new PotionAffixDisenchanter(itemGroup, disStack,
-                RecipeType.ENHANCED_CRAFTING_TABLE, disRecipe)
-                .register(this);
-
-        // Potion Affix Enchanter
-        String enchName = zh ? "§d药水词缀附魔机" : "§dPotion Affix Enchanter";
-        SlimefunItemStack enchStack = new SlimefunItemStack(
-                "POTION_AFFIX_ENCHANTER", Material.JUKEBOX, enchName, machineLore);
-        ItemStack[] enchRecipe = {null, null, null,
-                null, SlimefunItems.AUTO_ENCHANTER, null,
-                null, null, null};
-        new PotionAffixEnchanter(itemGroup, enchStack,
-                RecipeType.ENHANCED_CRAFTING_TABLE, enchRecipe)
-                .register(this);
+        // --- Shared crafting materials (must be created before machines that use them) ---
 
         // Ancient Rune of Past (往日)
         String runeName = zh ? "§7古代符文 §8§l[§e§l往日§8§l]"
@@ -144,8 +121,7 @@ final class SlimefunHook implements SlimefunAddon {
                         "", "§7Past memories, you truly don't remember?",
                         "§7Past memories? Past...", "§7Are you talking about the past..."};
 
-        // SF's ColoredFireworkStar: sets effect color + HIDE_ADDITIONAL_TOOLTIP flag
-        // to suppress the client-side "Small Ball / Custom" text from Firework NBT.
+        // SF's ColoredFireworkStar pattern: effect color + HIDE_ADDITIONAL_TOOLTIP
         ItemStack runeBase = new ItemStack(Material.FIREWORK_STAR);
         FireworkEffectMeta fwMeta = (FireworkEffectMeta) runeBase.getItemMeta();
         fwMeta.setEffect(FireworkEffect.builder()
@@ -170,7 +146,7 @@ final class SlimefunHook implements SlimefunAddon {
                 new SlimefunItemStack(runeStack, 3))
                 .register(this);
 
-        // Time of Exploration (探索的时光) — crafting material
+        // Time of Exploration (探索的时光)
         String timeName = zh ? "&b&l探索的时光" : "&b&lAdventuring Time";
         String[] timeLore = zh
                 ? new String[]{"", "&7一缕光阴"}
@@ -185,6 +161,39 @@ final class SlimefunHook implements SlimefunAddon {
                 runeStack, new ItemStack(Material.DRAGON_HEAD), runeStack};
         new SlimefunItem(itemGroup, timeStack, RecipeType.ANCIENT_ALTAR, timeRecipe,
                 new SlimefunItemStack(timeStack, 4))
+                .register(this);
+
+        // --- Machines ---
+
+        String[] machineLore = {"", LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
+                LoreBuilder.speed(5), LoreBuilder.powerPerSecond(128)};
+
+        // Potion Affix Disenchanter
+        String disName = zh ? "§d药水词缀祛魔机" : "§dPotion Affix Disenchanter";
+        SlimefunItemStack disStack = new SlimefunItemStack(
+                "POTION_AFFIX_DISENCHANTER", Material.NOTE_BLOCK, disName, machineLore);
+        ItemStack[] disRecipe = {
+                timeStack, SlimefunItems.CARBONADO, timeStack,
+                SlimefunItems.PROGRAMMABLE_ANDROID_3_FISHERMAN,
+                SlimefunItems.AUTO_DISENCHANTER_2,
+                SlimefunItems.PROGRAMMABLE_ANDROID_3_BUTCHER,
+                timeStack, SlimefunItems.NETHER_STAR_REACTOR, timeStack};
+        new PotionAffixDisenchanter(itemGroup, disStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, disRecipe)
+                .register(this);
+
+        // Potion Affix Enchanter
+        String enchName = zh ? "§d药水词缀附魔机" : "§dPotion Affix Enchanter";
+        SlimefunItemStack enchStack = new SlimefunItemStack(
+                "POTION_AFFIX_ENCHANTER", Material.JUKEBOX, enchName, machineLore);
+        ItemStack[] enchRecipe = {
+                timeStack, SlimefunItems.CARBONADO, timeStack,
+                SlimefunItems.PROGRAMMABLE_ANDROID_3_FISHERMAN,
+                SlimefunItems.AUTO_ENCHANTER_2,
+                SlimefunItems.PROGRAMMABLE_ANDROID_3_BUTCHER,
+                timeStack, SlimefunItems.NETHER_STAR_REACTOR, timeStack};
+        new PotionAffixEnchanter(itemGroup, enchStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, enchRecipe)
                 .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));
