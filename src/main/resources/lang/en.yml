@@ -185,11 +185,9 @@ rune:
     success: "&7Ancient Rune &8&l[&e&lPast&8&l] &8> &aRune consumed, equipment is now unidentified!"
 
 machine:
-  fuel_slot_name: "&b&lAdventuring Time"
-  fuel_slot_lore:
+  fuel_slot_hint:
     - "&fPlease place &b&lAdventuring Time &fin the slot below"
     - "&fEach use has a 40% chance to consume one"
-  no_fuel: "&cYou need to place &b&lAdventuring Time &cin the middle slot of the second row to start!"
 
 cmd:
   header: "&6MagicLoot3 &7v{0} (build #{1})"

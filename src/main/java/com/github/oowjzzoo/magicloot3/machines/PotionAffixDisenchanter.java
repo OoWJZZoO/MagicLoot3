@@ -51,24 +51,17 @@ public class PotionAffixDisenchanter extends AContainer {
     protected void constructMenu(BlockMenuPreset preset) {
         super.constructMenu(preset);
 
+        List<String> lines = Messages.getList("machine.fuel_slot_hint");
+        String name = lines.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', lines.get(0));
         ItemStack hint = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
-        ItemMeta hintMeta = hint.getItemMeta();
-        hintMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
-                Messages.get("machine.fuel_slot_name")));
-        List<String> hintLore = Messages.getList("machine.fuel_slot_lore");
-        List<String> coloredLore = new java.util.ArrayList<>();
-        for (String line : hintLore) {
-            coloredLore.add(ChatColor.translateAlternateColorCodes('&', line));
+        ItemMeta hm = hint.getItemMeta();
+        hm.setDisplayName(name);
+        if (lines.size() > 1) {
+            hm.setLore(java.util.Collections.singletonList(
+                    ChatColor.translateAlternateColorCodes('&', lines.get(1))));
         }
-        hintMeta.setLore(coloredLore);
-        hint.setItemMeta(hintMeta);
+        hint.setItemMeta(hm);
         preset.addItem(4, hint, ChestMenuUtils.getEmptyClickHandler());
-
-        ItemStack emptySlot = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
-        ItemMeta emptyMeta = emptySlot.getItemMeta();
-        emptyMeta.setDisplayName(" ");
-        emptySlot.setItemMeta(emptyMeta);
-        preset.addItem(FUEL_SLOT, emptySlot, ChestMenuUtils.getEmptyClickHandler());
     }
 
     @Override
@@ -121,15 +114,7 @@ public class PotionAffixDisenchanter extends AContainer {
 
     private boolean hasFuel(BlockMenu menu) {
         ItemStack fuel = menu.getItemInSlot(FUEL_SLOT);
-        if (fuel == null) {
-            MagicLoot3.getInstance().getServer().getScheduler().runTask(
-                    MagicLoot3.getInstance(), () -> {
-                        for (org.bukkit.entity.HumanEntity viewer : menu.toInventory().getViewers()) {
-                            viewer.sendMessage(Messages.get("machine.no_fuel"));
-                        }
-                    });
-            return false;
-        }
+        if (fuel == null) return false;
         SlimefunItem sfItem = SlimefunItem.getByItem(fuel);
         return sfItem != null && FUEL_ID.equals(sfItem.getId());
     }
