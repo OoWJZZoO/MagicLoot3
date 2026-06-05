@@ -3,6 +3,7 @@ package com.github.oowjzzoo.magicloot3.machines;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -134,7 +135,12 @@ public class PotionAffixEnchanter extends AContainer {
         if (item != null && item.getType() != Material.ENCHANTED_BOOK
                 && !item.getType().isAir()) {
             SlimefunItem sfItem = SlimefunItem.getByItem(item);
-            return sfItem == null || sfItem.isEnchantable();
+            if (sfItem != null) return sfItem.isEnchantable();
+            // Vanilla item: must be enchantable by at least one enchantment
+            for (Enchantment e : Enchantment.values()) {
+                if (e.canEnchantItem(item)) return true;
+            }
+            return false;
         }
         return false;
     }
