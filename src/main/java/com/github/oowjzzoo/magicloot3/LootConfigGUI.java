@@ -167,9 +167,9 @@ public final class LootConfigGUI {
         for (int i = 0; i < 9; i++) {
             menu.addItem(i, ChestMenuUtils.getBackground(), ChestMenuUtils.getEmptyClickHandler());
         }
-        // Back button at slot 0 — matching SF's addBackButton pattern
-        menu.addItem(0, ChestMenuUtils.getPreviousButton(player, 1, 1));
-        menu.addMenuClickHandler(0, (pl, s, it, action) -> {
+        // Back button at slot 1 — matching SF's openItemGroup addBackButton
+        menu.addItem(1, ChestMenuUtils.getPreviousButton(player, 1, 1));
+        menu.addMenuClickHandler(1, (pl, s, it, action) -> {
             switching.add(pl.getUniqueId());
             openMainMenu(pl, 1);
             return false;
