@@ -282,7 +282,6 @@ public final class LootConfigGUI {
                     return;
                 }
 
-                switching.add(player.getUniqueId());
                 openCategory(player, pi.group, pi.page);
             });
         }
