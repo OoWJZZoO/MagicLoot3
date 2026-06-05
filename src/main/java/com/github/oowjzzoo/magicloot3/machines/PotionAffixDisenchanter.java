@@ -22,6 +22,7 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.AContainer;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
+import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 
 public class PotionAffixDisenchanter extends AContainer {
@@ -40,17 +41,21 @@ public class PotionAffixDisenchanter extends AContainer {
         addItemHandler(new BlockBreakHandler(false, false) {
             @Override
             public void onPlayerBreak(BlockBreakEvent e, ItemStack tool, List<ItemStack> drops) {
-                ItemStack[] pending = pendingInputs.remove(e.getBlock().getLocation());
+                Location loc = e.getBlock().getLocation().clone();
+                ItemStack[] pending = pendingInputs.remove(loc);
                 if (pending != null) {
                     for (ItemStack p : pending) {
                         if (p != null) drops.add(p.clone());
                     }
+                    log("BreakHandler fired: dropped " + pending[0].getType() + " + " + (pending[1] != null ? pending[1].getType() : "null"));
                 }
-                // Delay clear so SF's internal cleanup doesn't re-save operation state over it
-                Location loc = e.getBlock().getLocation().clone();
+                // Clear BlockStorage after a 1-tick delay so SF internal cleanup doesn't overwrite
                 org.bukkit.Bukkit.getScheduler().runTask(
                         MagicLoot3.getInstance(),
-                        () -> me.mrCookieSlime.Slimefun.api.BlockStorage.clearBlockInfo(loc));
+                        () -> {
+                            BlockStorage.clearBlockInfo(loc);
+                            log("Delayed clear: BlockStorage cleared for " + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ());
+                        });
             }
         });
     }
@@ -115,13 +120,17 @@ public class PotionAffixDisenchanter extends AContainer {
         if (!menu.fits(outputEquipment, getOutputSlots())) return null;
         if (!menu.fits(outputBook, getOutputSlots())) return null;
 
-        // Store pending inputs so they can be recovered if the machine is broken mid-operation
         pendingInputs.put(loc, new ItemStack[]{equipment.clone(), plainBook.clone()});
 
         for (int slot : getInputSlots()) {
             menu.consumeItem(slot);
         }
 
+        log("findNextRecipe: recipe created, ticks=" + ticks);
         return recipe;
+    }
+
+    private static void log(String msg) {
+        MagicLoot3.getInstance().getLogger().info("[Disenchanter] " + msg);
     }
 }
