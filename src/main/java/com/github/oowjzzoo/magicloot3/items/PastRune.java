@@ -82,6 +82,8 @@ public class PastRune extends SimpleSlimefunItem<ItemDropHandler> {
                 return;
             }
 
+            l.getWorld().strikeLightningEffect(l);
+
             ItemStack finalStack = target.getItemStack();
             rune.remove();
             target.remove();
