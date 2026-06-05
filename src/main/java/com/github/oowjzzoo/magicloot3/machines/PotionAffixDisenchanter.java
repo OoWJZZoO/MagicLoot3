@@ -62,6 +62,9 @@ public class PotionAffixDisenchanter extends AContainer {
         }
         hint.setItemMeta(hm);
         preset.addItem(4, hint, ChestMenuUtils.getEmptyClickHandler());
+
+        preset.addItem(FUEL_SLOT, ChestMenuUtils.getInputSlotTexture(),
+                ChestMenuUtils.getEmptyClickHandler());
     }
 
     @Override
