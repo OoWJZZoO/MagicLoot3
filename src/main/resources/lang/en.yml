@@ -181,9 +181,9 @@ log:
 
 rune:
   past:
-    no_target: "&cNo compatible equipment nearby. Requirements: vanilla item, no enchantments, no potion affixes, not a Slimefun item."
-    stacked: "&cCan only convert single items, not stacks."
-    success: "&aRune consumed, equipment is now unidentified!"
+    no_target: "&7Ancient Rune &8&l[&e&lPast&8&l] &8> &cNo compatible equipment nearby. Requirements: vanilla item, no enchantments, no potion affixes, not a Slimefun item."
+    stacked: "&7Ancient Rune &8&l[&e&lPast&8&l] &8> &cCan only convert single items, not stacks."
+    success: "&7Ancient Rune &8&l[&e&lPast&8&l] &8> &aRune consumed, equipment is now unidentified!"
 
 cmd:
   header: "&6MagicLoot3 &7v{0} (build #{1})"
