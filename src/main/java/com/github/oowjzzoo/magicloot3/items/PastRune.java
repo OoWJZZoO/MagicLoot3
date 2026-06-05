@@ -66,25 +66,26 @@ public class PastRune extends SimpleSlimefunItem<ItemDropHandler> {
         }
 
         Item target = (Item) optional.get();
-        ItemStack stack = target.getItemStack();
 
-        if (stack.getAmount() != 1) {
-            p.sendMessage(Messages.get("rune.past.stacked"));
-            return;
-        }
-
-        // l.getWorld().strikeLightningEffect(l);
         SoundEffect.ENCHANTMENT_RUNE_ADD_ENCHANT_SOUND.playAt(l, SoundCategory.PLAYERS);
 
-        // Check again after the sound effect delay
         Slimefun.runSync(() -> {
-            if (!rune.isValid() || !target.isValid() || target.getItemStack().getAmount() != 1) {
-                return;
-            }
+            if (!rune.isValid() || !target.isValid()) return;
 
             l.getWorld().strikeLightningEffect(l);
 
-            ItemStack finalStack = target.getItemStack();
+            // Take one item from target stack
+            ItemStack targetStack = target.getItemStack();
+            ItemStack one = targetStack.clone();
+            one.setAmount(1);
+            targetStack.setAmount(targetStack.getAmount() - 1);
+            if (targetStack.getAmount() <= 0) {
+                target.remove();
+            } else {
+                target.setItemStack(targetStack);
+            }
+
+            // Consume one rune from the stack
             ItemStack runeStack = rune.getItemStack();
             runeStack.setAmount(runeStack.getAmount() - 1);
             if (runeStack.getAmount() <= 0) {
@@ -92,9 +93,8 @@ public class PastRune extends SimpleSlimefunItem<ItemDropHandler> {
             } else {
                 rune.setItemStack(runeStack);
             }
-            target.remove();
 
-            ItemStack unanalyzed = makeUnidentified(finalStack);
+            ItemStack unanalyzed = makeUnidentified(one);
             l.getWorld().dropItemNaturally(l, unanalyzed);
             p.sendMessage(Messages.get("rune.past.success"));
         }, 10L);
@@ -110,19 +110,19 @@ public class PastRune extends SimpleSlimefunItem<ItemDropHandler> {
     /** Check if the item is valid for conversion: vanilla, no enchants, no affixes. */
     static boolean isUnidentified(ItemStack item) {
         if (item == null || item.getType().isAir()) return false;
-        // Not an enchanted book
         if (item.getType() == org.bukkit.Material.ENCHANTED_BOOK) return false;
-        // Not a Slimefun item
         if (SlimefunItem.getByItem(item) != null) return false;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return false;
-        // Must be enchantable (excludes sand, planks, etc.)
-        boolean enchantable = false;
-        for (Enchantment e : Enchantment.values()) {
-            if (e.canEnchantItem(item)) { enchantable = true; break; }
+        // Plain books can't be enchanted but can become enchanted books via this rune
+        boolean isBook = item.getType() == org.bukkit.Material.BOOK;
+        if (!isBook) {
+            boolean enchantable = false;
+            for (Enchantment e : Enchantment.values()) {
+                if (e.canEnchantItem(item)) { enchantable = true; break; }
+            }
+            if (!enchantable) return false;
         }
-        if (!enchantable) return false;
-        // No vanilla enchantments
         if (meta.hasEnchants()) return false;
         // No potion affix PDC
         if (meta.getPersistentDataContainer().has(ItemKeys.EFFECTS)) return false;
@@ -137,9 +137,14 @@ public class PastRune extends SimpleSlimefunItem<ItemDropHandler> {
         ItemMeta meta = result.getItemMeta();
         if (meta == null) return result;
 
+        // Books become enchanted books (vanilla book can't hold meta properly)
+        if (result.getType() == org.bukkit.Material.BOOK) {
+            result.setType(org.bukkit.Material.ENCHANTED_BOOK);
+            meta = result.getItemMeta();
+        }
+
         meta.getPersistentDataContainer().set(ItemKeys.TIER,
                 PersistentDataType.STRING, "UNKNOWN");
-        // Always use English garbled text — Chinese characters don't obfuscate properly
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
                 "&7&kMEH WANNA BE EXAMINED"));
 
