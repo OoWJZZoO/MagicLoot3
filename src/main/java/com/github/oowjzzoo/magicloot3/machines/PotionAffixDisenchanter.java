@@ -22,10 +22,11 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.handlers.SimpleBlockBreakHandler;
+import io.github.thebusybiscuit.slimefun4.implementation.operations.CraftingOperation;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.AContainer;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
+import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 
@@ -33,6 +34,10 @@ public class PotionAffixDisenchanter extends AContainer {
 
     private static final int FUEL_SLOT = 13;
     private static final String FUEL_ID = "TIME_OF_EXPLORATION";
+
+    private static final int[] BORDER = { 0,1,2,3,4,5,6,7,8, 31, 36,37,38,39,40,41,42,43,44 };
+    private static final int[] BORDER_IN = { 9,10,11,12, 18,21, 27,28,29,30 };
+    private static final int[] BORDER_OUT = { 14,15,16,17, 23,26, 32,33,34,35 };
 
     public PotionAffixDisenchanter(ItemGroup itemGroup, SlimefunItemStack item,
                                     RecipeType recipeType, ItemStack[] recipe) {
@@ -44,6 +49,12 @@ public class PotionAffixDisenchanter extends AContainer {
 
     @Override
     public String getMachineIdentifier() { return "POTION_AFFIX_DISENCHANTER"; }
+
+    @Override
+    public ItemStack getProgressBar() { return new ItemStack(Material.ENCHANTED_BOOK); }
+
+    @Override
+    protected void registerDefaultRecipes() {}
 
     @Override
     protected BlockBreakHandler onBlockBreak() {
@@ -60,16 +71,6 @@ public class PotionAffixDisenchanter extends AContainer {
             }
         };
     }
-
-    @Override
-    public ItemStack getProgressBar() { return new ItemStack(Material.ENCHANTED_BOOK); }
-
-    @Override
-    protected void registerDefaultRecipes() {}
-
-    private static final int[] BORDER = { 0,1,2,3,4,5,6,7,8, 31, 36,37,38,39,40,41,42,43,44 };
-    private static final int[] BORDER_IN = { 9,10,11,12, 18,21, 27,28,29,30 };
-    private static final int[] BORDER_OUT = { 14,15,16,17, 23,26, 32,33,34,35 };
 
     @Override
     protected void constructMenu(BlockMenuPreset preset) {
@@ -90,6 +91,42 @@ public class PotionAffixDisenchanter extends AContainer {
                 ChatColor.translateAlternateColorCodes('&', lines.get(1))));
         hint.setItemMeta(hm);
         preset.addItem(4, hint, empty);
+    }
+
+    @Override
+    protected void tick(Block b) {
+        BlockMenu inv = BlockStorage.getInventory(b);
+        CraftingOperation op = getMachineProcessor().getOperation(b);
+
+        if (op != null) {
+            if (takeCharge(b.getLocation())) {
+                if (!op.isFinished()) {
+                    getMachineProcessor().updateProgressBar(inv, 22, op);
+                    op.addProgress(1);
+                } else {
+                    ItemStack pane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+                    ItemMeta pm = pane.getItemMeta(); pm.setDisplayName(" "); pane.setItemMeta(pm);
+                    inv.replaceExistingItem(22, pane);
+
+                    for (ItemStack output : op.getResults()) {
+                        ItemStack clone = output.clone();
+                        if (fitsAll(inv, new ItemStack[]{clone})) {
+                            inv.pushItem(clone, getOutputSlots());
+                        } else {
+                            b.getWorld().dropItemNaturally(b.getLocation(), clone);
+                        }
+                    }
+                    getMachineProcessor().endOperation(b);
+                }
+            }
+        } else {
+            MachineRecipe next = findNextRecipe(inv);
+            if (next != null) {
+                op = new CraftingOperation(next);
+                getMachineProcessor().startOperation(b, op);
+                getMachineProcessor().updateProgressBar(inv, 22, op);
+            }
+        }
     }
 
     @Override
@@ -178,7 +215,6 @@ public class PotionAffixDisenchanter extends AContainer {
         return true;
     }
 
-    /** Mirrors {@code AutoDisenchanter.isDisenchantable()}. */
     private boolean isDisenchantable(ItemStack item) {
         if (item != null && !item.getType().isAir()
                 && item.getType() != Material.BOOK) {
