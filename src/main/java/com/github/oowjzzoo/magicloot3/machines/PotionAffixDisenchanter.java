@@ -24,9 +24,9 @@ public class PotionAffixDisenchanter extends AContainer {
     public PotionAffixDisenchanter(ItemGroup itemGroup, SlimefunItemStack item,
                                     RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
-        setCapacity(128);
-        setEnergyConsumption(9);
-        setProcessingSpeed(1);
+        setCapacity(1024);
+        setEnergyConsumption(64);
+        setProcessingSpeed(3);
     }
 
     @Override
