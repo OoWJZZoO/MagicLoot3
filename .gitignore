@@ -2,3 +2,5 @@ target/
 lib/Slimefun.jar
 *.class
 deploy.sh
+.mcp.json
+CLAUDE.md
