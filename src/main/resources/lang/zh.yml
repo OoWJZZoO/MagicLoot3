@@ -172,6 +172,13 @@ rune:
     no_target: "古代符文 &7&l[&e往日&7] &8&l> &c附近没有可转换的装备。请确认：装备是原版物品，无附魔、无药水词缀、非粘液科技物品。"
     success: "古代符文 &7&l[&e往日&7] &8&l> &a符文已被消耗，装备成功转化！"
 
+machine:
+  fuel_slot_name: "&b&l探索的时光"
+  fuel_slot_lore:
+    - "&f请在下面的格子里放入 &b&l探索的时光"
+    - "&f每次使用机器都有40%的概率消耗一个"
+  no_fuel: "&c需要在第二行中间格子放入 &b&l探索的时光 &c才能启动！"
+
 cmd:
   header: "&6MagicLoot3 &7v{0} (build #{1})"
   usage: "&7/magicloot version|debug|reload|generate <名称>|language <zh|en>"

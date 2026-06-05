@@ -1,25 +1,34 @@
 package com.github.oowjzzoo.magicloot3.machines;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.github.oowjzzoo.magicloot3.ItemKeys;
 import com.github.oowjzzoo.magicloot3.LootTier;
 import com.github.oowjzzoo.magicloot3.MagicLoot3;
+import com.github.oowjzzoo.magicloot3.Messages;
 import com.github.oowjzzoo.magicloot3.machines.AffixTransferUtil.EffectEntry;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
+import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.AContainer;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 
 public class PotionAffixDisenchanter extends AContainer {
+
+    private static final int FUEL_SLOT = 13;
+    private static final String FUEL_ID = "TIME_OF_EXPLORATION";
 
     public PotionAffixDisenchanter(ItemGroup itemGroup, SlimefunItemStack item,
                                     RecipeType recipeType, ItemStack[] recipe) {
@@ -39,7 +48,33 @@ public class PotionAffixDisenchanter extends AContainer {
     protected void registerDefaultRecipes() {}
 
     @Override
+    protected void constructMenu(BlockMenuPreset preset) {
+        super.constructMenu(preset);
+
+        ItemStack hint = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
+        ItemMeta hintMeta = hint.getItemMeta();
+        hintMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
+                Messages.get("machine.fuel_slot_name")));
+        List<String> hintLore = Messages.getList("machine.fuel_slot_lore");
+        List<String> coloredLore = new java.util.ArrayList<>();
+        for (String line : hintLore) {
+            coloredLore.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+        hintMeta.setLore(coloredLore);
+        hint.setItemMeta(hintMeta);
+        preset.addItem(4, hint, ChestMenuUtils.getEmptyClickHandler());
+
+        ItemStack emptySlot = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemMeta emptyMeta = emptySlot.getItemMeta();
+        emptyMeta.setDisplayName(" ");
+        emptySlot.setItemMeta(emptyMeta);
+        preset.addItem(FUEL_SLOT, emptySlot, ChestMenuUtils.getEmptyClickHandler());
+    }
+
+    @Override
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
+        if (!hasFuel(menu)) return null;
+
         for (int slot : getInputSlots()) {
             ItemStack equipment = menu.getItemInSlot(slot);
             if (!isDisenchantable(equipment)) continue;
@@ -71,18 +106,34 @@ public class PotionAffixDisenchanter extends AContainer {
                 new ItemStack[]{equipment.clone(), book.clone()},
                 new ItemStack[]{outputEquipment, outputBook});
 
-        if (!fitsAll(menu, recipe.getOutput())) {
-            return null;
-        }
+        if (!fitsAll(menu, recipe.getOutput())) return null;
 
         for (int inputSlot : getInputSlots()) {
             menu.consumeItem(inputSlot);
         }
 
+        if (ThreadLocalRandom.current().nextInt(100) < 40) {
+            menu.consumeItem(FUEL_SLOT);
+        }
+
         return recipe;
     }
 
-    /** Equivalent to {@code InvUtils.fitAll(inv, items, slots)} — simulates pushes. */
+    private boolean hasFuel(BlockMenu menu) {
+        ItemStack fuel = menu.getItemInSlot(FUEL_SLOT);
+        if (fuel == null) {
+            MagicLoot3.getInstance().getServer().getScheduler().runTask(
+                    MagicLoot3.getInstance(), () -> {
+                        for (org.bukkit.entity.HumanEntity viewer : menu.toInventory().getViewers()) {
+                            viewer.sendMessage(Messages.get("machine.no_fuel"));
+                        }
+                    });
+            return false;
+        }
+        SlimefunItem sfItem = SlimefunItem.getByItem(fuel);
+        return sfItem != null && FUEL_ID.equals(sfItem.getId());
+    }
+
     private boolean fitsAll(BlockMenu menu, ItemStack[] items) {
         org.bukkit.inventory.Inventory copy = org.bukkit.Bukkit.createInventory(
                 null, menu.toInventory().getSize());

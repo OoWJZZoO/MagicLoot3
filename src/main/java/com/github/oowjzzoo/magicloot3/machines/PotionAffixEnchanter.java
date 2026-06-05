@@ -1,27 +1,36 @@
 package com.github.oowjzzoo.magicloot3.machines;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.github.oowjzzoo.magicloot3.ItemKeys;
 import com.github.oowjzzoo.magicloot3.LootTier;
 import com.github.oowjzzoo.magicloot3.MagicLoot3;
+import com.github.oowjzzoo.magicloot3.Messages;
 import com.github.oowjzzoo.magicloot3.machines.AffixTransferUtil.EffectEntry;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
+import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.AContainer;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 
 public class PotionAffixEnchanter extends AContainer {
+
+    private static final int FUEL_SLOT = 13;
+    private static final String FUEL_ID = "TIME_OF_EXPLORATION";
 
     public PotionAffixEnchanter(ItemGroup itemGroup, SlimefunItemStack item,
                                  RecipeType recipeType, ItemStack[] recipe) {
@@ -41,7 +50,35 @@ public class PotionAffixEnchanter extends AContainer {
     protected void registerDefaultRecipes() {}
 
     @Override
+    protected void constructMenu(BlockMenuPreset preset) {
+        super.constructMenu(preset);
+
+        // Slot 4: fuel slot hint
+        ItemStack hint = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
+        ItemMeta hintMeta = hint.getItemMeta();
+        hintMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
+                Messages.get("machine.fuel_slot_name")));
+        List<String> hintLore = Messages.getList("machine.fuel_slot_lore");
+        List<String> coloredLore = new java.util.ArrayList<>();
+        for (String line : hintLore) {
+            coloredLore.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+        hintMeta.setLore(coloredLore);
+        hint.setItemMeta(hintMeta);
+        preset.addItem(4, hint, ChestMenuUtils.getEmptyClickHandler());
+
+        // Slot 13: empty fuel slot
+        ItemStack emptySlot = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemMeta emptyMeta = emptySlot.getItemMeta();
+        emptyMeta.setDisplayName(" ");
+        emptySlot.setItemMeta(emptyMeta);
+        preset.addItem(FUEL_SLOT, emptySlot, ChestMenuUtils.getEmptyClickHandler());
+    }
+
+    @Override
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
+        if (!hasFuel(menu)) return null;
+
         for (int slot : getInputSlots()) {
             ItemStack book = menu.getItemInSlot(slot);
             if (book == null || book.getType() != Material.ENCHANTED_BOOK
@@ -78,15 +115,33 @@ public class PotionAffixEnchanter extends AContainer {
                 new ItemStack[]{equipment.clone(), affixBook.clone()},
                 new ItemStack[]{outputEquipment, outputBook});
 
-        if (!fitsAll(menu, recipe.getOutput())) {
-            return null;
-        }
+        if (!fitsAll(menu, recipe.getOutput())) return null;
 
         for (int inputSlot : getInputSlots()) {
             menu.consumeItem(inputSlot);
         }
 
+        // 40% chance to consume one Adventuring Time
+        if (ThreadLocalRandom.current().nextInt(100) < 40) {
+            menu.consumeItem(FUEL_SLOT);
+        }
+
         return recipe;
+    }
+
+    private boolean hasFuel(BlockMenu menu) {
+        ItemStack fuel = menu.getItemInSlot(FUEL_SLOT);
+        if (fuel == null) {
+            MagicLoot3.getInstance().getServer().getScheduler().runTask(
+                    MagicLoot3.getInstance(), () -> {
+                        for (org.bukkit.entity.HumanEntity viewer : menu.toInventory().getViewers()) {
+                            viewer.sendMessage(Messages.get("machine.no_fuel"));
+                        }
+                    });
+            return false;
+        }
+        SlimefunItem sfItem = SlimefunItem.getByItem(fuel);
+        return sfItem != null && FUEL_ID.equals(sfItem.getId());
     }
 
     private ItemStack buildResultBook(ItemStack book) {
@@ -98,7 +153,6 @@ public class PotionAffixEnchanter extends AContainer {
         return book;
     }
 
-    /** Equivalent to {@code InvUtils.fitAll(inv, items, slots)} — simulates pushes. */
     private boolean fitsAll(BlockMenu menu, ItemStack[] items) {
         org.bukkit.inventory.Inventory copy = org.bukkit.Bukkit.createInventory(
                 null, menu.toInventory().getSize());
@@ -130,13 +184,11 @@ public class PotionAffixEnchanter extends AContainer {
         return true;
     }
 
-    /** Mirrors {@code AutoEnchanter.isEnchantable()}. */
     private boolean isEnchantable(ItemStack item) {
         if (item != null && item.getType() != Material.ENCHANTED_BOOK
                 && !item.getType().isAir()) {
             SlimefunItem sfItem = SlimefunItem.getByItem(item);
             if (sfItem != null) return sfItem.isEnchantable();
-            // Vanilla item: must be enchantable by at least one enchantment
             for (Enchantment e : Enchantment.values()) {
                 if (e.canEnchantItem(item)) return true;
             }

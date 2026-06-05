@@ -165,7 +165,11 @@ final class SlimefunHook implements SlimefunAddon {
 
         // --- Machines ---
 
-        String[] machineLore = {"", LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
+        String[] machineLore = {"",
+                zh ? "&7花费了大量的 &b&l探索的时光" : "&7After spending a great deal of &b&lAdventuring Time",
+                zh ? "&7你终于打造出了一套神装" : "&7you have finally crafted a set of godly gear",
+                "",
+                LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
                 LoreBuilder.speed(5), LoreBuilder.powerPerSecond(128)};
 
         // Potion Affix Disenchanter
