@@ -3,9 +3,12 @@ package com.github.oowjzzoo.magicloot3;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.FireworkEffectMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -124,6 +127,41 @@ final class SlimefunHook implements SlimefunAddon {
                 null, null, null};
         new PotionAffixEnchanter(itemGroup, enchStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, enchRecipe)
+                .register(this);
+
+        // Ancient Rune of Past (往日)
+        String runeName = zh ? "§7古代符文 §8§l[§e§l往日§8§l]"
+                : "§7Ancient Rune §8§l[§e§lPast§8§l]";
+        String[] runeLore = zh
+                ? new String[]{"", "§e把符文丢向你已经丢出的装备物品",
+                        "§e该物品会变为 §4未鉴定 §e的乱码装备",
+                        "", "§7往日种种，你当真不记得了？",
+                        "§7往日种种？往日…", "§7你说的可是往日…"}
+                : new String[]{"", "§eDrop this rune onto an equipment item",
+                        "§eThe item will become §4Unidentified §ewith garbled name",
+                        "", "§7Past memories, you truly don't remember?",
+                        "§7Past memories? Past...", "§7Are you talking about the past..."};
+
+        ItemStack fireworkStar = new ItemStack(Material.FIREWORK_STAR);
+        FireworkEffectMeta fwMeta = (FireworkEffectMeta) fireworkStar.getItemMeta();
+        fwMeta.setEffect(FireworkEffect.builder().withColor(Color.YELLOW).build());
+        fwMeta.setDisplayName("§7Ancient Rune §8§l[§e§lPast§8§l]");
+        fireworkStar.setItemMeta(fwMeta);
+        SlimefunItemStack runeStack = new SlimefunItemStack(
+                "ANCIENT_RUNE_PAST", fireworkStar, runeName, runeLore);
+
+        ItemStack[] runeRecipe = {
+                new ItemStack(Material.ANCIENT_DEBRIS),
+                new ItemStack(Material.WAXED_WEATHERED_COPPER_BULB),
+                new ItemStack(Material.SCULK_CATALYST),
+                SlimefunItems.ESSENCE_OF_AFTERLIFE,
+                SlimefunItems.VILLAGER_RUNE,
+                SlimefunItems.ESSENCE_OF_AFTERLIFE,
+                new ItemStack(Material.SCULK_CATALYST),
+                new ItemStack(Material.WAXED_WEATHERED_COPPER_BULB),
+                new ItemStack(Material.ANCIENT_DEBRIS)};
+
+        new SlimefunItem(itemGroup, runeStack, RecipeType.ANCIENT_ALTAR, runeRecipe)
                 .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));
