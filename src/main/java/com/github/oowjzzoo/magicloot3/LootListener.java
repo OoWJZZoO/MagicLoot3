@@ -125,15 +125,27 @@ public class LootListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent e) {
         if (!(e.getEntity() instanceof LivingEntity victim)) return;
-        if (!CAUSES.contains(e.getCause())) return;
-        if (!e.getEntity().getWorld().getPVP()) return;
 
         // Protect Lost Librarian villagers
         if (victim instanceof Villager
                 && victim.getPersistentDataContainer().has(ItemKeys.LIBRARIAN)) {
-            e.setCancelled(true);
+            if (e.getCause() == DamageCause.MAGIC) {
+                // Magic damage (poison, wither, instant damage) passes through
+            } else if (e instanceof EntityDamageByEntityEvent dmgEvent
+                    && dmgEvent.getDamager() instanceof Player attacker) {
+                // Physical hit: cancel damage, apply weapon affixes to NPC
+                e.setCancelled(true);
+                ItemStack weapon = getItemInMainHand(attacker);
+                applyEffectsFromItem(weapon, victim, victim);
+            } else {
+                // All other damage sources blocked
+                e.setCancelled(true);
+            }
             return;
         }
+
+        if (!CAUSES.contains(e.getCause())) return;
+        if (!e.getEntity().getWorld().getPVP()) return;
 
         try {
             if (e instanceof EntityDamageByEntityEvent damageEvent) {
