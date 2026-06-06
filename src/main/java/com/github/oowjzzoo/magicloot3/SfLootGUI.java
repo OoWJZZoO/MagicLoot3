@@ -88,28 +88,46 @@ final class SfLootGUI extends LootConfigGUI {
 
     // ── Route to items / sub-groups ──
 
+    @SuppressWarnings("unchecked")
     private void openGroup(Player player, ItemGroup group, int page) {
         if (group instanceof NestedItemGroup nested) {
-            openSubGroups(player, nested, page);
-        } else if (group instanceof FlexItemGroup) {
-            openFlatItems(player, group, page);
-        } else {
-            openItems(player, group, page);
+            showSubGroups(player, nested, findNestedChildren(nested), page);
+            return;
         }
+        if (group instanceof FlexItemGroup) {
+            // Try to get sub-groups via reflection (addons like LogiTech expose them)
+            try {
+                var m = group.getClass().getMethod("getItemGroup");
+                List<ItemGroup> subs = (List<ItemGroup>) m.invoke(group);
+                if (subs != null && !subs.isEmpty()) {
+                    showSubGroups(player, group, subs, page);
+                    return;
+                }
+            } catch (Exception ignored) {}
+            openFlatItems(player, group, page);
+            return;
+        }
+        openItems(player, group, page);
     }
 
-    // ── Sub-group page (NestedItemGroup) ──
+    // ── Sub-group pages ──
 
-    private void openSubGroups(Player player, NestedItemGroup parent, int page) {
-        Map<String, Integer> cache = CACHES.get(player.getUniqueId());
-        if (cache == null) return;
-
-        // Find all SubItemGroup children
-        List<SubItemGroup> subs = new ArrayList<>();
+    private List<ItemGroup> findNestedChildren(NestedItemGroup parent) {
+        List<ItemGroup> subs = new ArrayList<>();
         for (ItemGroup g : Slimefun.getRegistry().getAllItemGroups()) {
             if (g instanceof SubItemGroup sub && sub.getParent() == parent)
                 subs.add(sub);
         }
+        subs.sort(Comparator.comparing(
+                g -> ChatColor.stripColor(g.getDisplayName(null))));
+        return subs;
+    }
+
+    private void openSubGroups(Player player, NestedItemGroup parent, int page) {
+        showSubGroups(player, parent, findNestedChildren(parent), page);
+    }
+
+    private void showSubGroups(Player player, ItemGroup parent, List<? extends ItemGroup> subs, int page) {
         subs.sort(Comparator.comparing(
                 g -> ChatColor.stripColor(g.getDisplayName(player))));
 
@@ -123,19 +141,20 @@ final class SfLootGUI extends LootConfigGUI {
         int start = MAX_ITEMS * (cur - 1);
         int slot = 9;
         for (int i = start; i < subs.size() && slot < 45; i++, slot++) {
-            SubItemGroup sub = subs.get(i);
+            ItemGroup sub = subs.get(i);
             menu.addItem(slot, sub.getItem(player));
-            final SubItemGroup snap = sub;
+            final ItemGroup snap = sub;
             menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
                 sw.add(pl.getUniqueId());
-                openItems(pl, snap, 1);
+                openGroup(pl, snap, 1);
                 return false;
             });
         }
 
+        addFooterBg(menu);
         addPrevNext(menu, player, cur, pages, sw,
-                () -> openSubGroups(player, parent, cur - 1),
-                () -> openSubGroups(player, parent, cur + 1));
+                () -> showSubGroups(player, parent, subs, cur - 1),
+                () -> showSubGroups(player, parent, subs, cur + 1));
         finishMenu(menu, player, sw);
     }
 
