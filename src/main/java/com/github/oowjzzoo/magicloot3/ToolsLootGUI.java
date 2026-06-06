@@ -94,6 +94,7 @@ final class ToolsLootGUI extends LootConfigGUI {
             if (m.isBlock() || m.toString().contains("BOOK")) continue;
             boolean ok = false;
             for (org.bukkit.enchantments.Enchantment e : org.bukkit.enchantments.Enchantment.values()) {
+                if (e.isCursed()) continue;
                 if (e.canEnchantItem(new ItemStack(m))) { ok = true; break; }
             }
             if (ok) keys.add(m.toString());

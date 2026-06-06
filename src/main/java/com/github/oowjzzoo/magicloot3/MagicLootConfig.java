@@ -72,18 +72,12 @@ public class MagicLootConfig {
         for (Material m : Material.values()) {
             if (m.isBlock()) continue;
             for (Enchantment e : Enchantment.values()) {
+                if (e.isCursed()) continue; // mirror SF EnchantmentRune
                 if (e.canEnchantItem(new ItemStack(m)) && !m.toString().contains("BOOK")) {
                     configItems.setDefaultValue("tools." + m.toString(), 100);
                     break;
                 }
             }
-        }
-        // Disable non-weapon items in tools pool
-        for (String t : new String[]{"FLINT_AND_STEEL", "SHEARS", "FISHING_ROD",
-                "CARROT_ON_A_STICK", "WARPED_FUNGUS_ON_A_STICK", "COMPASS",
-                "CLOCK", "NAME_TAG", "LEAD", "SADDLE", "SHIELD", "BOW",
-                "CROSSBOW", "TRIDENT", "ELYTRA"}) {
-            configItems.setDefaultValue("tools." + t, 0);
         }
         // Treasure pool: default items
         for (String t : new String[]{"DIAMOND", "GOLD_INGOT", "IRON_INGOT", "EMERALD", "QUARTZ"}) {
