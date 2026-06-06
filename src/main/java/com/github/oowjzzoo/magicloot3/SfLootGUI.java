@@ -231,11 +231,10 @@ final class SfLootGUI extends LootConfigGUI {
     private List<ItemGroup> getVisibleGroups(Player player) {
         List<ItemGroup> groups = new ArrayList<>();
         for (ItemGroup group : Slimefun.getRegistry().getAllItemGroups()) {
-            if (group instanceof FlexItemGroup flex) {
-                if (flex.isVisible(player, null, SlimefunGuideMode.CHEAT_MODE))
-                    groups.add(group);
-            } else if (!group.isHidden(player) && !group.getItems().isEmpty())
+            if (!(group instanceof FlexItemGroup flex)
+                    || flex.isVisible(player, null, SlimefunGuideMode.CHEAT_MODE)) {
                 groups.add(group);
+            }
         }
         return groups;
     }
