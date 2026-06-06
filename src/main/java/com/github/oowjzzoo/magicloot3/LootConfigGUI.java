@@ -71,13 +71,18 @@ abstract class LootConfigGUI {
         return m;
     }
 
+    /** Add footer backgrounds, then close handler, then open. */
     void finishMenu(ChestMenu menu, Player player, Set<UUID> switching) {
-        for (int i = 45; i < 54; i++)
-            menu.addItem(i, ChestMenuUtils.getBackground(), ChestMenuUtils.getEmptyClickHandler());
         menu.addMenuCloseHandler(pl -> {
             if (!switching.remove(pl.getUniqueId())) trySave(pl);
         });
         menu.open(player);
+    }
+
+    /** Add footer backgrounds to all slots 45-53. */
+    void addFooterBg(ChestMenu menu) {
+        for (int i = 45; i < 54; i++)
+            menu.addItem(i, ChestMenuUtils.getBackground(), ChestMenuUtils.getEmptyClickHandler());
     }
 
     void addBack(ChestMenu menu, int slot, Set<UUID> switching, Runnable action) {

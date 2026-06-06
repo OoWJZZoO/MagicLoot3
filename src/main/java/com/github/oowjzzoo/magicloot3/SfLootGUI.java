@@ -79,6 +79,7 @@ final class SfLootGUI extends LootConfigGUI {
             });
         }
 
+        addFooterBg(menu);
         addPrevNext(menu, player, cur, pages, sw,
                 () -> openMainPage(player, cur - 1),
                 () -> openMainPage(player, cur + 1));
