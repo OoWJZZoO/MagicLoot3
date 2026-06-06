@@ -153,35 +153,35 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
             }
             case "set_sf_w" -> {
                 if (args.length < 3) {
-                    sender.sendMessage("§cUsage: /magicloot set_sf_w <SF_ID> <weight>");
+                    sender.sendMessage(Messages.get("cmd.set_sf_w_usage"));
                     return true;
                 }
                 if (!Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
-                    sender.sendMessage("§cSlimefun is not enabled.");
+                    sender.sendMessage(Messages.get("cmd.sf_not_enabled"));
                     return true;
                 }
                 String sfId = args[1].toUpperCase();
                 SlimefunItem sfItem = SlimefunItem.getById(sfId);
                 if (sfItem == null) {
-                    sender.sendMessage("§cUnknown Slimefun item: " + sfId);
+                    sender.sendMessage(Messages.get("cmd.unknown_sf_item", sfId));
                     return true;
                 }
                 int weight;
                 try {
                     weight = Integer.parseInt(args[2]);
                 } catch (NumberFormatException e) {
-                    sender.sendMessage("§cWeight must be an integer.");
+                    sender.sendMessage(Messages.get("cmd.weight_must_be_int"));
                     return true;
                 }
                 if (weight < 0) {
-                    sender.sendMessage("§cWeight must be >= 0.");
+                    sender.sendMessage(Messages.get("cmd.weight_must_be_nonnegative"));
                     return true;
                 }
                 ConfigManager cfg = new ConfigManager(new File(plugin.getDataFolder(), "Items.yml"));
                 cfg.getYaml().set("slimefun." + sfId, weight);
                 cfg.save();
                 MagicLoot3.reload(plugin);
-                sender.sendMessage("§aSet " + sfId + " weight to " + weight + ".");
+                sender.sendMessage(Messages.get("cmd.set_sf_w_done", sfId, String.valueOf(weight)));
             }
             default -> sender.sendMessage(Messages.get("log.unknown_command"));
         }
