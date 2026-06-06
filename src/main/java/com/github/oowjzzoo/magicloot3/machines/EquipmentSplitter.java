@@ -68,7 +68,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
     private static final int SIGN_SLOT = 16;
     private static final int TRASH_SLOT = 25;
 
-    private static final int SAVE_SLOT = 2;
+    private static final int SAVE_SLOT = 4; // 1-based slot 5
     private static final int MAX_ITEMS = 36;
 
     // Cyan frame: 28,29,30,37,39,46,47,48 → 0-based
@@ -121,9 +121,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
                 ItemStack orangePane = stainedPane(Material.ORANGE_STAINED_GLASS_PANE);
                 for (int i : ORANGE_SLOTS) addItem(i, orangePane, empty);
 
-                // I/O slot textures
-                addItem(INPUT_SLOT, ChestMenuUtils.getInputSlotTexture(), empty);
-                addItem(OUTPUT_SLOT, ChestMenuUtils.getOutputSlotTexture(), empty);
+                // I/O slots are framed by cyan/orange; no extra texture needed
             }
 
             @Override
@@ -364,10 +362,6 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
             if (!sw.remove(pl.getUniqueId())) {
                 dirtyConfigs.remove(loc);
                 dirtyPriorities.remove(loc);
-                Bukkit.getScheduler().runTask(plugin, () -> {
-                    BlockMenu inv = BlockStorage.getInventory(b);
-                    if (inv != null) inv.open(pl);
-                });
             }
         });
 
@@ -385,7 +379,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
     }
 
     private ItemStack buildSaveButton() {
-        ItemStack item = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
+        ItemStack item = new ItemStack(Material.CHEST);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(Messages.get("machine.equipment_splitter.save_exit"));
         item.setItemMeta(meta);
