@@ -186,7 +186,14 @@ final class SlimefunHook implements SlimefunAddon {
                 "§f使用带有伤害型药水词缀的武器杀死",
                 "§f或者使用喷溅型药水杀死"));
         eggIcon.setItemMeta(eggMeta);
-        new SlimefunItem(itemGroup, brainStack, RecipeType.MOB_DROP,
+
+        ItemStack dropIcon = new ItemStack(Material.IRON_SWORD);
+        ItemMeta dropMeta = dropIcon.getItemMeta();
+        dropMeta.setDisplayName("§5§l无魂鉴定师掉落");
+        dropIcon.setItemMeta(dropMeta);
+        RecipeType librarianDrop = new RecipeType(
+                new NamespacedKey(plugin, "librarian_drop"), dropIcon);
+        new SlimefunItem(itemGroup, brainStack, librarianDrop,
                 new ItemStack[]{null, null, null, null, eggIcon, null, null, null, null})
                 .register(this);
 
