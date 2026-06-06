@@ -36,6 +36,7 @@ final class SfLootGUI extends LootConfigGUI {
         // Fill defaults for SF items not yet in config (addons installed after ours)
         if (Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
             for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
+                if (item.getId().startsWith("JEG")) continue;
                 cache.putIfAbsent(item.getId(), 100);
             }
         }
