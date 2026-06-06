@@ -63,8 +63,9 @@ abstract class LootConfigGUI {
 
     // ── UI builders ──
 
-    ChestMenu newMenu(Player player, String titleKey) {
-        ChestMenu m = new ChestMenu(m("title") + " - " + m(titleKey));
+    /** @param subtitle already-localized subtitle (caller calls {@link #m} if needed) */
+    ChestMenu newMenu(Player player, String subtitle) {
+        ChestMenu m = new ChestMenu(m("title") + " - " + subtitle);
         m.setEmptySlotsClickable(false);
         for (int i = 0; i < 9; i++)
             m.addItem(i, ChestMenuUtils.getBackground(), ChestMenuUtils.getEmptyClickHandler());

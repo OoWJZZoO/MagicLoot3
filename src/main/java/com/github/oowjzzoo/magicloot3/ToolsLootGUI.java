@@ -65,7 +65,7 @@ final class ToolsLootGUI extends LootConfigGUI {
         int pages = Math.max(1, (keys.size() - 1) / MAX_ITEMS + 1);
         final int cur = Math.min(page, pages);
 
-        var menu = newMenu(player, "tools");
+        var menu = newMenu(player, m("tools"));
         var sw = new HashSet<UUID>();
         int tw = computeTotal(cache);
 

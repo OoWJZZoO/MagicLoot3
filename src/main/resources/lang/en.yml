@@ -193,6 +193,7 @@ gui:
   loot_config:
     title: "Loot Config"
     categories: "Categories"
+    tools: "Tools"
     back: "&7← Back to Categories"
     enabled: "&a✔ Enabled (weight: {0}, probability: {1}‰)"
     disabled: "&c✘ Disabled"

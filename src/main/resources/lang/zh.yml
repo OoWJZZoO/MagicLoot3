@@ -181,6 +181,7 @@ gui:
   loot_config:
     title: "战利品配置"
     categories: "分类"
+    tools: "原版物品"
     back: "&7← 返回分类"
     enabled: "&a✔ 已启用（权重: {0}, 概率: {1}‰）"
     disabled: "&c✘ 已禁用"

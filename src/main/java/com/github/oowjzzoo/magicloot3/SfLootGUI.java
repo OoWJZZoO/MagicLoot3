@@ -72,7 +72,7 @@ final class SfLootGUI extends LootConfigGUI {
         int pages = Math.max(1, (total - 1) / MAX_ITEMS + 1);
         int cur = Math.min(page, pages);
 
-        var menu = newMenu(player, "categories");
+        var menu = newMenu(player, m("categories"));
         var sw = new HashSet<UUID>();
 
         int start = MAX_ITEMS * (cur - 1);
@@ -96,7 +96,7 @@ final class SfLootGUI extends LootConfigGUI {
         if (catchIdx >= start && catchIdx < end && slot < 45) {
             ItemStack icon = new ItemStack(org.bukkit.Material.CHEST);
             ItemMeta meta = icon.getItemMeta();
-            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', m("all_items")));
+            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&f&l" + m("all_items")));
             icon.setItemMeta(meta);
             menu.addItem(slot, icon);
             menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
@@ -237,7 +237,7 @@ final class SfLootGUI extends LootConfigGUI {
         int pages = Math.max(1, (ids.size() - 1) / MAX_ITEMS + 1);
         final int cur = Math.min(page, pages);
 
-        var menu = newMenu(player, "all_items");
+        var menu = newMenu(player, m("all_items"));
         var sw = new HashSet<UUID>();
         addBack(menu, 1, sw, back);
 
