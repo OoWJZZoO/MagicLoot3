@@ -24,7 +24,6 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 
 /**
  * Slimefun loot weight config GUI — /ml sf_loot.
- * Same structure as /sf cheat: main category grid, click to drill down.
  */
 final class SfLootGUI extends LootConfigGUI {
 
@@ -53,7 +52,7 @@ final class SfLootGUI extends LootConfigGUI {
         return s != null ? s.getItem().clone() : new ItemStack(org.bukkit.Material.BARRIER);
     }
 
-    // ── Main page: category grid ──
+    // ── Main page ──
 
     @Override protected void openMainPage(Player player, int page) {
         Map<String, Integer> cache = CACHES.get(player.getUniqueId());
@@ -74,7 +73,9 @@ final class SfLootGUI extends LootConfigGUI {
             final int idx = i;
             menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
                 sw.add(pl.getUniqueId());
-                openGroup(pl, groups.get(idx), 1);
+                // When drilling into a main-page group, back always returns to main page
+                Runnable back = () -> openMainPage(pl, 1);
+                openGroup(pl, groups.get(idx), 1, back);
                 return false;
             });
         }
@@ -86,32 +87,31 @@ final class SfLootGUI extends LootConfigGUI {
         finishMenu(menu, player, sw);
     }
 
-    // ── Route to items / sub-groups ──
+    // ── Route ──
 
     @SuppressWarnings("unchecked")
-    private void openGroup(Player player, ItemGroup group, int page) {
+    private void openGroup(Player player, ItemGroup group, int page, Runnable back) {
         if (group instanceof NestedItemGroup nested) {
-            showSubGroups(player, nested, findNestedChildren(nested, player), page);
+            showSubGroups(player, nested, findNestedChildren(nested, player), page, back);
             return;
         }
         if (group instanceof FlexItemGroup) {
-            // Try to get sub-groups via reflection (addons like LogiTech expose them)
             try {
                 var m = group.getClass().getDeclaredMethod("getItemGroup");
                 m.setAccessible(true);
                 List<ItemGroup> subs = (List<ItemGroup>) m.invoke(group);
                 if (subs != null && !subs.isEmpty()) {
-                    showSubGroups(player, group, subs, page);
+                    showSubGroups(player, group, subs, page, back);
                     return;
                 }
             } catch (Exception ignored) {}
-            openFlatItems(player, group, page);
+            openFlatItems(player, group, page, back);
             return;
         }
-        openItems(player, group, page);
+        openItems(player, group, page, back);
     }
 
-    // ── Sub-group pages ──
+    // ── Sub-group page ──
 
     private List<ItemGroup> findNestedChildren(NestedItemGroup parent, Player player) {
         List<ItemGroup> subs = new ArrayList<>();
@@ -124,11 +124,8 @@ final class SfLootGUI extends LootConfigGUI {
         return subs;
     }
 
-    private void openSubGroups(Player player, NestedItemGroup parent, int page) {
-        showSubGroups(player, parent, findNestedChildren(parent, player), page);
-    }
-
-    private void showSubGroups(Player player, ItemGroup parent, List<? extends ItemGroup> subs, int page) {
+    private void showSubGroups(Player player, ItemGroup parent, List<? extends ItemGroup> subs,
+                                int page, Runnable back) {
         subs.sort(Comparator.comparing(
                 g -> ChatColor.stripColor(g.getDisplayName(player))));
 
@@ -137,7 +134,7 @@ final class SfLootGUI extends LootConfigGUI {
 
         var menu = newMenu(player, ChatColor.stripColor(parent.getDisplayName(player)));
         var sw = new HashSet<UUID>();
-        addBack(menu, 1, sw, () -> openMainPage(player, 1));
+        addBack(menu, 1, sw, back);
 
         int start = MAX_ITEMS * (cur - 1);
         int slot = 9;
@@ -147,21 +144,23 @@ final class SfLootGUI extends LootConfigGUI {
             final ItemGroup snap = sub;
             menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
                 sw.add(pl.getUniqueId());
-                openGroup(pl, snap, 1);
+                final int pageSnap = cur;
+                Runnable subBack = () -> showSubGroups(player, parent, subs, pageSnap, back);
+                openGroup(pl, snap, 1, subBack);
                 return false;
             });
         }
 
         addFooterBg(menu);
         addPrevNext(menu, player, cur, pages, sw,
-                () -> showSubGroups(player, parent, subs, cur - 1),
-                () -> showSubGroups(player, parent, subs, cur + 1));
+                () -> showSubGroups(player, parent, subs, cur - 1, back),
+                () -> showSubGroups(player, parent, subs, cur + 1, back));
         finishMenu(menu, player, sw);
     }
 
-    // ── Items page (non-flex group or SubItemGroup) ──
+    // ── Items page ──
 
-    private void openItems(Player player, ItemGroup group, int page) {
+    private void openItems(Player player, ItemGroup group, int page, Runnable back) {
         Map<String, Integer> cache = CACHES.get(player.getUniqueId());
         if (cache == null) return;
 
@@ -173,7 +172,7 @@ final class SfLootGUI extends LootConfigGUI {
         var menu = newMenu(player, ChatColor.stripColor(group.getDisplayName(player)));
         var sw = new HashSet<UUID>();
 
-        addBack(menu, 1, sw, () -> openBack(player, group));
+        addBack(menu, 1, sw, back);
 
         int tw = computeTotal(cache);
         int start = MAX_ITEMS * (cur - 1);
@@ -185,23 +184,22 @@ final class SfLootGUI extends LootConfigGUI {
             menu.addItem(slot, buildItem(id, weight, tw));
             final int pageSnap = cur;
             menu.addMenuClickHandler(slot, makeClickHandler(player, id, sw,
-                    () -> openItems(player, group, pageSnap)));
+                    () -> openItems(player, group, pageSnap, back)));
         }
 
         addFooterBg(menu);
         addPrevNext(menu, player, cur, pages, sw,
-                () -> openItems(player, group, cur - 1),
-                () -> openItems(player, group, cur + 1));
+                () -> openItems(player, group, cur - 1, back),
+                () -> openItems(player, group, cur + 1, back));
         finishMenu(menu, player, sw);
     }
 
-    // ── Fallback for unknown flex groups: show sub-groups by same addon ──
+    // ── Fallback flex-group page ──
 
-    private void openFlatItems(Player player, ItemGroup flex, int page) {
+    private void openFlatItems(Player player, ItemGroup flex, int page, Runnable back) {
         Map<String, Integer> cache = CACHES.get(player.getUniqueId());
         if (cache == null) return;
 
-        // Find visible non-flex groups from the same addon
         List<ItemGroup> subs = new ArrayList<>();
         var addon = flex.getAddon();
         for (ItemGroup g : Slimefun.getRegistry().getAllItemGroups()) {
@@ -216,7 +214,7 @@ final class SfLootGUI extends LootConfigGUI {
 
         var menu = newMenu(player, ChatColor.stripColor(flex.getDisplayName(player)));
         var sw = new HashSet<UUID>();
-        addBack(menu, 1, sw, () -> openMainPage(player, 1));
+        addBack(menu, 1, sw, back);
 
         int start = MAX_ITEMS * (cur - 1);
         int slot = 9;
@@ -226,28 +224,21 @@ final class SfLootGUI extends LootConfigGUI {
             final ItemGroup snap = sub;
             menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
                 sw.add(pl.getUniqueId());
-                openItems(pl, snap, 1);
+                final int pageSnap = cur;
+                Runnable subBack = () -> openFlatItems(pl, flex, pageSnap, back);
+                openGroup(pl, snap, 1, subBack);
                 return false;
             });
         }
 
         addFooterBg(menu);
         addPrevNext(menu, player, cur, pages, sw,
-                () -> openFlatItems(player, flex, cur - 1),
-                () -> openFlatItems(player, flex, cur + 1));
+                () -> openFlatItems(player, flex, cur - 1, back),
+                () -> openFlatItems(player, flex, cur + 1, back));
         finishMenu(menu, player, sw);
     }
 
-    // ── Back routing ──
-
-    private void openBack(Player player, ItemGroup group) {
-        if (group instanceof SubItemGroup sub)
-            openSubGroups(player, sub.getParent(), 1);
-        else
-            openMainPage(player, 1);
-    }
-
-    // ── Visible groups (matching CheatSheetSlimefunGuide) ──
+    // ── Visible groups ──
 
     private List<ItemGroup> getVisibleGroups(Player player) {
         List<ItemGroup> groups = new ArrayList<>();
