@@ -317,11 +317,11 @@ public final class LootConfigGUI {
             lore.add(ChatColor.translateAlternateColorCodes('&', m("multiblock")));
         } else {
             if (weight > 0) {
-                String pct = totalWeight > 0
-                        ? String.format("%.1f%%", 100.0 * weight / totalWeight)
-                        : "0%";
+                String prob = totalWeight > 0
+                        ? String.format("%.2g", 1000.0 * weight / totalWeight)
+                        : "0";
                 lore.add(ChatColor.translateAlternateColorCodes('&',
-                        m("enabled", String.valueOf(weight), pct)));
+                        m("enabled", String.valueOf(weight), prob)));
             } else {
                 lore.add(ChatColor.translateAlternateColorCodes('&', m("disabled")));
             }

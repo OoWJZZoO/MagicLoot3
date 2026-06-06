@@ -182,7 +182,7 @@ gui:
     title: "战利品配置"
     categories: "分类"
     back: "&7← 返回分类"
-    enabled: "&a✔ 已启用（权重: {0}, 概率: {1}）"
+    enabled: "&a✔ 已启用（权重: {0}, 概率: {1}‰）"
     disabled: "&c✘ 已禁用"
     multiblock: "&8🚫 多方块结构，无法作为战利品生成"
     help: "&7左键启用(100) | 右键禁用(0) | Shift+点击自定义"
