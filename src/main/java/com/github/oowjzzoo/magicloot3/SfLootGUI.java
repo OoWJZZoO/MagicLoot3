@@ -174,45 +174,46 @@ final class SfLootGUI extends LootConfigGUI {
         finishMenu(menu, player, sw);
     }
 
-    // ── Fallback for unknown flex groups ──
+    // ── Fallback for unknown flex groups: show sub-groups by same addon ──
 
-    private void openFlatItems(Player player, ItemGroup group, int page) {
+    private void openFlatItems(Player player, ItemGroup flex, int page) {
         Map<String, Integer> cache = CACHES.get(player.getUniqueId());
         if (cache == null) return;
 
-        List<SlimefunItem> items = new ArrayList<>();
+        // Find visible non-flex groups from the same addon
+        List<ItemGroup> subs = new ArrayList<>();
+        var addon = flex.getAddon();
         for (ItemGroup g : Slimefun.getRegistry().getAllItemGroups()) {
             if (g instanceof FlexItemGroup || g.isHidden(player) || g.getItems().isEmpty()) continue;
-            for (SlimefunItem item : g.getItems())
-                if (!item.isDisabledIn(player.getWorld())) items.add(item);
+            if (g.getAddon() == addon) subs.add(g);
         }
-        items.sort(Comparator.comparing(
-                (SlimefunItem i) -> ChatColor.stripColor(i.getItemGroup().getDisplayName(player)))
-                .thenComparing(i -> ChatColor.stripColor(i.getItemName())));
+        subs.sort(Comparator.comparing(
+                g -> ChatColor.stripColor(g.getDisplayName(player))));
 
-        int pages = Math.max(1, (items.size() - 1) / MAX_ITEMS + 1);
+        int pages = Math.max(1, (subs.size() - 1) / MAX_ITEMS + 1);
         final int cur = Math.min(page, pages);
 
-        var menu = newMenu(player, ChatColor.stripColor(group.getDisplayName(player)));
+        var menu = newMenu(player, ChatColor.stripColor(flex.getDisplayName(player)));
         var sw = new HashSet<UUID>();
         addBack(menu, 1, sw, () -> openMainPage(player, 1));
 
-        int tw = computeTotal(cache);
         int start = MAX_ITEMS * (cur - 1);
         int slot = 9;
-        for (int i = start; i < items.size() && slot < 45; i++, slot++) {
-            SlimefunItem sfItem = items.get(i);
-            String id = sfItem.getId();
-            int weight = cache.getOrDefault(id, 0);
-            menu.addItem(slot, buildItem(id, weight, tw));
-            final int pageSnap = cur;
-            menu.addMenuClickHandler(slot, makeClickHandler(player, id, sw,
-                    () -> openFlatItems(player, group, pageSnap)));
+        for (int i = start; i < subs.size() && slot < 45; i++, slot++) {
+            ItemGroup sub = subs.get(i);
+            menu.addItem(slot, sub.getItem(player));
+            final ItemGroup snap = sub;
+            menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
+                sw.add(pl.getUniqueId());
+                openItems(pl, snap, 1);
+                return false;
+            });
         }
 
+        addFooterBg(menu);
         addPrevNext(menu, player, cur, pages, sw,
-                () -> openFlatItems(player, group, cur - 1),
-                () -> openFlatItems(player, group, cur + 1));
+                () -> openFlatItems(player, flex, cur - 1),
+                () -> openFlatItems(player, flex, cur + 1));
         finishMenu(menu, player, sw);
     }
 
