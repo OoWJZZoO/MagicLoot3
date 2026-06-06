@@ -89,12 +89,7 @@ public class MagicLootConfig {
         for (String t : new String[]{"DIAMOND", "GOLD_INGOT", "IRON_INGOT", "EMERALD", "QUARTZ"}) {
             configItems.setDefaultValue("treasure." + t, 100);
         }
-        // Slimefun pool
-        if (Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
-            for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
-                configItems.setDefaultValue("slimefun." + item.getId(), 100);
-            }
-        }
+        writeSfDefaults(configItems);
 
         for (LootTier tier : LootTier.values()) {
             if (tier == LootTier.NONE || tier == LootTier.UNKNOWN) continue;
@@ -233,17 +228,20 @@ public class MagicLootConfig {
     public static void ensureDefaults(JavaPlugin plugin) {
         ConfigManager cfg = getConfig(ConfigType.ITEMS);
         if (cfg == null) return;
-        int count = 0, existed = 0, total = 0;
-        for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
-            total++;
-            String path = "slimefun." + item.getId();
-            boolean had = cfg.contains(path);
-            if (had) existed++; else count++;
-            cfg.setDefaultValue(path, 100);
-        }
+        int prev = cfg.getYaml().getConfigurationSection("slimefun") != null
+                ? cfg.getYaml().getConfigurationSection("slimefun").getKeys(false).size() : 0;
+        writeSfDefaults(cfg);
         cfg.save();
-        plugin.getLogger().info("[LootDefaults] total=" + total + " existed=" + existed
-                + " added=" + count);
+        int after = cfg.getYaml().getConfigurationSection("slimefun").getKeys(false).size();
+        plugin.getLogger().info("[LootDefaults] total=" + after + " existed=" + prev
+                + " added=" + (after - prev));
+    }
+
+    private static void writeSfDefaults(ConfigManager cfg) {
+        if (!Bukkit.getPluginManager().isPluginEnabled("Slimefun")) return;
+        for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
+            cfg.setDefaultValue("slimefun." + item.getId(), 100);
+        }
     }
 
     private static void saveDefaultConfig(String name) {

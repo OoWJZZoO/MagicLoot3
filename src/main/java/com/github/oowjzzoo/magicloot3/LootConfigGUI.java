@@ -71,7 +71,7 @@ abstract class LootConfigGUI {
         return m;
     }
 
-    /** Add footer backgrounds, then close handler, then open. */
+    /** Add close handler, then open. Call {@link #addFooterBg} before {@link #addPrevNext}. */
     void finishMenu(ChestMenu menu, Player player, Set<UUID> switching) {
         menu.addMenuCloseHandler(pl -> {
             if (!switching.remove(pl.getUniqueId())) trySave(pl);

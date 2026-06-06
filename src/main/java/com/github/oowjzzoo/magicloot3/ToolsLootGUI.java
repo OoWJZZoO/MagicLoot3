@@ -80,6 +80,7 @@ final class ToolsLootGUI extends LootConfigGUI {
                     () -> openMainPage(player, pageSnap)));
         }
 
+        addFooterBg(menu);
         addPrevNext(menu, player, cur, pages, sw,
                 () -> openMainPage(player, cur - 1),
                 () -> openMainPage(player, cur + 1));

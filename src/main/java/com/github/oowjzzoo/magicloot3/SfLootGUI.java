@@ -32,7 +32,14 @@ final class SfLootGUI extends LootConfigGUI {
 
     static void open(Player player, Plugin plugin) {
         PLUGIN = plugin;
-        CACHES.put(player.getUniqueId(), INSTANCE.loadConfig());
+        Map<String, Integer> cache = INSTANCE.loadConfig();
+        // Fill defaults for SF items not yet in config (addons installed after ours)
+        if (Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
+            for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
+                cache.putIfAbsent(item.getId(), 100);
+            }
+        }
+        CACHES.put(player.getUniqueId(), cache);
         if (chatListener == null) {
             chatListener = new ChatHandler();
             Bukkit.getPluginManager().registerEvents(chatListener, plugin);
@@ -96,16 +103,22 @@ final class SfLootGUI extends LootConfigGUI {
             return;
         }
         if (group instanceof FlexItemGroup) {
+            List<ItemGroup> subs = null;
             try {
                 var m = group.getClass().getDeclaredMethod("getItemGroup");
                 m.setAccessible(true);
-                List<ItemGroup> subs = (List<ItemGroup>) m.invoke(group);
-                if (subs != null && !subs.isEmpty()) {
-                    showSubGroups(player, group, subs, page, back);
-                    return;
-                }
+                subs = (List<ItemGroup>) m.invoke(group);
             } catch (Exception ignored) {}
-            openFlatItems(player, group, page, back);
+            // If no getItemGroup(), collect non-flex groups from the same addon
+            if (subs == null || subs.isEmpty()) {
+                subs = new ArrayList<>();
+                var addon = group.getAddon();
+                for (ItemGroup g : Slimefun.getRegistry().getAllItemGroups()) {
+                    if (g instanceof FlexItemGroup || g.getItems().isEmpty()) continue;
+                    if (g.getAddon() == addon) subs.add(g);
+                }
+            }
+            showSubGroups(player, group, subs, page, back);
             return;
         }
         openItems(player, group, page, back);
@@ -191,50 +204,6 @@ final class SfLootGUI extends LootConfigGUI {
         addPrevNext(menu, player, cur, pages, sw,
                 () -> openItems(player, group, cur - 1, back),
                 () -> openItems(player, group, cur + 1, back));
-        finishMenu(menu, player, sw);
-    }
-
-    // ── Fallback flex-group page ──
-
-    private void openFlatItems(Player player, ItemGroup flex, int page, Runnable back) {
-        Map<String, Integer> cache = CACHES.get(player.getUniqueId());
-        if (cache == null) return;
-
-        List<ItemGroup> subs = new ArrayList<>();
-        var addon = flex.getAddon();
-        for (ItemGroup g : Slimefun.getRegistry().getAllItemGroups()) {
-            if (g instanceof FlexItemGroup || g.getItems().isEmpty()) continue;
-            if (g.getAddon() == addon) subs.add(g);
-        }
-        subs.sort(Comparator.comparing(
-                g -> ChatColor.stripColor(g.getDisplayName(player))));
-
-        int pages = Math.max(1, (subs.size() - 1) / MAX_ITEMS + 1);
-        final int cur = Math.min(page, pages);
-
-        var menu = newMenu(player, ChatColor.stripColor(flex.getDisplayName(player)));
-        var sw = new HashSet<UUID>();
-        addBack(menu, 1, sw, back);
-
-        int start = MAX_ITEMS * (cur - 1);
-        int slot = 9;
-        for (int i = start; i < subs.size() && slot < 45; i++, slot++) {
-            ItemGroup sub = subs.get(i);
-            menu.addItem(slot, sub.getItem(player));
-            final ItemGroup snap = sub;
-            menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
-                sw.add(pl.getUniqueId());
-                final int pageSnap = cur;
-                Runnable subBack = () -> openFlatItems(pl, flex, pageSnap, back);
-                openGroup(pl, snap, 1, subBack);
-                return false;
-            });
-        }
-
-        addFooterBg(menu);
-        addPrevNext(menu, player, cur, pages, sw,
-                () -> openFlatItems(player, flex, cur - 1, back),
-                () -> openFlatItems(player, flex, cur + 1, back));
         finishMenu(menu, player, sw);
     }
 
