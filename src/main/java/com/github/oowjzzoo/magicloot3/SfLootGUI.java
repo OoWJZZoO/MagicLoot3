@@ -97,7 +97,8 @@ final class SfLootGUI extends LootConfigGUI {
         if (group instanceof FlexItemGroup) {
             // Try to get sub-groups via reflection (addons like LogiTech expose them)
             try {
-                var m = group.getClass().getMethod("getItemGroup");
+                var m = group.getClass().getDeclaredMethod("getItemGroup");
+                m.setAccessible(true);
                 List<ItemGroup> subs = (List<ItemGroup>) m.invoke(group);
                 if (subs != null && !subs.isEmpty()) {
                     showSubGroups(player, group, subs, page);
@@ -203,7 +204,7 @@ final class SfLootGUI extends LootConfigGUI {
         List<ItemGroup> subs = new ArrayList<>();
         var addon = flex.getAddon();
         for (ItemGroup g : Slimefun.getRegistry().getAllItemGroups()) {
-            if (g instanceof FlexItemGroup || g.isHidden(player) || g.getItems().isEmpty()) continue;
+            if (g instanceof FlexItemGroup || g.getItems().isEmpty()) continue;
             if (g.getAddon() == addon) subs.add(g);
         }
         subs.sort(Comparator.comparing(
