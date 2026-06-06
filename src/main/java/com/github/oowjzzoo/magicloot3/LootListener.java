@@ -2,6 +2,7 @@ package com.github.oowjzzoo.magicloot3;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.ChatColor;
@@ -122,6 +123,9 @@ public class LootListener implements Listener {
 
     // --- Combat potion effect triggers ---
 
+    private static final Set<DamageCause> ALLOWED_CAUSES = Set.of(
+            DamageCause.MAGIC, DamageCause.POISON, DamageCause.WITHER);
+
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent e) {
         if (!(e.getEntity() instanceof LivingEntity victim)) return;
@@ -129,8 +133,8 @@ public class LootListener implements Listener {
         // Protect Lost Librarian villagers
         if (victim instanceof Villager
                 && victim.getPersistentDataContainer().has(ItemKeys.LIBRARIAN)) {
-            if (e.getCause() == DamageCause.MAGIC) {
-                // Magic damage (poison, wither, instant damage) passes through
+            if (ALLOWED_CAUSES.contains(e.getCause())) {
+                // Poison, wither, instant damage passes through
             } else if (e instanceof EntityDamageByEntityEvent dmgEvent
                     && dmgEvent.getDamager() instanceof Player attacker) {
                 // Physical hit: cancel damage, apply weapon affixes to NPC
