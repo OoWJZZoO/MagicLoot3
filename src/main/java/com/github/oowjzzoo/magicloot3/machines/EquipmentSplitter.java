@@ -2,7 +2,6 @@ package com.github.oowjzzoo.magicloot3.machines;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,22 +58,23 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
     enum Route { A, B, C }
     enum Priority { DESTROY_FIRST, OUTPUT_FIRST }
 
-    private static final int INPUT_SLOT = 10;
-    private static final int OUTPUT_SLOT = 16;
-    private static final int MENU_SLOT = 13;
-    private static final int PRIO_SLOT = 20;
-    private static final int SIGN_SLOT = 21;
-    private static final int TRASH_SLOT = 23;
+    // 1-based slots from user spec, converted to 0-based
+    // Input: 38 → 37, Output: 44 → 43
+    private static final int INPUT_SLOT = 37;
+    private static final int OUTPUT_SLOT = 43;
+    // Menu: 11 → 10, Priority: 20 → 19, Sign(B): 17 → 16, Trash(C): 26 → 25
+    private static final int MENU_SLOT = 10;
+    private static final int PRIO_SLOT = 19;
+    private static final int SIGN_SLOT = 16;
+    private static final int TRASH_SLOT = 25;
 
     private static final int SAVE_SLOT = 2;
     private static final int MAX_ITEMS = 36;
 
-    private static final int[] BG_SLOTS = {
-        0,1,2,3,4,5,6,7,8,
-        27,28,29,30,31,32,33,34,35,
-        36,37,38,39,40,41,42,43,44,
-        45,46,47,48,49,50,51,52,53
-    };
+    // Cyan frame: 28,29,30,37,39,46,47,48 → 0-based
+    private static final int[] CYAN_SLOTS  = {27, 28, 29, 36, 38, 45, 46, 47};
+    // Orange frame: 34,35,36,43,45,52,53,54 → 0-based
+    private static final int[] ORANGE_SLOTS = {33, 34, 35, 42, 44, 51, 52, 53};
 
     // Persisted config
     static final Map<Location, Map<String, Route>> savedConfigs = new ConcurrentHashMap<>();
@@ -104,7 +104,24 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         new BlockMenuPreset(getId(), getItemName()) {
             @Override public void init() {
                 var empty = ChestMenuUtils.getEmptyClickHandler();
-                for (int i : BG_SLOTS) addItem(i, ChestMenuUtils.getBackground(), empty);
+                // Gray background: all slots not otherwise used
+                Set<Integer> used = new HashSet<>();
+                used.add(INPUT_SLOT); used.add(OUTPUT_SLOT);
+                used.add(MENU_SLOT); used.add(PRIO_SLOT);
+                used.add(SIGN_SLOT); used.add(TRASH_SLOT);
+                for (int i : CYAN_SLOTS) used.add(i);
+                for (int i : ORANGE_SLOTS) used.add(i);
+                for (int i = 0; i < 54; i++)
+                    if (!used.contains(i)) addItem(i, ChestMenuUtils.getBackground(), empty);
+
+                // Cyan frame
+                ItemStack cyanPane = stainedPane(Material.CYAN_STAINED_GLASS_PANE);
+                for (int i : CYAN_SLOTS) addItem(i, cyanPane, empty);
+                // Orange frame
+                ItemStack orangePane = stainedPane(Material.ORANGE_STAINED_GLASS_PANE);
+                for (int i : ORANGE_SLOTS) addItem(i, orangePane, empty);
+
+                // I/O slot textures
                 addItem(INPUT_SLOT, ChestMenuUtils.getInputSlotTexture(), empty);
                 addItem(OUTPUT_SLOT, ChestMenuUtils.getOutputSlotTexture(), empty);
             }
@@ -433,6 +450,14 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         meta.setLore(lore);
         potion.setItemMeta(meta);
         return potion;
+    }
+
+    private static ItemStack stainedPane(Material mat) {
+        ItemStack pane = new ItemStack(mat);
+        ItemMeta m = pane.getItemMeta();
+        m.setDisplayName(" ");
+        pane.setItemMeta(m);
+        return pane;
     }
 
     private ItemStack getTrashIcon() {
