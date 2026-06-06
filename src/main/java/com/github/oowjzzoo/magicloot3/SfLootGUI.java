@@ -188,6 +188,7 @@ final class SfLootGUI extends LootConfigGUI {
                     () -> openItems(player, group, pageSnap)));
         }
 
+        addFooterBg(menu);
         addPrevNext(menu, player, cur, pages, sw,
                 () -> openItems(player, group, cur - 1),
                 () -> openItems(player, group, cur + 1));
