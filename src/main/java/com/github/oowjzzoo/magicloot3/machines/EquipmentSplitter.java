@@ -217,7 +217,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
             case C -> inv.replaceExistingItem(INPUT_SLOT, null);
             default -> {
                 inv.replaceExistingItem(INPUT_SLOT, null);
-                b.getWorld().dropItemNaturally(b.getLocation(), item);
+                b.getWorld().dropItem(b.getLocation(), item);
             }
         }
     }
@@ -495,7 +495,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
     private static void dropIfPresent(Block b, BlockMenu inv, int slot) {
         ItemStack item = inv.getItemInSlot(slot);
         if (item != null && !item.getType().isAir())
-            b.getWorld().dropItemNaturally(b.getLocation(), item);
+            b.getWorld().dropItem(b.getLocation(), item);
     }
 
     private ItemStack getTrashIcon() {
