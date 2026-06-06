@@ -1,11 +1,15 @@
 package com.github.oowjzzoo.magicloot3;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
+import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -17,7 +21,7 @@ import org.bukkit.plugin.Plugin;
 
 public class MagicLootCommand implements CommandExecutor, TabCompleter {
 
-    private static final List<String> SUBCOMMANDS = List.of("version", "debug", "reload", "generate", "language", "add_effect", "sf_loot", "tools_loot");
+    private static final List<String> SUBCOMMANDS = List.of("version", "debug", "reload", "generate", "language", "add_effect", "sf_loot", "tools_loot", "set_sf_w");
 
     private final Plugin plugin;
     private String buildNumber;
@@ -147,6 +151,38 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                 }
                 ToolsLootGUI.open(player, plugin);
             }
+            case "set_sf_w" -> {
+                if (args.length < 3) {
+                    sender.sendMessage("§cUsage: /magicloot set_sf_w <SF_ID> <weight>");
+                    return true;
+                }
+                if (!Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
+                    sender.sendMessage("§cSlimefun is not enabled.");
+                    return true;
+                }
+                String sfId = args[1].toUpperCase();
+                SlimefunItem sfItem = SlimefunItem.getById(sfId);
+                if (sfItem == null) {
+                    sender.sendMessage("§cUnknown Slimefun item: " + sfId);
+                    return true;
+                }
+                int weight;
+                try {
+                    weight = Integer.parseInt(args[2]);
+                } catch (NumberFormatException e) {
+                    sender.sendMessage("§cWeight must be an integer.");
+                    return true;
+                }
+                if (weight < 0) {
+                    sender.sendMessage("§cWeight must be >= 0.");
+                    return true;
+                }
+                ConfigManager cfg = new ConfigManager(new File(plugin.getDataFolder(), "Items.yml"));
+                cfg.getYaml().set("slimefun." + sfId, weight);
+                cfg.save();
+                MagicLoot3.reload(plugin);
+                sender.sendMessage("§aSet " + sfId + " weight to " + weight + ".");
+            }
             default -> sender.sendMessage(Messages.get("log.unknown_command"));
         }
         return true;
@@ -180,6 +216,20 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                 if (key.startsWith(prefix)) matches.add(key);
             }
             return matches;
+        }
+        if (args.length >= 2 && args[0].equalsIgnoreCase("set_sf_w")) {
+            if (args.length == 2) {
+                String prefix = args[1].toUpperCase();
+                List<String> matches = new ArrayList<>();
+                if (Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
+                    for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
+                        if (item.getId().startsWith("JEG")) continue;
+                        if (item.getId().startsWith(prefix)) matches.add(item.getId());
+                    }
+                }
+                return matches;
+            }
+            return List.of();
         }
         return List.of();
     }

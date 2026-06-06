@@ -209,7 +209,7 @@ gui:
 
 cmd:
   header: "&6MagicLoot3 &7v{0} (build #{1})"
-  usage: "&7/magicloot version|debug|reload|generate <name>|language <zh|en>|sf_loot|tools_loot"
+  usage: "&7/magicloot version|debug|reload|generate <name>|language <zh|en>|sf_loot|tools_loot|set_sf_w <ID> <weight>"
   struct_mode: "&7Structure mode: &avanilla (StructureManager)"
   debug_on: "&6MagicLoot3 debug mode: &aON"
   debug_off: "&6MagicLoot3 debug mode: &cOFF"
