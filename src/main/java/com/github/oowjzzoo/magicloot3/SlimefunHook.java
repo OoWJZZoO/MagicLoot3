@@ -107,6 +107,21 @@ final class SlimefunHook implements SlimefunAddon {
         });
         desk.register(this);
 
+        // Equipment Splitter
+        String splitterName = zh ? "§a装备分流器" : "§aEquipment Splitter";
+        String[] splitterLore = zh
+                ? new String[]{"", "&7词条太多太杂?", "&7懒得手动分类?", "&7试试装备分流机"}
+                : new String[]{"", "&7Too many affixes to sort?", "&7Tired of manual classification?", "&7Try the Equipment Splitter"};
+        SlimefunItemStack splitterStack = new SlimefunItemStack(
+                "EQUIPMENT_SPLITTER", Material.STONECUTTER, splitterName, splitterLore);
+        ItemStack[] splitterRecipe = {
+                null, SlimefunItems.REINFORCED_ALLOY_INGOT, null,
+                bookshelfStack, new ItemStack(Material.DISPENSER), bookshelfStack,
+                bookshelfStack, SlimefunItems.PORTABLE_DUSTBIN, bookshelfStack};
+        new EquipmentSplitter(itemGroup, splitterStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, splitterRecipe)
+                .register(this);
+
         // --- Shared crafting materials (must be created before machines that use them) ---
 
         // Ancient Rune of Past (往日)
@@ -174,7 +189,7 @@ final class SlimefunHook implements SlimefunAddon {
                 LoreBuilder.speed(5), LoreBuilder.powerPerSecond(128)};
 
         // Potion Affix Disenchanter
-        String disName = zh ? "§d药水词缀祛魔机" : "§dPotion Affix Disenchanter";
+        String disName = zh ? "§6§l药水词缀祛魔机" : "§6§lPotion Affix Disenchanter";
         SlimefunItemStack disStack = new SlimefunItemStack(
                 "POTION_AFFIX_DISENCHANTER", Material.NOTE_BLOCK, disName, machineLore);
         ItemStack[] disRecipe = {
@@ -188,7 +203,7 @@ final class SlimefunHook implements SlimefunAddon {
                 .register(this);
 
         // Potion Affix Enchanter
-        String enchName = zh ? "§d药水词缀附魔机" : "§dPotion Affix Enchanter";
+        String enchName = zh ? "§6§l药水词缀附魔机" : "§6§lPotion Affix Enchanter";
         SlimefunItemStack enchStack = new SlimefunItemStack(
                 "POTION_AFFIX_ENCHANTER", Material.JUKEBOX, enchName, machineLore);
         ItemStack[] enchRecipe = {
@@ -199,18 +214,6 @@ final class SlimefunHook implements SlimefunAddon {
                 timeStack, SlimefunItems.NETHER_STAR_REACTOR, timeStack};
         new PotionAffixEnchanter(itemGroup, enchStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, enchRecipe)
-                .register(this);
-
-        // Equipment Splitter
-        String splitterName = zh ? "§a§l装备分流器" : "§a§lEquipment Splitter";
-        SlimefunItemStack splitterStack = new SlimefunItemStack(
-                "EQUIPMENT_SPLITTER", Material.STONECUTTER, splitterName, "");
-        ItemStack[] splitterRecipe = {
-                null, SlimefunItems.REINFORCED_ALLOY_INGOT, null,
-                bookshelfStack, new ItemStack(Material.DISPENSER), bookshelfStack,
-                bookshelfStack, SlimefunItems.PORTABLE_DUSTBIN, bookshelfStack};
-        new EquipmentSplitter(itemGroup, splitterStack,
-                RecipeType.ENHANCED_CRAFTING_TABLE, splitterRecipe)
                 .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));
