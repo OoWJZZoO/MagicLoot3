@@ -390,7 +390,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         ItemStack item = new ItemStack(Material.COMPARATOR);
         ItemMeta meta = item.getItemMeta();
         boolean isDestroy = prio == Priority.DESTROY_FIRST;
-        meta.setDisplayName(Messages.get("machine.equipment_splitter.priority") + ": "
+        meta.setDisplayName("§f" + Messages.get("machine.equipment_splitter.priority") + ": "
                 + Messages.get(isDestroy
                         ? "machine.equipment_splitter.destroy_first"
                         : "machine.equipment_splitter.output_first"));
@@ -413,14 +413,20 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
                 ? "machine.equipment_splitter.sign_b_lore"
                 : "machine.equipment_splitter.trash_c_lore"));
         Route target = isB ? Route.B : Route.C;
-        boolean found = false;
+        List<String> pos = new ArrayList<>();
+        List<String> neg = new ArrayList<>();
         for (var e : routes.entrySet()) {
             if (e.getValue() == target) {
-                lore.add(formatRouteKey(e.getKey()));
-                found = true;
+                if (e.getKey().endsWith(":+")) pos.add(formatRouteKey(e.getKey()));
+                else neg.add(formatRouteKey(e.getKey()));
             }
         }
-        if (!found) lore.add(Messages.get("machine.equipment_splitter.no_affixes"));
+        if (!pos.isEmpty() || !neg.isEmpty()) {
+            lore.addAll(pos);
+            lore.addAll(neg);
+        } else {
+            lore.add(Messages.get("machine.equipment_splitter.no_affixes"));
+        }
         meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
@@ -440,7 +446,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
                 + "  §8→ " + routeName(route));
 
         List<String> lore = new ArrayList<>();
-        lore.add(Messages.get("machine.equipment_splitter.route_hint"));
+        lore.add(Messages.get("machine.equipment_splitter.route_hint1"));
+        lore.add(Messages.get("machine.equipment_splitter.route_hint2"));
         meta.setLore(lore);
         potion.setItemMeta(meta);
         return potion;
