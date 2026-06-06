@@ -1,6 +1,7 @@
 package com.github.oowjzzoo.magicloot3;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
 import org.bukkit.Color;
@@ -10,6 +11,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkEffectMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -175,7 +177,15 @@ final class SlimefunHook implements SlimefunAddon {
                         "&7This feels unethical"};
         SlimefunItemStack brainStack = new SlimefunItemStack(
                 "LOST_LIBRARIAN_BRAIN", Material.ROTTEN_FLESH, brainName, brainLore);
-        new SlimefunItem(itemGroup, brainStack, RecipeType.NULL, new ItemStack[9])
+        ItemStack eggIcon = new ItemStack(Material.VILLAGER_SPAWN_EGG);
+        ItemMeta eggMeta = eggIcon.getItemMeta();
+        eggMeta.setDisplayName("§5§l无魂鉴定师");
+        eggMeta.setLore(List.of("§f免疫物理伤害",
+                "§f使用带有伤害型药水词缀的武器杀死",
+                "§f或者使用喷溅型药水杀死"));
+        eggIcon.setItemMeta(eggMeta);
+        new SlimefunItem(itemGroup, brainStack, RecipeType.MOB_DROP,
+                new ItemStack[]{null, null, null, null, eggIcon, null, null, null, null})
                 .register(this);
 
         // Time of Exploration (探索的时光)
