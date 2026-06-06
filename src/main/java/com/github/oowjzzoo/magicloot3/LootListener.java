@@ -20,7 +20,9 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.world.ChunkPopulateEvent;
 import org.bukkit.inventory.ItemStack;
@@ -245,5 +247,16 @@ public class LootListener implements Listener {
             return entity.getEquipment().getArmorContents();
         }
         return new ItemStack[0];
+    }
+
+    @EventHandler
+    public void onDeath(EntityDeathEvent e) {
+        if (e.getEntity() instanceof Villager
+                && e.getEntity().getPersistentDataContainer().has(ItemKeys.LIBRARIAN)) {
+            SlimefunItem brainItem = SlimefunItem.getById("LOST_LIBRARIAN_BRAIN");
+            if (brainItem != null)
+                e.getEntity().getWorld().dropItemNaturally(
+                        e.getEntity().getLocation(), brainItem.getItem().clone());
+        }
     }
 }

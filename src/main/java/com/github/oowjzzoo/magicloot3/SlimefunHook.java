@@ -162,6 +162,22 @@ final class SlimefunHook implements SlimefunAddon {
                 new SlimefunItemStack(runeStack, 3))
                 .register(this);
 
+        // Lost Librarian's Brain
+        String brainName = zh ? "§2无魂鉴定师之脑" : "§2Lost Librarian's Brain";
+        String[] brainLore = zh
+                ? new String[]{"", "&7无魂鉴定师免疫物理攻击",
+                        "&7不免疫魔法(药水效果)攻击",
+                        "&7不过说真的",
+                        "&7这不太道德..."}
+                : new String[]{"", "&7The Lost Librarian is immune to physical attacks",
+                        "&7But not immune to magic (potion effects)",
+                        "&7Though honestly...",
+                        "&7This feels unethical"};
+        SlimefunItemStack brainStack = new SlimefunItemStack(
+                "LOST_LIBRARIAN_BRAIN", Material.ROTTEN_FLESH, brainName, brainLore);
+        new SlimefunItem(itemGroup, brainStack, RecipeType.NULL, new ItemStack[9])
+                .register(this);
+
         // Time of Exploration (探索的时光)
         String timeName = zh ? "&b&l探索的时光" : "&b&lAdventuring Time";
         String[] timeLore = zh
