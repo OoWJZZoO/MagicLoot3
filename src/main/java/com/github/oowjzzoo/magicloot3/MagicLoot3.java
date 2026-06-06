@@ -3,6 +3,7 @@ package com.github.oowjzzoo.magicloot3;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -73,6 +74,17 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
     @EventHandler
     public void onWorldInit(WorldInitEvent event) {
         StructurePlacer.deployToWorld(this, event.getWorld());
+    }
+
+    @EventHandler
+    public void onServerLoaded(ServerLoadEvent event) {
+        // All plugins (including SF addons) are now loaded.
+        // Write default weights for any SF items that were registered after ours.
+        if (Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
+            MagicLootConfig.ensureDefaults(this);
+            MagicLootConfig.loadSettings();
+            getLogger().info("Server loaded — refreshed loot config defaults.");
+        }
     }
 
     public static MagicLoot3 getInstance() { return instance; }

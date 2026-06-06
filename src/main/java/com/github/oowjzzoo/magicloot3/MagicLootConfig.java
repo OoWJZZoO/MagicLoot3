@@ -226,6 +226,18 @@ public class MagicLootConfig {
         return getConfig(ConfigType.EFFECTS).getInt(e.getKey().getKey() + ".max-level");
     }
 
+    /**
+     * Write default weight 100 to Items.yml for any Slimefun items not yet present.
+     * Called from ServerLoadEvent to catch addons that loaded after our onEnable.
+     */
+    public static void ensureDefaults(JavaPlugin plugin) {
+        ConfigManager cfg = new ConfigManager(new File(plugin.getDataFolder(), "Items.yml"));
+        for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
+            cfg.setDefaultValue("slimefun." + item.getId(), 100);
+        }
+        cfg.save();
+    }
+
     private static void saveDefaultConfig(String name) {
         File dest = new File(dataFolder, name);
         if (!dest.exists()) {
