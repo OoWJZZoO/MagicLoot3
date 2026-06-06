@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nonnull;
@@ -278,8 +279,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
 
         List<String> allKeys = new ArrayList<>(ItemManager.potionEffectMap.keySet());
         allKeys.sort(Comparator.naturalOrder());
-        int total = allKeys.size() * 2; // + and - for each effect
-        int pages = Math.max(1, (total - 1) / MAX_ITEMS + 1);
+        int effectsPerPage = 18;
+        int pages = Math.max(1, (allKeys.size() - 1) / effectsPerPage + 1);
         final int cur = Math.min(page, pages);
 
         ChestMenu menu = new ChestMenu(Messages.get("machine.equipment_splitter.menu_button"));
@@ -310,31 +311,27 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
             return false;
         });
 
-        // Potion affix items
-        int start = MAX_ITEMS * (cur - 1);
-        int slot = 9;
-        for (int i = start; i < total && slot < 45; i++) {
-            String effectKey = allKeys.get(i / 2);
-            String polarity = i % 2 == 0 ? "+" : "-";
-            String routeKey = effectKey + ":" + polarity;
-
-            Route currentRoute = working.getOrDefault(routeKey, Route.A);
-            menu.addItem(slot, buildAffixItem(effectKey, polarity, currentRoute));
-            final String rk = routeKey;
+        // Potion grid: + in rows 2&4, - in rows 3&5 (directly below each +)
+        int pageStart = effectsPerPage * (cur - 1);
+        for (int i = 0; i < effectsPerPage && (pageStart + i) < allKeys.size(); i++) {
+            String effectKey = allKeys.get(pageStart + i);
+            int row = i / 9;
+            int col = i % 9;
+            int plusSlot = (row == 0 ? 9 : 27) + col;
+            int minusSlot = plusSlot + 9;
             final int pageSnap = cur;
-            menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
-                sw.add(pl.getUniqueId());
-                if (a.isShiftClicked()) {
-                    working.put(rk, Route.C);
-                } else if (a.isRightClicked()) {
-                    working.put(rk, Route.A);
-                } else {
-                    working.put(rk, Route.B);
-                }
-                showSubPage(pl, b, pageSnap);
-                return false;
-            });
-            slot++;
+
+            // + version
+            String plusKey = effectKey + ":+";
+            Route plusRoute = working.getOrDefault(plusKey, Route.A);
+            menu.addItem(plusSlot, buildAffixItem(effectKey, "+", plusRoute));
+            menu.addMenuClickHandler(plusSlot, makeAffixHandler(sw, working, plusKey, b, pageSnap));
+
+            // - version
+            String minusKey = effectKey + ":-";
+            Route minusRoute = working.getOrDefault(minusKey, Route.A);
+            menu.addItem(minusSlot, buildAffixItem(effectKey, "-", minusRoute));
+            menu.addMenuClickHandler(minusSlot, makeAffixHandler(sw, working, minusKey, b, pageSnap));
         }
 
         // Footer
@@ -441,16 +438,33 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         if (type != null)
             meta.addCustomEffect(new PotionEffect(type, 600, 0), true);
 
-        String effName = ItemManager.effectNames.getOrDefault(effectKey, effectKey);
-        meta.setDisplayName((positive ? "§a+" : "§c-") + effName
-                + "  §8→ " + routeName(route));
+        meta.setDisplayName(routeName(route));
 
         List<String> lore = new ArrayList<>();
+        lore.add(Messages.get(positive
+                ? "machine.equipment_splitter.affix_pos_desc"
+                : "machine.equipment_splitter.affix_neg_desc"));
         lore.add(Messages.get("machine.equipment_splitter.route_hint1"));
         lore.add(Messages.get("machine.equipment_splitter.route_hint2"));
         meta.setLore(lore);
         potion.setItemMeta(meta);
         return potion;
+    }
+
+    private ChestMenu.MenuClickHandler makeAffixHandler(Set<UUID> sw,
+            Map<String, Route> working, String routeKey, Block b, int pageSnap) {
+        return (pl, s, it, a) -> {
+            sw.add(pl.getUniqueId());
+            if (a.isShiftClicked()) {
+                working.put(routeKey, Route.C);
+            } else if (a.isRightClicked()) {
+                working.put(routeKey, Route.A);
+            } else {
+                working.put(routeKey, Route.B);
+            }
+            showSubPage(pl, b, pageSnap);
+            return false;
+        };
     }
 
     private static ItemStack stainedPane(Material mat) {
