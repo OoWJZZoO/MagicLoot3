@@ -230,13 +230,14 @@ cmd:
 
 machine:
   equipment_splitter:
-    menu_button: "§a§lAffix Split Config"
+    menu_button: "§aAffix Split Config"
     save_exit: "&aSave & Exit"
     priority: "Routing Priority"
     destroy_first: "&cDestroy First"
     output_first: "&bOutput First"
-    priority_lore_destroy: "&fWhen item has multiple affixes, destroy takes priority"
-    priority_lore_output: "&fWhen item has multiple affixes, output takes priority"
+    priority_lore_destroy: "&fDestroy takes priority"
+    priority_lore_output: "&fOutput takes priority"
+    priority_lore_base: "&fWhen an item matches both output and destroy rules"
     sign_b_title: "&bOutput"
     sign_b_lore: "&7Items with these affixes will be output:"
     trash_c_title: "&cDestroy"
@@ -246,6 +247,9 @@ machine:
     route_c_title: "&4Destroy"
     route_hint1: "&7Left→&bOutput &8| &7Right→&8Drop"
     route_hint2: "&7Shift+click→&4Destroy"
+    bell_title: "&fAll items drop into the world by default"
+    bell_lore1: "&fConfigure split rules to decide if equipment is destroyed or output"
+    bell_lore2: "&fItems not matching any rule will drop automatically"
     affix_pos_desc: "&a+ Positive effect on self"
     affix_neg_desc: "&c- Negative effect on target"
     no_affixes: "&7(none)"

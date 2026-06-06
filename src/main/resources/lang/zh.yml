@@ -218,13 +218,14 @@ cmd:
 
 machine:
   equipment_splitter:
-    menu_button: "§a§l词缀分流配置"
+    menu_button: "§a词缀分流配置"
     save_exit: "&a保存并退出"
     priority: "路由优先级"
     destroy_first: "&c销毁优先"
     output_first: "&b输出优先"
-    priority_lore_destroy: "&f当物品同时有多个词缀时，优先走销毁路径"
-    priority_lore_output: "&f当物品同时有多个词缀时，优先走输出路径"
+    priority_lore_destroy: "&f优先走销毁路径"
+    priority_lore_output: "&f优先走输出路径"
+    priority_lore_base: "&f当物品同时满足输出与销毁条件时"
     sign_b_title: "&b输出"
     sign_b_lore: "&7以下词缀的物品将被输出："
     trash_c_title: "&c销毁"
@@ -234,6 +235,9 @@ machine:
     route_c_title: "&4销毁"
     route_hint1: "&7左键→&b输出 &8| &7右键→&8掉落"
     route_hint2: "&7Shift+点击→&4销毁"
+    bell_title: "&f默认所有物品都会掉落在世界"
+    bell_lore1: "&f请修改分流配置以决定装备是销毁还是输出"
+    bell_lore2: "&f不满足任一方条件的物品会自动掉落"
     affix_pos_desc: "&a+ 给予自己的药水效果"
     affix_neg_desc: "&c- 给予目标的药水效果"
     no_affixes: "&7（无）"

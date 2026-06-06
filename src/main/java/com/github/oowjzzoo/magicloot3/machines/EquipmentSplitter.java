@@ -63,11 +63,12 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
     // Input: 38 → 37, Output: 44 → 43
     private static final int INPUT_SLOT = 37;
     private static final int OUTPUT_SLOT = 43;
-    // Menu: 11 → 10, Priority: 20 → 19, Sign(B): 17 → 16, Trash(C): 26 → 25
+    // Menu: 11 → 10, Priority: 20 → 19, Sign(B): 17 → 16, Trash(C): 26 → 25, Bell: 23 → 22
     private static final int MENU_SLOT = 10;
     private static final int PRIO_SLOT = 19;
     private static final int SIGN_SLOT = 16;
     private static final int TRASH_SLOT = 25;
+    private static final int BELL_SLOT = 22;
 
     private static final int SAVE_SLOT = 4; // 1-based slot 5
     private static final int MAX_ITEMS = 36;
@@ -109,7 +110,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
                 Set<Integer> used = new HashSet<>();
                 used.add(INPUT_SLOT); used.add(OUTPUT_SLOT);
                 used.add(MENU_SLOT); used.add(PRIO_SLOT);
-                used.add(SIGN_SLOT); used.add(TRASH_SLOT);
+                used.add(SIGN_SLOT); used.add(TRASH_SLOT); used.add(BELL_SLOT);
                 for (int i : CYAN_SLOTS) used.add(i);
                 for (int i : ORANGE_SLOTS) used.add(i);
                 for (int i = 0; i < 54; i++)
@@ -151,8 +152,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
             public void onBlockBreak(@Nonnull Block b) {
                 BlockMenu inv = BlockStorage.getInventory(b);
                 if (inv != null) {
-                    b.getWorld().dropItemNaturally(b.getLocation(), inv.getItemInSlot(INPUT_SLOT));
-                    b.getWorld().dropItemNaturally(b.getLocation(), inv.getItemInSlot(OUTPUT_SLOT));
+                    dropIfPresent(b, inv, INPUT_SLOT);
+                    dropIfPresent(b, inv, OUTPUT_SLOT);
                 }
                 Location loc = b.getLocation();
                 savedConfigs.remove(loc);
@@ -254,6 +255,10 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         // Trash (route C list)
         menu.replaceExistingItem(TRASH_SLOT, buildRouteDisplay(false, routes));
         menu.addMenuClickHandler(TRASH_SLOT, ChestMenuUtils.getEmptyClickHandler());
+
+        // Bell (info)
+        menu.replaceExistingItem(BELL_SLOT, buildBellItem());
+        menu.addMenuClickHandler(BELL_SLOT, ChestMenuUtils.getEmptyClickHandler());
     }
 
     // ── Sub-menu ──
@@ -392,6 +397,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
                         ? "machine.equipment_splitter.destroy_first"
                         : "machine.equipment_splitter.output_first"));
         meta.setLore(List.of(
+                Messages.get("machine.equipment_splitter.priority_lore_base"),
                 Messages.get(isDestroy
                         ? "machine.equipment_splitter.priority_lore_destroy"
                         : "machine.equipment_splitter.priority_lore_output")));
@@ -473,6 +479,23 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         m.setDisplayName(" ");
         pane.setItemMeta(m);
         return pane;
+    }
+
+    private ItemStack buildBellItem() {
+        ItemStack item = new ItemStack(Material.BELL);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(Messages.get("machine.equipment_splitter.bell_title"));
+        meta.setLore(List.of(
+                Messages.get("machine.equipment_splitter.bell_lore1"),
+                Messages.get("machine.equipment_splitter.bell_lore2")));
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private static void dropIfPresent(Block b, BlockMenu inv, int slot) {
+        ItemStack item = inv.getItemInSlot(slot);
+        if (item != null && !item.getType().isAir())
+            b.getWorld().dropItemNaturally(b.getLocation(), item);
     }
 
     private ItemStack getTrashIcon() {
