@@ -170,6 +170,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
                 lastClickTime.remove(loc);
                 dirtyConfigs.remove(loc);
                 dirtyPriorities.remove(loc);
+                // Clean up stale entry in YAML file
+                deleteLocation(loc);
             }
         };
     }
@@ -593,6 +595,17 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
     private static String locKey(Location loc) {
         return loc.getWorld().getName() + ";" + loc.getBlockX()
                 + ";" + loc.getBlockY() + ";" + loc.getBlockZ();
+    }
+
+    static void deleteLocation(Location loc) {
+        File file = getDataFile();
+        if (!file.exists()) return;
+        YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
+        String key = locKey(loc);
+        if (cfg.contains(key)) {
+            cfg.set(key, null);
+            try { cfg.save(file); } catch (Exception ignored) {}
+        }
     }
 
     static void loadLocation(Location loc) {
