@@ -206,9 +206,9 @@ final class SlimefunHook implements SlimefunAddon {
         SlimefunItemStack splitterStack = new SlimefunItemStack(
                 "EQUIPMENT_SPLITTER", Material.STONECUTTER, splitterName, "");
         ItemStack[] splitterRecipe = {
-                null, null, null,
-                null, timeStack, null,
-                null, null, null};
+                null, SlimefunItems.REINFORCED_ALLOY_INGOT, null,
+                bookshelfStack, new ItemStack(Material.DISPENSER), bookshelfStack,
+                bookshelfStack, SlimefunItems.PORTABLE_DUSTBIN, bookshelfStack};
         new EquipmentSplitter(itemGroup, splitterStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, splitterRecipe)
                 .register(this);
