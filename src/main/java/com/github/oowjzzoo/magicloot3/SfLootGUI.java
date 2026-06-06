@@ -1,7 +1,6 @@
 package com.github.oowjzzoo.magicloot3;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,15 +20,12 @@ import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 
 /**
- * Slimefun loot weight config GUI — /ml sf_loot.
- * Flat list of all visible SF items, exactly matching /sf cheat coverage.
+ * Slimefun loot weight config GUI — /ml sf_loot
  */
 final class SfLootGUI extends LootConfigGUI {
 
     private static final SfLootGUI INSTANCE = new SfLootGUI();
     private static ChatHandler chatListener;
-    /** All visible SF items, sorted by group name then item name. */
-    private static List<SlimefunItem> ALL_ITEMS;
 
     static void open(Player player, Plugin plugin) {
         PLUGIN = plugin;
@@ -38,7 +34,6 @@ final class SfLootGUI extends LootConfigGUI {
             chatListener = new ChatHandler();
             Bukkit.getPluginManager().registerEvents(chatListener, plugin);
         }
-        allItems(player);
         INSTANCE.openMainPage(player, 1);
     }
 
@@ -56,28 +51,26 @@ final class SfLootGUI extends LootConfigGUI {
 
     @Override protected void openMainPage(Player player, int page) {
         Map<String, Integer> cache = CACHES.get(player.getUniqueId());
-        if (cache == null || ALL_ITEMS == null) return;
+        if (cache == null) return;
 
-        int pages = Math.max(1, (ALL_ITEMS.size() - 1) / MAX_ITEMS + 1);
-        final int cur = Math.min(page, pages);
+        List<ItemGroup> groups = getVisibleGroups(player);
+        int pages = Math.max(1, (groups.size() - 1) / MAX_ITEMS + 1);
+        int cur = Math.min(page, pages);
 
         var menu = newMenu(player, "categories");
         var sw = new HashSet<UUID>();
-        int tw = computeTotal(cache);
 
         int start = MAX_ITEMS * (cur - 1);
         int slot = 9;
-        for (int i = start; i < ALL_ITEMS.size() && slot < 45; i++, slot++) {
-            SlimefunItem sfItem = ALL_ITEMS.get(i);
-            String id = sfItem.getId();
-            int weight = cache.getOrDefault(id, 0);
-            // Append group name to display
-            ItemStack icon = buildItem(id, weight, tw);
-            addGroupLine(icon, sfItem.getItemGroup(), player);
-            menu.addItem(slot, icon);
-            final int pageSnap = cur;
-            menu.addMenuClickHandler(slot, makeClickHandler(player, id, sw,
-                    () -> openMainPage(player, pageSnap)));
+        for (int i = start; i < groups.size() && slot < 45; i++, slot++) {
+            ItemGroup group = groups.get(i);
+            menu.addItem(slot, group.getItem(player));
+            final int idx = i;
+            menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
+                sw.add(pl.getUniqueId());
+                openCategory(pl, groups.get(idx), 1);
+                return false;
+            });
         }
 
         addPrevNext(menu, player, cur, pages, sw,
@@ -86,37 +79,73 @@ final class SfLootGUI extends LootConfigGUI {
         finishMenu(menu, player, sw);
     }
 
-    /** Append the group name to the lore of a display item. */
-    private static void addGroupLine(ItemStack icon, ItemGroup group, Player player) {
-        var meta = icon.getItemMeta();
-        if (meta == null) return;
-        var lore = new ArrayList<>(meta.getLore());
-        lore.add(ChatColor.DARK_GRAY + "   " + group.getDisplayName(player));
-        meta.setLore(lore);
-        icon.setItemMeta(meta);
+    private void openCategory(Player player, ItemGroup group, int page) {
+        Map<String, Integer> cache = CACHES.get(player.getUniqueId());
+        if (cache == null) return;
+
+        List<SlimefunItem> items;
+        String title;
+        if (group instanceof FlexItemGroup) {
+            // Flex groups can't expose items via getItems() — collect all items
+            // from all visible non-flex groups instead.
+            items = collectAllVisibleItems(player);
+            title = ChatColor.stripColor(group.getDisplayName(player));
+        } else {
+            items = new ArrayList<>(group.getItems());
+            title = ChatColor.stripColor(group.getDisplayName(player));
+        }
+        items.removeIf(i -> i.isDisabledIn(player.getWorld()));
+        int pages = Math.max(1, (items.size() - 1) / MAX_ITEMS + 1);
+        int cur = Math.min(page, pages);
+
+        var menu = newMenu(player, ChatColor.stripColor(group.getDisplayName(player)));
+        var sw = new HashSet<UUID>();
+
+        addBack(menu, 1, sw, () -> openMainPage(player, 1));
+
+        int tw = computeTotal(cache);
+        int start = MAX_ITEMS * (cur - 1);
+        int slot = 9;
+        for (int i = start; i < items.size() && slot < 45; i++, slot++) {
+            SlimefunItem sfItem = items.get(i);
+            String id = sfItem.getId();
+            int weight = cache.getOrDefault(id, 0);
+            menu.addItem(slot, buildItem(id, weight, tw));
+            final int pageSnap = cur;
+            menu.addMenuClickHandler(slot, makeClickHandler(player, id, sw,
+                    () -> openCategory(player, group, pageSnap)));
+        }
+
+        addPrevNext(menu, player, cur, pages, sw,
+                () -> openCategory(player, group, cur - 1),
+                () -> openCategory(player, group, cur + 1));
+        finishMenu(menu, player, sw);
     }
 
-    /** Build sorted list of all Slimefun items from all visible groups. */
-    private static void allItems(Player player) {
-        List<SlimefunItem> items = new ArrayList<>();
+    /** Collect all SlimefunItems from ALL visible non-flex groups. */
+    private List<SlimefunItem> collectAllVisibleItems(Player player) {
+        List<SlimefunItem> all = new ArrayList<>();
+        for (ItemGroup g : Slimefun.getRegistry().getAllItemGroups()) {
+            if (g instanceof FlexItemGroup || g.isHidden(player) || g.getItems().isEmpty())
+                continue;
+            for (SlimefunItem item : g.getItems())
+                if (!item.isDisabledIn(player.getWorld())) all.add(item);
+        }
+        all.sort(java.util.Comparator.comparing(
+                (SlimefunItem i) -> ChatColor.stripColor(i.getItemGroup().getDisplayName(player)))
+                .thenComparing(i -> ChatColor.stripColor(i.getItemName())));
+        return all;
+    }
+
+    private List<ItemGroup> getVisibleGroups(Player player) {
+        List<ItemGroup> groups = new ArrayList<>();
         for (ItemGroup group : Slimefun.getRegistry().getAllItemGroups()) {
             if (group instanceof FlexItemGroup flex) {
-                if (!flex.isVisible(player, null, SlimefunGuideMode.CHEAT_MODE))
-                    continue;
-                // Flex groups don't expose items — they own sub-groups
-                continue;
-            }
-            if (group.isHidden(player) || group.getItems().isEmpty()) continue;
-            for (SlimefunItem item : group.getItems()) {
-                if (!item.isDisabledIn(player.getWorld()))
-                    items.add(item);
-            }
+                if (flex.isVisible(player, null, SlimefunGuideMode.CHEAT_MODE))
+                    groups.add(group);
+            } else if (!group.isHidden(player) && !group.getItems().isEmpty())
+                groups.add(group);
         }
-        items.sort(Comparator.comparing(
-                (SlimefunItem i) -> strip(i.getItemGroup().getDisplayName(player))
-        ).thenComparing(i -> strip(i.getItemName())));
-        ALL_ITEMS = items;
+        return groups;
     }
-
-    private static String strip(String s) { return ChatColor.stripColor(s); }
 }
