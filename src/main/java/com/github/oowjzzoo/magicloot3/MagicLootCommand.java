@@ -138,14 +138,14 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(Messages.get("cmd.player_only"));
                     return true;
                 }
-                LootConfigGUI.open(player, plugin);
+                SfLootGUI.open(player, plugin);
             }
             case "tools_loot" -> {
                 if (!(sender instanceof Player player)) {
                     sender.sendMessage(Messages.get("cmd.player_only"));
                     return true;
                 }
-                player.sendMessage("§eTools loot config — 尚未实现");
+                ToolsLootGUI.open(player, plugin);
             }
             default -> sender.sendMessage(Messages.get("log.unknown_command"));
         }
