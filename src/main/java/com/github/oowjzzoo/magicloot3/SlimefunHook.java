@@ -25,6 +25,7 @@ import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
 import io.github.thebusybiscuit.slimefun4.utils.LoreBuilder;
 
 import com.github.oowjzzoo.magicloot3.items.PastRune;
+import com.github.oowjzzoo.magicloot3.machines.EquipmentSplitter;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixDisenchanter;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixEnchanter;
 
@@ -198,6 +199,18 @@ final class SlimefunHook implements SlimefunAddon {
                 timeStack, SlimefunItems.NETHER_STAR_REACTOR, timeStack};
         new PotionAffixEnchanter(itemGroup, enchStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, enchRecipe)
+                .register(this);
+
+        // Equipment Splitter
+        String splitterName = zh ? "§a§l装备分流器" : "§a§lEquipment Splitter";
+        SlimefunItemStack splitterStack = new SlimefunItemStack(
+                "EQUIPMENT_SPLITTER", Material.STONECUTTER, splitterName, "");
+        ItemStack[] splitterRecipe = {
+                null, null, null,
+                null, timeStack, null,
+                null, null, null};
+        new EquipmentSplitter(itemGroup, splitterStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, splitterRecipe)
                 .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));

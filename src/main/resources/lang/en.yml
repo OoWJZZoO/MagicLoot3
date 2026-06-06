@@ -227,3 +227,22 @@ cmd:
   weight_must_be_int: "&cWeight must be an integer."
   weight_must_be_nonnegative: "&cWeight must be >= 0."
   set_sf_w_done: "&aSet {0} weight to {1}."
+
+machine:
+  equipment_splitter:
+    menu_button: "§a§lAffix Split Config"
+    save_exit: "&aSave & Exit"
+    priority: "Routing Priority"
+    destroy_first: "&cDestroy First"
+    output_first: "&bOutput First"
+    priority_lore_destroy: "When item has multiple affixes, destroy takes priority"
+    priority_lore_output: "When item has multiple affixes, output takes priority"
+    sign_b_title: "&bOutput (B)"
+    sign_b_lore: "&7Items with these affixes will be output:"
+    trash_c_title: "&cDestroy (C)"
+    trash_c_lore: "&7Items with these affixes will be destroyed:"
+    route_a_title: "&7Drop (A)"
+    route_b_title: "&bOutput (B)"
+    route_c_title: "&cDestroy (C)"
+    route_hint: "&7Left→B  |  Right→A  |  Shift+click→C"
+    no_affixes: "&7(none)"

@@ -215,3 +215,22 @@ cmd:
   weight_must_be_int: "&c权重必须是整数。"
   weight_must_be_nonnegative: "&c权重必须 >= 0。"
   set_sf_w_done: "&a已将 {0} 的权重设为 {1}。"
+
+machine:
+  equipment_splitter:
+    menu_button: "§a§l词缀分流配置"
+    save_exit: "&a保存并退出"
+    priority: "路由优先级"
+    destroy_first: "&c销毁优先"
+    output_first: "&b输出优先"
+    priority_lore_destroy: "当物品同时有多个词缀时，优先走销毁路径"
+    priority_lore_output: "当物品同时有多个词缀时，优先走输出路径"
+    sign_b_title: "&b输出 (B)"
+    sign_b_lore: "&7以下词缀的物品将被输出："
+    trash_c_title: "&c销毁 (C)"
+    trash_c_lore: "&7以下词缀的物品将被销毁："
+    route_a_title: "&7丢弃 (A)"
+    route_b_title: "&b输出 (B)"
+    route_c_title: "&c销毁 (C)"
+    route_hint: "&7左键→B  |  右键→A  |  Shift+点击→C"
+    no_affixes: "&7（无）"

@@ -1,5 +1,6 @@
 package com.github.oowjzzoo.magicloot3;
 
+import com.github.oowjzzoo.magicloot3.machines.EquipmentSplitter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -40,6 +41,7 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
             MagicLootConfig.loadSettings();
 
             if (Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
+                EquipmentSplitter.setPlugin(this);
                 SlimefunHook.registerItems(this);
                 getLogger().info(Messages.get("log.slimefun_enabled"));
             } else {
