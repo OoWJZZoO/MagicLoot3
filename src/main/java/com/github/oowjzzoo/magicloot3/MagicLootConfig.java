@@ -231,11 +231,19 @@ public class MagicLootConfig {
      * Called from ServerLoadEvent to catch addons that loaded after our onEnable.
      */
     public static void ensureDefaults(JavaPlugin plugin) {
-        ConfigManager cfg = new ConfigManager(new File(plugin.getDataFolder(), "Items.yml"));
+        ConfigManager cfg = getConfig(ConfigType.ITEMS);
+        if (cfg == null) return;
+        int count = 0, existed = 0, total = 0;
         for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
-            cfg.setDefaultValue("slimefun." + item.getId(), 100);
+            total++;
+            String path = "slimefun." + item.getId();
+            boolean had = cfg.contains(path);
+            if (had) existed++; else count++;
+            cfg.setDefaultValue(path, 100);
         }
         cfg.save();
+        plugin.getLogger().info("[LootDefaults] total=" + total + " existed=" + existed
+                + " added=" + count);
     }
 
     private static void saveDefaultConfig(String name) {
