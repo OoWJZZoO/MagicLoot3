@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
@@ -67,13 +68,15 @@ final class SfLootGUI extends LootConfigGUI {
         if (cache == null) return;
 
         List<ItemGroup> groups = getVisibleGroups(player);
-        int pages = Math.max(1, (groups.size() - 1) / MAX_ITEMS + 1);
+        int total = groups.size() + 1; // +1 for the catch-all
+        int pages = Math.max(1, (total - 1) / MAX_ITEMS + 1);
         int cur = Math.min(page, pages);
 
         var menu = newMenu(player, "categories");
         var sw = new HashSet<UUID>();
 
         int start = MAX_ITEMS * (cur - 1);
+        int end = start + MAX_ITEMS;
         int slot = 9;
         for (int i = start; i < groups.size() && slot < 45; i++, slot++) {
             ItemGroup group = groups.get(i);
@@ -84,6 +87,21 @@ final class SfLootGUI extends LootConfigGUI {
                 // When drilling into a main-page group, back always returns to main page
                 Runnable back = () -> openMainPage(pl, 1);
                 openGroup(pl, groups.get(idx), 1, back);
+                return false;
+            });
+        }
+
+        // Catch-all: show all items from config if it falls on this page
+        int catchIdx = groups.size();
+        if (catchIdx >= start && catchIdx < end && slot < 45) {
+            ItemStack icon = new ItemStack(org.bukkit.Material.CHEST);
+            ItemMeta meta = icon.getItemMeta();
+            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', m("all_items")));
+            icon.setItemMeta(meta);
+            menu.addItem(slot, icon);
+            menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
+                sw.add(pl.getUniqueId());
+                openAllConfigItems(pl, 1, () -> openMainPage(pl, 1));
                 return false;
             });
         }
@@ -205,6 +223,40 @@ final class SfLootGUI extends LootConfigGUI {
         addPrevNext(menu, player, cur, pages, sw,
                 () -> openItems(player, group, cur - 1, back),
                 () -> openItems(player, group, cur + 1, back));
+        finishMenu(menu, player, sw);
+    }
+
+    // ── All config items page (catch-all) ──
+
+    private void openAllConfigItems(Player player, int page, Runnable back) {
+        Map<String, Integer> cache = CACHES.get(player.getUniqueId());
+        if (cache == null) return;
+
+        List<String> ids = new ArrayList<>(cache.keySet());
+        ids.sort(String.CASE_INSENSITIVE_ORDER);
+        int pages = Math.max(1, (ids.size() - 1) / MAX_ITEMS + 1);
+        final int cur = Math.min(page, pages);
+
+        var menu = newMenu(player, "all_items");
+        var sw = new HashSet<UUID>();
+        addBack(menu, 1, sw, back);
+
+        int tw = computeTotal(cache);
+        int start = MAX_ITEMS * (cur - 1);
+        int slot = 9;
+        for (int i = start; i < ids.size() && slot < 45; i++, slot++) {
+            String id = ids.get(i);
+            int weight = cache.getOrDefault(id, 0);
+            menu.addItem(slot, buildItem(id, weight, tw));
+            final int pageSnap = cur;
+            menu.addMenuClickHandler(slot, makeClickHandler(player, id, sw,
+                    () -> openAllConfigItems(player, pageSnap, back)));
+        }
+
+        addFooterBg(menu);
+        addPrevNext(menu, player, cur, pages, sw,
+                () -> openAllConfigItems(player, cur - 1, back),
+                () -> openAllConfigItems(player, cur + 1, back));
         finishMenu(menu, player, sw);
     }
 
