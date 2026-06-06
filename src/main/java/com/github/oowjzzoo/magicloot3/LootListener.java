@@ -136,7 +136,7 @@ public class LootListener implements Listener {
                 // Physical hit: cancel damage, apply weapon affixes to NPC
                 e.setCancelled(true);
                 ItemStack weapon = getItemInMainHand(attacker);
-                applyEffectsFromItem(weapon, victim, victim);
+                applyEffectsFromItem(weapon, attacker, victim);
             } else {
                 // All other damage sources blocked
                 e.setCancelled(true);
