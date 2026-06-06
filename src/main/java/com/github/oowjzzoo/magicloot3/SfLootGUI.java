@@ -91,7 +91,7 @@ final class SfLootGUI extends LootConfigGUI {
     @SuppressWarnings("unchecked")
     private void openGroup(Player player, ItemGroup group, int page) {
         if (group instanceof NestedItemGroup nested) {
-            showSubGroups(player, nested, findNestedChildren(nested), page);
+            showSubGroups(player, nested, findNestedChildren(nested, player), page);
             return;
         }
         if (group instanceof FlexItemGroup) {
@@ -113,19 +113,19 @@ final class SfLootGUI extends LootConfigGUI {
 
     // ── Sub-group pages ──
 
-    private List<ItemGroup> findNestedChildren(NestedItemGroup parent) {
+    private List<ItemGroup> findNestedChildren(NestedItemGroup parent, Player player) {
         List<ItemGroup> subs = new ArrayList<>();
         for (ItemGroup g : Slimefun.getRegistry().getAllItemGroups()) {
             if (g instanceof SubItemGroup sub && sub.getParent() == parent)
                 subs.add(sub);
         }
         subs.sort(Comparator.comparing(
-                g -> ChatColor.stripColor(g.getDisplayName(null))));
+                g -> ChatColor.stripColor(g.getDisplayName(player))));
         return subs;
     }
 
     private void openSubGroups(Player player, NestedItemGroup parent, int page) {
-        showSubGroups(player, parent, findNestedChildren(parent), page);
+        showSubGroups(player, parent, findNestedChildren(parent, player), page);
     }
 
     private void showSubGroups(Player player, ItemGroup parent, List<? extends ItemGroup> subs, int page) {
