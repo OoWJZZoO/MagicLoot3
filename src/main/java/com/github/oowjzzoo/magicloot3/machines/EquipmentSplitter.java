@@ -89,6 +89,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
     // Dirty working copies (keyed by Location, used while sub-menu is open)
     static final Map<Location, Map<String, Route>> dirtyConfigs = new ConcurrentHashMap<>();
     static final Map<Location, Priority> dirtyPriorities = new ConcurrentHashMap<>();
+    static final Map<Location, Long> lastClickTime = new ConcurrentHashMap<>();
 
     private static Plugin plugin;
 
@@ -166,6 +167,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
                 savedPriorities.remove(loc);
                 enchProtectEnabled.remove(loc);
                 enchProtectThreshold.remove(loc);
+                lastClickTime.remove(loc);
                 dirtyConfigs.remove(loc);
                 dirtyPriorities.remove(loc);
             }
@@ -280,6 +282,9 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         int epThreshold = enchProtectThreshold.getOrDefault(loc, 5);
         menu.replaceExistingItem(ENCH_PROTECT_SLOT, buildEnchantProtectItem(epOn, epThreshold));
         menu.addMenuClickHandler(ENCH_PROTECT_SLOT, (pl, s, it, a) -> {
+            long now = System.currentTimeMillis();
+            if (now - lastClickTime.getOrDefault(loc, 0L) < 200) return false;
+            lastClickTime.put(loc, now);
             if (a.isShiftClicked()) {
                 enchProtectEnabled.put(loc, !epOn);
             } else if (epOn) {
