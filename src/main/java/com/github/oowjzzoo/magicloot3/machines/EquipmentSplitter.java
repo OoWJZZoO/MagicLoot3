@@ -19,6 +19,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -63,12 +64,14 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
     // Input: 38 → 37, Output: 44 → 43
     private static final int INPUT_SLOT = 37;
     private static final int OUTPUT_SLOT = 43;
-    // Menu: 11 → 10, Priority: 20 → 19, Sign(B): 17 → 16, Trash(C): 26 → 25, Bell: 23 → 22
+    // Menu: 11 → 10, Priority: 20 → 19, Sign(B): 17 → 16, Trash(C): 26 → 25
+    // EnchProtect: 23 → 22, Bell: 5 → 4
     private static final int MENU_SLOT = 10;
     private static final int PRIO_SLOT = 19;
     private static final int SIGN_SLOT = 16;
     private static final int TRASH_SLOT = 25;
-    private static final int BELL_SLOT = 22;
+    private static final int ENCH_PROTECT_SLOT = 22;
+    private static final int BELL_SLOT = 4;
 
     private static final int SAVE_SLOT = 4; // 1-based slot 5
     private static final int MAX_ITEMS = 36;
@@ -81,6 +84,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
     // Persisted config
     static final Map<Location, Map<String, Route>> savedConfigs = new ConcurrentHashMap<>();
     static final Map<Location, Priority> savedPriorities = new ConcurrentHashMap<>();
+    static final Map<Location, Boolean> enchProtectEnabled = new ConcurrentHashMap<>();
+    static final Map<Location, Integer> enchProtectThreshold = new ConcurrentHashMap<>();
     // Dirty working copies (keyed by Location, used while sub-menu is open)
     static final Map<Location, Map<String, Route>> dirtyConfigs = new ConcurrentHashMap<>();
     static final Map<Location, Priority> dirtyPriorities = new ConcurrentHashMap<>();
@@ -110,7 +115,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
                 Set<Integer> used = new HashSet<>();
                 used.add(INPUT_SLOT); used.add(OUTPUT_SLOT);
                 used.add(MENU_SLOT); used.add(PRIO_SLOT);
-                used.add(SIGN_SLOT); used.add(TRASH_SLOT); used.add(BELL_SLOT);
+                used.add(SIGN_SLOT); used.add(TRASH_SLOT);
+                used.add(ENCH_PROTECT_SLOT); used.add(BELL_SLOT);
                 for (int i : CYAN_SLOTS) used.add(i);
                 for (int i : ORANGE_SLOTS) used.add(i);
                 for (int i = 0; i < 54; i++)
@@ -158,6 +164,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
                 Location loc = b.getLocation();
                 savedConfigs.remove(loc);
                 savedPriorities.remove(loc);
+                enchProtectEnabled.remove(loc);
+                enchProtectThreshold.remove(loc);
                 dirtyConfigs.remove(loc);
                 dirtyPriorities.remove(loc);
             }
@@ -203,6 +211,17 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
                 } else {
                     if (r == Route.B) { finalRoute = Route.B; break; }
                     if (r == Route.C) finalRoute = Route.C;
+                }
+            }
+        }
+
+        // Enchant protection overrides affix routing
+        if (enchProtectEnabled.getOrDefault(loc, false)) {
+            int threshold = enchProtectThreshold.getOrDefault(loc, 5);
+            for (Enchantment ench : item.getEnchantments().keySet()) {
+                if (item.getEnchantmentLevel(ench) >= threshold) {
+                    finalRoute = Route.B;
+                    break;
                 }
             }
         }
@@ -255,6 +274,27 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         // Trash (route C list)
         menu.replaceExistingItem(TRASH_SLOT, buildRouteDisplay(false, routes));
         menu.addMenuClickHandler(TRASH_SLOT, ChestMenuUtils.getEmptyClickHandler());
+
+        // Enchant protect
+        boolean epOn = enchProtectEnabled.getOrDefault(loc, false);
+        int epThreshold = enchProtectThreshold.getOrDefault(loc, 5);
+        menu.replaceExistingItem(ENCH_PROTECT_SLOT, buildEnchantProtectItem(epOn, epThreshold));
+        menu.addMenuClickHandler(ENCH_PROTECT_SLOT, (pl, s, it, a) -> {
+            if (a.isShiftClicked()) {
+                enchProtectEnabled.put(loc, !epOn);
+            } else if (epOn) {
+                int newThreshold = a.isRightClicked()
+                        ? Math.max(1, epThreshold - 1)
+                        : Math.min(255, epThreshold + 1);
+                enchProtectThreshold.put(loc, newThreshold);
+            } else {
+                enchProtectEnabled.put(loc, true);
+            }
+            saveLocation(loc);
+            refreshMainPage(menu, b);
+            pl.playSound(pl.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
+            return false;
+        });
 
         // Bell (info)
         menu.replaceExistingItem(BELL_SLOT, buildBellItem());
@@ -481,6 +521,26 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         return pane;
     }
 
+    private ItemStack buildEnchantProtectItem(boolean on, int threshold) {
+        ItemStack item = new ItemStack(Material.ENCHANTED_BOOK);
+        ItemMeta meta = item.getItemMeta();
+        if (on) {
+            meta.setDisplayName(Messages.get("machine.equipment_splitter.ench_protect_on"));
+            meta.setLore(List.of(
+                    Messages.get("machine.equipment_splitter.ench_protect_lore1",
+                            String.valueOf(threshold)),
+                    Messages.get("machine.equipment_splitter.ench_protect_lore2"),
+                    "",
+                    Messages.get("machine.equipment_splitter.ench_protect_hint_on1"),
+                    Messages.get("machine.equipment_splitter.ench_protect_hint_on2")));
+        } else {
+            meta.setDisplayName(Messages.get("machine.equipment_splitter.ench_protect_off"));
+            meta.setLore(List.of(Messages.get("machine.equipment_splitter.ench_protect_hint_off")));
+        }
+        item.setItemMeta(meta);
+        return item;
+    }
+
     private ItemStack buildBellItem() {
         ItemStack item = new ItemStack(Material.BELL);
         ItemMeta meta = item.getItemMeta();
@@ -537,6 +597,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         String key = locKey(loc);
         String prioStr = cfg.getString(key + ".priority", "DESTROY_FIRST");
         savedPriorities.put(loc, Priority.valueOf(prioStr));
+        enchProtectEnabled.put(loc, cfg.getBoolean(key + ".ench_protect_enabled", false));
+        enchProtectThreshold.put(loc, cfg.getInt(key + ".ench_protect_threshold", 5));
 
         Map<String, Route> routes = new HashMap<>();
         var sec = cfg.getConfigurationSection(key + ".routes");
@@ -569,6 +631,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
 
         String key = locKey(loc);
         cfg.set(key + ".priority", prio.name());
+        cfg.set(key + ".ench_protect_enabled", enchProtectEnabled.getOrDefault(loc, false));
+        cfg.set(key + ".ench_protect_threshold", enchProtectThreshold.getOrDefault(loc, 5));
         for (var e : working.entrySet())
             cfg.set(key + ".routes." + e.getKey(), e.getValue().name());
 
