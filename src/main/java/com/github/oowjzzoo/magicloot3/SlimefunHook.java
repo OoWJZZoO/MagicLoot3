@@ -179,8 +179,10 @@ final class SlimefunHook implements SlimefunAddon {
                 "LOST_LIBRARIAN_BRAIN", Material.ROTTEN_FLESH, brainName, brainLore);
         ItemStack eggIcon = new ItemStack(Material.VILLAGER_SPAWN_EGG);
         ItemMeta eggMeta = eggIcon.getItemMeta();
-        eggMeta.setDisplayName("§5§l无魂鉴定师");
-        eggMeta.setLore(List.of("§f免疫物理伤害",
+        eggMeta.setLore(List.of("",
+                "§5§l无魂鉴定师",
+                "§f自然生成在失落图书馆中",
+                "§f免疫物理伤害",
                 "§f使用带有伤害型药水词缀的武器杀死",
                 "§f或者使用喷溅型药水杀死"));
         eggIcon.setItemMeta(eggMeta);
