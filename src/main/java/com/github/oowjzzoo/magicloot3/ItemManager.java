@@ -32,8 +32,6 @@ import org.bukkit.potion.PotionType;
 
 import com.github.oowjzzoo.magicloot3.util.SkullCreator;
 
-import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
-
 public class ItemManager {
 
     public static List<Enchantment> enchantments = new ArrayList<>();
@@ -230,14 +228,6 @@ public class ItemManager {
             }
         }
         item.setItemMeta(im);
-
-        // Remove dummy SF ID from formerly unidentified items
-        Slimefun.getItemDataService().getItemData(im).ifPresent(id -> {
-            if ("MAGICLOOT_UNIDENTIFIED".equals(id)) {
-                im.getPersistentDataContainer().remove(Slimefun.getItemDataService().getKey());
-                item.setItemMeta(im);
-            }
-        });
 
         // Enchantments for non-book items only
         if (!(im instanceof EnchantmentStorageMeta) && enchMax > 0 && !enchantments.isEmpty()) {

@@ -209,13 +209,33 @@ final class SlimefunHook implements SlimefunAddon {
                 new SlimefunItemStack(runeStack, 3))
                 .register(this);
 
-        // Second recipe: 8 unidentified items + blank rune → 1 Ancient Rune [Past]
-        SlimefunItemStack unidIngredient = new SlimefunItemStack(
-                "MAGICLOOT_UNIDENTIFIED", unidDummy.getItem());
+        // Garbled Voucher — traded for unidentified items at the desk/librarian
+        String voucherName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
+        String[] voucherLore = zh
+                ? new String[]{"", "&7乱码凭证",
+                        "", "&7远古祭坛上围8个，中间放空白符文",
+                        "&7也可合成 古代符文 [往日]"}
+                : new String[]{"", "&7Garbled Voucher",
+                        "", "&7Place 8 around an Ancient Altar with a Blank Rune",
+                        "&7to craft an Ancient Rune [Past]"};
+        SlimefunItemStack voucherStack = new SlimefunItemStack(
+                "GARBLED_VOUCHER", Material.PAPER, voucherName, voucherLore);
+
+        ItemStack voucherDeskIcon = new ItemStack(Material.CRAFTING_TABLE);
+        ItemMeta voucherDeskMeta = voucherDeskIcon.getItemMeta();
+        voucherDeskMeta.setDisplayName(zh ? "§5§l兑换: 遗物鉴定桌/无魂鉴定师" : "§5§lExchange: Desk / Librarian");
+        voucherDeskIcon.setItemMeta(voucherDeskMeta);
+        RecipeType voucherRecipeType = new RecipeType(
+                new NamespacedKey(plugin, "voucher_exchange"), voucherDeskIcon);
+        new SlimefunItem(itemGroup, voucherStack, voucherRecipeType,
+                new ItemStack[]{null, null, null, null, unidDummy.getItem(), null, null, null, null})
+                .register(this);
+
+        // Second recipe: 8 vouchers + blank rune → 1 Ancient Rune [Past]
         RecipeType.ANCIENT_ALTAR.register(
-                new ItemStack[]{unidIngredient, unidIngredient, unidIngredient,
-                        unidIngredient, SlimefunItems.BLANK_RUNE, unidIngredient,
-                        unidIngredient, unidIngredient, unidIngredient},
+                new ItemStack[]{voucherStack, voucherStack, voucherStack,
+                        voucherStack, SlimefunItems.BLANK_RUNE, voucherStack,
+                        voucherStack, voucherStack, voucherStack},
                 new SlimefunItemStack(runeStack, 1));
 
         // Ancient Rune of Rename (重命名)
