@@ -9,12 +9,6 @@ desk:
   success: "§5§lLost Librarian's Desk §8> §7Examination complete."
   no_xp: "§5§lLost Librarian's Desk §8> §7Insufficient Experience Levels."
 
-gui:
-  title: "Lost Librarian"
-  random: "&7[&rRandom&7]"
-  cost: "§7Cost: §b{0} XP Level"
-  border: " "
-
 tiers:
   COMMON: "§aCommon"
   UNCOMMON: "§5Uncommon"
@@ -194,6 +188,10 @@ machine:
     - "&fEach use has a 40% chance to consume one"
 
 gui:
+  title: "Lost Librarian"
+  random: "&7[&rRandom&7]"
+  cost: "§7Cost: §b{0} XP Level"
+  border: " "
   loot_config:
     title: "Loot Config"
     categories: "Categories"

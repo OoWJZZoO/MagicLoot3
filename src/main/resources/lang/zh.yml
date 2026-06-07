@@ -9,12 +9,6 @@ desk:
   success: "§5§l遗物鉴定桌 §8> §7鉴定大成功！"
   no_xp: "§5§l遗物鉴定桌 §8> §7经验不够，需要采集经验。"
 
-gui:
-  title: "无魂鉴定师"
-  random: "&7[&r随机鉴定&7]"
-  cost: "§7消耗：§b{0} 级经验"
-  border: " "
-
 tiers:
   COMMON: "§a普通"
   UNCOMMON: "§5非凡"
@@ -182,6 +176,10 @@ machine:
     - "&f每次使用机器都有40%的概率消耗一个"
 
 gui:
+  title: "无魂鉴定师"
+  random: "&7[&r随机鉴定&7]"
+  cost: "§7消耗：§b{0} 级经验"
+  border: " "
   loot_config:
     title: "战利品配置"
     categories: "分类"
