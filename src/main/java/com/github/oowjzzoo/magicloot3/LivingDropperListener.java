@@ -84,18 +84,31 @@ public class LivingDropperListener implements Listener {
 
         ItemStack toDrop = e.getItem().clone();
         BlockFace face = getFacing(block);
-        Location dropLoc = block.getLocation().add(0.5, 0.5, 0.5)
-                .add(face.getModX() * 0.5, face.getModY() * 0.5, face.getModZ() * 0.5);
+
+        // Exact vanilla position: blockCenter + facing * 0.7 (DispenserBlock.getDispensePosition)
+        double x = block.getX() + 0.5 + face.getModX() * 0.7;
+        double y = block.getY() + 0.5 + face.getModY() * 0.7;
+        double z = block.getZ() + 0.5 + face.getModZ() * 0.7;
+        // Y adjustment from DefaultDispenseItemBehavior.spawnItem
+        if (face == BlockFace.UP || face == BlockFace.DOWN) {
+            y -= 0.125;
+        } else {
+            y -= 0.15625;
+        }
+        Location dropLoc = new Location(block.getWorld(), x, y, z);
 
         Bukkit.getScheduler().runTask(MagicLoot3.getInstance(), () -> {
             if (!removeFromDropper(block, toDrop)) return;
 
             Item itemEntity = block.getWorld().dropItem(dropLoc, toDrop);
+            // Exact vanilla velocity from DefaultDispenseItemBehavior.spawnItem
             ThreadLocalRandom r = ThreadLocalRandom.current();
+            double pow = r.nextDouble() * 0.1 + 0.2;
+            double spread = 0.0172275 * 6; // accuracy = 6
             itemEntity.setVelocity(new Vector(
-                    face.getModX() * 0.1 + (r.nextDouble() - 0.5) * 0.1,
-                    face.getModY() * 0.1 + (r.nextDouble() - 0.5) * 0.1,
-                    face.getModZ() * 0.1 + (r.nextDouble() - 0.5) * 0.1));
+                    face.getModX() * pow + (r.nextDouble() - r.nextDouble()) * spread,
+                    0.2 + (r.nextDouble() - r.nextDouble()) * spread,
+                    face.getModZ() * pow + (r.nextDouble() - r.nextDouble()) * spread));
 
             PlayerDropItemEvent dropEvent = new PlayerDropItemEvent(bound, itemEntity);
             Bukkit.getPluginManager().callEvent(dropEvent);
