@@ -66,39 +66,45 @@ public class LivingDropperListener implements Listener {
         Block block = e.getBlock();
         if (!LivingDropper.isLivingDropper(block.getLocation())) return;
 
-        e.setCancelled(true);
-
         Location loc = block.getLocation();
         UUID boundUUID = LivingDropper.getBoundUUID(loc);
-        if (boundUUID == null) return;
+        Player bound;
+        if (boundUUID == null || (bound = Bukkit.getPlayer(boundUUID)) == null
+                || !bound.isOnline()) {
+            // Unbound or offline: cancel so vanilla dropper doesn't dispense either
+            e.setCancelled(true);
+            return;
+        }
 
-        Player bound = Bukkit.getPlayer(boundUUID);
-        if (bound == null || !bound.isOnline()) return;
+        // Vanilla removed the item from inventory BEFORE firing this event.
+        // On cancel, Paper puts it back AFTER the event. So we must cancel
+        // (to suppress vanilla's own Item entity), then schedule inventory
+        // removal + our own Item entity for after the put-back.
+        e.setCancelled(true);
 
         ItemStack toDrop = e.getItem().clone();
-
-        if (!removeFromDropper(block, toDrop)) return;
-
-        // Spawn item at vanilla dropper position: block center + facing * 0.5
         BlockFace face = getFacing(block);
         Location dropLoc = block.getLocation().add(0.5, 0.5, 0.5)
                 .add(face.getModX() * 0.5, face.getModY() * 0.5, face.getModZ() * 0.5);
-        Item itemEntity = block.getWorld().dropItem(dropLoc, toDrop);
 
-        // Dispenser-style velocity: slight push in facing direction + random spread
-        ThreadLocalRandom r = ThreadLocalRandom.current();
-        itemEntity.setVelocity(new Vector(
-                face.getModX() * 0.1 + (r.nextDouble() - 0.5) * 0.1,
-                face.getModY() * 0.1 + (r.nextDouble() - 0.5) * 0.1,
-                face.getModZ() * 0.1 + (r.nextDouble() - 0.5) * 0.1));
+        Bukkit.getScheduler().runTask(MagicLoot3.getInstance(), () -> {
+            if (!removeFromDropper(block, toDrop)) return;
 
-        PlayerDropItemEvent dropEvent = new PlayerDropItemEvent(bound, itemEntity);
-        Bukkit.getPluginManager().callEvent(dropEvent);
+            Item itemEntity = block.getWorld().dropItem(dropLoc, toDrop);
+            ThreadLocalRandom r = ThreadLocalRandom.current();
+            itemEntity.setVelocity(new Vector(
+                    face.getModX() * 0.1 + (r.nextDouble() - 0.5) * 0.1,
+                    face.getModY() * 0.1 + (r.nextDouble() - 0.5) * 0.1,
+                    face.getModZ() * 0.1 + (r.nextDouble() - 0.5) * 0.1));
 
-        if (dropEvent.isCancelled()) {
-            itemEntity.remove();
-            returnToDropper(block, toDrop);
-        }
+            PlayerDropItemEvent dropEvent = new PlayerDropItemEvent(bound, itemEntity);
+            Bukkit.getPluginManager().callEvent(dropEvent);
+
+            if (dropEvent.isCancelled()) {
+                itemEntity.remove();
+                returnToDropper(block, toDrop);
+            }
+        });
     }
 
     // --- Binding GUI clicks ---
@@ -171,7 +177,7 @@ public class LivingDropperListener implements Listener {
         Inventory inv = dropper.getInventory();
         for (int i = 0; i < inv.getSize(); i++) {
             ItemStack slot = inv.getItem(i);
-            if (slot != null && slot.getType() == target.getType()) {
+            if (slot != null && slot.isSimilar(target)) {
                 if (slot.getAmount() > 1) {
                     slot.setAmount(slot.getAmount() - 1);
                 } else {
