@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -305,6 +306,8 @@ public class LootListener implements Listener {
                 head.setItemMeta(skull);
             }
             deadPlayer.getWorld().dropItemNaturally(deadPlayer.getLocation(), head);
+            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
+                    "&e" + deadPlayer.getName() + " &4&l自刎归天!"));
         }
     }
 
