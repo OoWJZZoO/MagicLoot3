@@ -171,7 +171,7 @@ public class LivingDropperListener implements Listener {
         Inventory inv = dropper.getInventory();
         for (int i = 0; i < inv.getSize(); i++) {
             ItemStack slot = inv.getItem(i);
-            if (slot != null && slot.isSimilar(target)) {
+            if (slot != null && slot.getType() == target.getType()) {
                 if (slot.getAmount() > 1) {
                     slot.setAmount(slot.getAmount() - 1);
                 } else {
