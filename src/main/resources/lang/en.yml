@@ -183,6 +183,9 @@ rune:
   past:
     no_target: "&7Ancient Rune &8&l[&e&lPast&8&l] &8> &cNo compatible equipment nearby. Requirements: vanilla item, no enchantments, no potion affixes, not a Slimefun item."
     success: "&7Ancient Rune &8&l[&e&lPast&8&l] &8> &aRune consumed, equipment is now unidentified!"
+  rename:
+    no_target: "&7Ancient Rune &8&l[&3&lRename&8&l] &8> &cNo items nearby."
+    success: "&7Ancient Rune &8&l[&3&lRename&8&l] &8> &aRune consumed, item has been renamed!"
 
 machine:
   fuel_slot_hint:

@@ -307,6 +307,15 @@ public class ItemManager {
                 + " to your item.");
     }
 
+    /** Generate a random equipment name from the configured pool. */
+    public static String generateRandomName() {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        String prefix = prefixes.get(random.nextInt(prefixes.size()));
+        String suffix = suffixes.get(random.nextInt(suffixes.size()));
+        return colorCodes.get(random.nextInt(colorCodes.size()))
+                + prefix + needsSpace(prefix, suffix) + suffix;
+    }
+
     /** Returns " " if prefix ends with a letter and suffix starts with one, else "". */
     private static String needsSpace(String prefix, String suffix) {
         char last = prefix.charAt(prefix.length() - 1);

@@ -27,6 +27,7 @@ import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
 import io.github.thebusybiscuit.slimefun4.utils.LoreBuilder;
 
 import com.github.oowjzzoo.magicloot3.items.PastRune;
+import com.github.oowjzzoo.magicloot3.items.RenameRune;
 import com.github.oowjzzoo.magicloot3.machines.EquipmentSplitter;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixDisenchanter;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixEnchanter;
@@ -195,6 +196,45 @@ final class SlimefunHook implements SlimefunAddon {
                 new NamespacedKey(plugin, "librarian_drop"), dropIcon);
         new SlimefunItem(itemGroup, brainStack, librarianDrop,
                 new ItemStack[]{null, null, null, null, eggIcon, null, null, null, null})
+                .register(this);
+
+        // Ancient Rune of Rename (重命名)
+        String renameRuneName = zh
+                ? "§7古代符文 §8§l[§3§l重命名§8§l]"
+                : "§7Ancient Rune §8§l[§3§lRename§8§l]";
+        String[] renameRuneLore = zh
+                ? new String[]{"", "&e把符文丢向你已经丢出的物品",
+                        "&e该物品会被随机重命名",
+                        "",
+                        "&7为什么我的神剑叫做雷霆大内裤",
+                        "&7我不满意!!!",
+                        "",
+                        "&4&l对于特殊物品请谨慎使用",
+                        "&4&l可能导致它们无法被识别"}
+                : new String[]{"", "&eDrop this rune onto a dropped item",
+                        "&eThe item will be randomly renamed",
+                        "",
+                        "&7Why is my legendary sword called",
+                        "&7Mighty Underpants?!",
+                        "",
+                        "&4&lUse with caution on special items",
+                        "&4&lIt may make them unrecognizable"};
+
+        ItemStack renameRuneBase = new ItemStack(Material.FIREWORK_STAR);
+        FireworkEffectMeta renameFwMeta = (FireworkEffectMeta) renameRuneBase.getItemMeta();
+        renameFwMeta.setEffect(FireworkEffect.builder()
+                .with(FireworkEffect.Type.BURST).withColor(Color.AQUA).build());
+        renameFwMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+        renameRuneBase.setItemMeta(renameFwMeta);
+        SlimefunItemStack renameRuneStack = new SlimefunItemStack(
+                "ANCIENT_RUNE_RENAME", renameRuneBase, renameRuneName, renameRuneLore);
+
+        ItemStack[] renameRuneRecipe = {
+                new ItemStack(Material.NAME_TAG), SlimefunItems.RAINBOW_LEATHER, runeStack,
+                SlimefunItems.RAINBOW_LEATHER, brainStack, SlimefunItems.RAINBOW_LEATHER,
+                runeStack, SlimefunItems.RAINBOW_LEATHER, new ItemStack(Material.NAME_TAG)};
+        new RenameRune(itemGroup, renameRuneStack, RecipeType.ANCIENT_ALTAR,
+                renameRuneRecipe, new SlimefunItemStack(renameRuneStack, 12))
                 .register(this);
 
         // Time of Exploration (探索的时光)
