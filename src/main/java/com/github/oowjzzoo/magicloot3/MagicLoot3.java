@@ -1,6 +1,7 @@
 package com.github.oowjzzoo.magicloot3;
 
 import com.github.oowjzzoo.magicloot3.machines.EquipmentSplitter;
+import com.github.oowjzzoo.magicloot3.machines.LivingDropper;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,6 +28,7 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
 
         String lang = getConfig().getString("language", "zh");
         Messages.load(this, lang);
+        LivingDropper.init(getDataFolder());
 
         MagicLootConfig.setupConfigs(this);
         StructurePlacer.extractDefaults(this);
@@ -49,6 +51,7 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
             }
 
             new LootListener(this);
+            new LivingDropperListener(this);
             getLogger().info(Messages.get("log.loaded"));
         }, 10L);
     }

@@ -261,3 +261,11 @@ machine:
     rank_button_title: "&b鉴定档位:"
     rank_switch_hint: "&7点击以切换"
     level_unit: 级
+living_dropper:
+  gui_title: "&f投掷器(活的!)"
+  bind_button_title: "&b绑定玩家"
+  unbound: "&7当前未绑定"
+  bound_to: "&f绑定到: {0}"
+  online: "&a在线"
+  offline: "&c离线"
+  click_to_bind: "&7点击绑定/解绑"

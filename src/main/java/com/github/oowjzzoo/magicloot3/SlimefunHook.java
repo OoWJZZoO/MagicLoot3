@@ -29,6 +29,7 @@ import io.github.thebusybiscuit.slimefun4.utils.LoreBuilder;
 import com.github.oowjzzoo.magicloot3.items.PastRune;
 import com.github.oowjzzoo.magicloot3.items.RenameRune;
 import com.github.oowjzzoo.magicloot3.machines.EquipmentSplitter;
+import com.github.oowjzzoo.magicloot3.machines.LivingDropper;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixDisenchanter;
 import com.github.oowjzzoo.magicloot3.machines.AutoAppraiser;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixEnchanter;
@@ -157,6 +158,16 @@ final class SlimefunHook implements SlimefunAddon {
                 new NamespacedKey(plugin, "librarian_drop"), dropIcon);
         new SlimefunItem(itemGroup, brainStack, librarianDrop,
                 new ItemStack[]{null, null, null, null, eggIcon, null, null, null, null})
+                .register(this);
+
+        // Living Dropper
+        String dropperName = zh ? "&f投掷器(活的!)" : "&fLiving Dropper";
+        String[] dropperLore = zh
+                ? new String[]{"", "&7就像真的玩家一样!", "&7绑定的玩家在线时就能工作", "&7Shift+右键 打开配置界面"}
+                : new String[]{"", "&7Just like a real player!", "&7Works when the bound player is online", "&7Shift+Right-click to configure"};
+        SlimefunItemStack dropperStack = new SlimefunItemStack(
+                "LIVING_DROPPER", Material.DROPPER, dropperName, dropperLore);
+        new LivingDropper(itemGroup, dropperStack, RecipeType.NULL, new ItemStack[9])
                 .register(this);
 
         // Dummy item for unidentified equipment recipe matching

@@ -273,3 +273,11 @@ machine:
     rank_button_title: "&bAppraisal Rank:"
     rank_switch_hint: "&7Click to switch"
     level_unit: " Level(s)"
+living_dropper:
+  gui_title: "&fLiving Dropper"
+  bind_button_title: "&bBound Player"
+  unbound: "&7Not bound"
+  bound_to: "&fBound to: {0}"
+  online: "&aOnline"
+  offline: "&cOffline"
+  click_to_bind: "&7Click to bind/unbind"
