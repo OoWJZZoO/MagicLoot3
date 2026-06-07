@@ -136,6 +136,8 @@ public class LivingDropperListener implements Listener {
     public void onInventoryClick(InventoryClickEvent e) {
         if (e.getInventory().getHolder() != BINDING_HOLDER) return;
         e.setCancelled(true);
+        if (e.getClickedInventory() != e.getView().getTopInventory()) return;
+        if (e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR) return;
         if (e.getSlot() != 4) return;
 
         Player player = (Player) e.getWhoClicked();
@@ -148,8 +150,7 @@ public class LivingDropperListener implements Listener {
         } else {
             LivingDropper.bind(loc, player.getUniqueId());
         }
-        player.closeInventory();
-        openBindingGUI(player, loc);
+        e.getInventory().setItem(4, buildBindButton(loc));
     }
 
     // --- GUI builder ---
@@ -166,6 +167,11 @@ public class LivingDropperListener implements Listener {
             if (i != 4) inv.setItem(i, border);
         }
 
+        inv.setItem(4, buildBindButton(loc));
+        player.openInventory(inv);
+    }
+
+    static ItemStack buildBindButton(Location loc) {
         UUID boundUUID = LivingDropper.getBoundUUID(loc);
         ItemStack btn;
         if (boundUUID != null) {
@@ -195,9 +201,7 @@ public class LivingDropperListener implements Listener {
         lore.add(Messages.get("living_dropper.click_to_bind"));
         meta.setLore(lore);
         btn.setItemMeta(meta);
-        inv.setItem(4, btn);
-
-        player.openInventory(inv);
+        return btn;
     }
 
     // --- Dropper inventory helpers ---
