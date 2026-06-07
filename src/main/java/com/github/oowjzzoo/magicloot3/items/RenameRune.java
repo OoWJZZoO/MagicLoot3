@@ -62,7 +62,12 @@ public class RenameRune extends SimpleSlimefunItem<ItemDropHandler> {
         Optional<Entity> optional = entities.stream().findFirst();
 
         if (optional.isEmpty()) {
-            p.sendMessage(Messages.get("rune.rename.no_target"));
+            // Check if there's an unidentified item nearby for a specific hint
+            if (isUnidentifiedNearby(l)) {
+                p.sendMessage(Messages.get("rune.rename.unidentified_blocked"));
+            } else {
+                p.sendMessage(Messages.get("rune.rename.no_target"));
+            }
             return;
         }
 
@@ -106,11 +111,29 @@ public class RenameRune extends SimpleSlimefunItem<ItemDropHandler> {
         ItemStack stack = item.getItemStack();
         if (isItem(stack)) return false; // don't target another RenameRune
         if (stack.getType().isAir()) return false;
-        // Can't rename unidentified items
+        // Only block unidentified (UNKNOWN tier) items
         ItemMeta meta = stack.getItemMeta();
-        if (meta != null && meta.getPersistentDataContainer()
-                .has(ItemKeys.TIER, PersistentDataType.STRING)) return false;
+        if (meta != null) {
+            String tier = meta.getPersistentDataContainer()
+                    .get(ItemKeys.TIER, PersistentDataType.STRING);
+            if ("UNKNOWN".equals(tier)) return false;
+        }
         return true;
+    }
+
+    private boolean isUnidentifiedNearby(Location l) {
+        for (Entity e : l.getWorld().getNearbyEntities(l, RANGE, RANGE, RANGE)) {
+            if (!(e instanceof Item item)) continue;
+            ItemStack stack = item.getItemStack();
+            if (isItem(stack) || stack.getType().isAir()) continue;
+            ItemMeta meta = stack.getItemMeta();
+            if (meta != null) {
+                String tier = meta.getPersistentDataContainer()
+                        .get(ItemKeys.TIER, PersistentDataType.STRING);
+                if ("UNKNOWN".equals(tier)) return true;
+            }
+        }
+        return false;
     }
 
     private static void renameItem(ItemStack item) {
