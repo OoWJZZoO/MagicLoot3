@@ -74,6 +74,7 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
         MagicLootConfig.mobs.clear();
         RuinBuilder.ruinNames.clear();
         RuinBuilder.buildingNames.clear();
+        LivingDropper.cleanup();
     }
 
     @EventHandler
