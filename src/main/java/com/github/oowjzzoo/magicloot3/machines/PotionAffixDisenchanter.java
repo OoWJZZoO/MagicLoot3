@@ -95,7 +95,7 @@ public class PotionAffixDisenchanter extends AContainer {
 
         List<String> lines = Messages.getList("machine.fuel_slot_hint");
         String name = lines.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', lines.get(0));
-        ItemStack hint = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
+        ItemStack hint = new ItemStack(Material.BELL);
         ItemMeta hm = hint.getItemMeta();
         hm.setDisplayName(name);
         if (lines.size() > 1) hm.setLore(java.util.Collections.singletonList(
