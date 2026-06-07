@@ -17,11 +17,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -45,18 +45,21 @@ public class LivingDropperListener implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    // --- InventoryOpen → shift detection for binding GUI ---
+    // --- Shift+Right-click → Binding GUI ---
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onInventoryOpen(InventoryOpenEvent e) {
-        if (e.getInventory().getType() != InventoryType.DROPPER) return;
-        Location loc = e.getInventory().getLocation();
-        if (loc == null) return;
-        if (!LivingDropper.isLivingDropper(loc)) return;
+    public void onPlayerInteract(PlayerInteractEvent e) {
+        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        Block block = e.getClickedBlock();
+        if (block == null || block.getType() != Material.DROPPER) return;
+        if (!LivingDropper.isLivingDropper(block.getLocation())) return;
         if (!e.getPlayer().isSneaking()) return;
+        // Only intercept when empty-handed or not holding a placeable block
+        ItemStack hand = e.getItem();
+        if (hand != null && hand.getType().isBlock()) return;
 
         e.setCancelled(true);
-        openBindingGUI((Player) e.getPlayer(), loc);
+        openBindingGUI(e.getPlayer(), block.getLocation());
     }
 
     // --- BlockDispenseEvent → Simulate player drop ---
