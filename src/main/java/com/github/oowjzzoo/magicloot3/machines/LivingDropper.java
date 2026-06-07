@@ -2,6 +2,7 @@ package com.github.oowjzzoo.magicloot3.machines;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import org.bukkit.block.Dropper;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -29,8 +31,8 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
+import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
-import io.github.thebusybiscuit.slimefun4.implementation.handlers.SimpleBlockBreakHandler;
 
 public class LivingDropper extends SlimefunItem {
 
@@ -51,22 +53,21 @@ public class LivingDropper extends SlimefunItem {
             }
         });
 
-        addItemHandler(new SimpleBlockBreakHandler() {
+        addItemHandler(new BlockBreakHandler(false, false) {
             @Override
-            public void onBlockBreak(@Nonnull Block b) {
+            public void onPlayerBreak(BlockBreakEvent e, ItemStack item, List<ItemStack> drops) {
+                Block b = e.getBlock();
                 Location loc = b.getLocation();
-                // Drop dropper contents
+                drops.clear();
                 if (b.getState() instanceof Dropper dropper) {
-                    Inventory inv = dropper.getInventory();
-                    for (ItemStack item : inv.getContents()) {
-                        if (item != null && item.getType() != Material.AIR) {
-                            b.getWorld().dropItemNaturally(loc, item);
+                    for (ItemStack content : dropper.getInventory().getContents()) {
+                        if (content != null && content.getType() != Material.AIR) {
+                            drops.add(content);
                         }
                     }
-                    inv.clear();
+                    dropper.getInventory().clear();
                 }
-                // Drop the living dropper item itself
-                b.getWorld().dropItemNaturally(loc, getItem().clone());
+                drops.add(getItem().clone());
                 locations.remove(loc);
                 bindings.remove(loc);
                 saveData();

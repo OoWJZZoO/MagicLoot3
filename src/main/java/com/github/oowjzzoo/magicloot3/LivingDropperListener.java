@@ -15,11 +15,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -37,23 +37,23 @@ public class LivingDropperListener implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    // --- Shift+Right-click → Binding GUI ---
+    // --- InventoryOpen → shift detection for binding GUI ---
 
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onPlayerInteract(PlayerInteractEvent e) {
-        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        Block block = e.getClickedBlock();
-        if (block == null || block.getType() != Material.DROPPER) return;
-        if (!LivingDropper.isLivingDropper(block.getLocation())) return;
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onInventoryOpen(InventoryOpenEvent e) {
+        if (e.getInventory().getType() != InventoryType.DROPPER) return;
+        Location loc = e.getInventory().getLocation();
+        if (loc == null) return;
+        if (!LivingDropper.isLivingDropper(loc)) return;
         if (!e.getPlayer().isSneaking()) return;
 
         e.setCancelled(true);
-        openBindingGUI(e.getPlayer(), block.getLocation());
+        openBindingGUI((Player) e.getPlayer(), loc);
     }
 
     // --- BlockDispenseEvent → Simulate player drop ---
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockDispense(BlockDispenseEvent e) {
         Block block = e.getBlock();
         if (!LivingDropper.isLivingDropper(block.getLocation())) return;
@@ -69,16 +69,13 @@ public class LivingDropperListener implements Listener {
 
         ItemStack toDrop = e.getItem().clone();
 
-        // Remove one item from dropper inventory
         if (!removeFromDropper(block, toDrop)) return;
 
-        // Create Item entity in front of dropper
         Block facingBlock = getFacingBlock(block);
         Location dropLoc = facingBlock.getLocation().add(0.5, 0.5, 0.5);
         Item itemEntity = block.getWorld().dropItem(dropLoc, toDrop);
         itemEntity.setVelocity(new Vector(0, 0, 0));
 
-        // Fire synthetic PlayerDropItemEvent
         PlayerDropItemEvent dropEvent = new PlayerDropItemEvent(bound, itemEntity);
         Bukkit.getPluginManager().callEvent(dropEvent);
 
@@ -90,26 +87,22 @@ public class LivingDropperListener implements Listener {
 
     // --- Binding GUI clicks ---
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent e) {
-        if (!(e.getView().getTitle().equals(GUI_TITLE))) return;
+        if (!e.getView().getTitle().equals(GUI_TITLE)) return;
         e.setCancelled(true);
+        if (e.getClickedInventory() != e.getView().getTopInventory()) return;
+        if (e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR) return;
         if (e.getSlot() != 4) return;
 
         Player player = (Player) e.getWhoClicked();
-        // Get the dropper location: the GUI title doesn't encode it, so
-        // we retrieve it from the player's last right-click. Use a simple approach:
-        // try each LivingDropper and open the one whose bind player just changed.
-        // Better: store the open-GUI location per player.
         Location loc = playerToOpenLoc.remove(player.getUniqueId());
         if (loc == null) return;
 
         UUID current = LivingDropper.getBoundUUID(loc);
         if (current != null && current.equals(player.getUniqueId())) {
-            // Unbind self
             LivingDropper.unbind(loc);
         } else {
-            // Bind to self (overwrite any existing binding)
             LivingDropper.bind(loc, player.getUniqueId());
         }
         player.closeInventory();
@@ -130,7 +123,6 @@ public class LivingDropperListener implements Listener {
             if (i != 4) inv.setItem(i, border);
         }
 
-        // Bind button
         UUID boundUUID = LivingDropper.getBoundUUID(loc);
         ItemStack btn = new ItemStack(Material.NAME_TAG);
         ItemMeta meta = btn.getItemMeta();
