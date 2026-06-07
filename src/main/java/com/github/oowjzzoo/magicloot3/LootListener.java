@@ -58,7 +58,9 @@ public class LootListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player player)) return;
-        if (!e.getView().getTitle().equals(LostLibrarianGUI.getTitle())) return;
+        String title = e.getView().getTitle();
+        if (!title.equals(LostLibrarianGUI.getTitle())
+                && !title.equals(Messages.get("desk.title"))) return;
         e.setCancelled(true);
         if (e.getCurrentItem() == null) return;
         if (e.getClickedInventory() != e.getView().getTopInventory()) return;

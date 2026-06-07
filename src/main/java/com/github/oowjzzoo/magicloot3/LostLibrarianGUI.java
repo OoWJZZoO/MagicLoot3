@@ -39,7 +39,6 @@ public final class LostLibrarianGUI {
         inv.setItem(0, border);
         inv.setItem(8, border);
         inv.setItem(9, border);
-        inv.setItem(17, border);
 
         // Random option (slot 4) — fixed cost from config
         ItemStack randomIcon = SkullCreator.createSkull(
@@ -69,12 +68,15 @@ public final class LostLibrarianGUI {
             inv.setItem(11 + i, paneItem);
         }
 
-        // Exchange button (slot 16) — convert unidentified item to voucher
+        // Exchange button (slot 17) — convert unidentified item to voucher
         ItemStack exchangeBtn = new ItemStack(Material.CAULDRON);
         ItemMeta exMeta = exchangeBtn.getItemMeta();
-        exMeta.setDisplayName(Messages.get("gui.exchange_voucher"));
+        exMeta.setDisplayName("§4§l兑换为乱码凭证");
+        List<String> exLore = new ArrayList<>();
+        exLore.add("§e警告: 你会失去该装备");
+        exMeta.setLore(exLore);
         exchangeBtn.setItemMeta(exMeta);
-        inv.setItem(16, exchangeBtn);
+        inv.setItem(17, exchangeBtn);
 
         return inv;
     }
@@ -88,7 +90,7 @@ public final class LostLibrarianGUI {
             case 13: LostLibrarian.examineTier(player, LootTier.RARE, isDesk); break;
             case 14: LostLibrarian.examineTier(player, LootTier.EPIC, isDesk); break;
             case 15: LostLibrarian.examineTier(player, LootTier.LEGENDARY, isDesk); break;
-            case 16: exchangeVoucher(player); break;
+            case 17: exchangeVoucher(player); break;
             default: return false;
         }
         return true;
