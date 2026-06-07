@@ -13,6 +13,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import com.github.oowjzzoo.magicloot3.util.SkullCreator;
 
 public final class LostLibrarianGUI {
@@ -27,7 +28,7 @@ public final class LostLibrarianGUI {
 
     public static Inventory create(Player player, boolean isDesk) {
         deskState.put(player.getUniqueId(), isDesk);
-        String title = getTitle();
+        String title = isDesk ? Messages.get("desk.title") : getTitle();
         Inventory inv = Bukkit.createInventory(null, 18, title);
 
         // Border panes
@@ -68,6 +69,13 @@ public final class LostLibrarianGUI {
             inv.setItem(11 + i, paneItem);
         }
 
+        // Exchange button (slot 16) — convert unidentified item to voucher
+        ItemStack exchangeBtn = new ItemStack(Material.CAULDRON);
+        ItemMeta exMeta = exchangeBtn.getItemMeta();
+        exMeta.setDisplayName(Messages.get("gui.exchange_voucher"));
+        exchangeBtn.setItemMeta(exMeta);
+        inv.setItem(16, exchangeBtn);
+
         return inv;
     }
 
@@ -80,9 +88,23 @@ public final class LostLibrarianGUI {
             case 13: LostLibrarian.examineTier(player, LootTier.RARE, isDesk); break;
             case 14: LostLibrarian.examineTier(player, LootTier.EPIC, isDesk); break;
             case 15: LostLibrarian.examineTier(player, LootTier.LEGENDARY, isDesk); break;
+            case 16: exchangeVoucher(player); break;
             default: return false;
         }
         return true;
+    }
+
+    private static void exchangeVoucher(Player player) {
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (LootTier.get(item) != LootTier.UNKNOWN) {
+            player.sendMessage(Messages.get("gui.exchange_no_unidentified"));
+            return;
+        }
+        SlimefunItem voucher = SlimefunItem.getById("GARBLED_VOUCHER");
+        if (voucher == null) return;
+        item.setAmount(item.getAmount() - 1);
+        player.getInventory().addItem(voucher.getItem().clone());
+        player.sendMessage(Messages.get("gui.exchange_success"));
     }
 
     private static int getCost(LootTier tier) {

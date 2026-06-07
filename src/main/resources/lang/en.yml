@@ -5,6 +5,7 @@ npc:
   no_xp: "§5§lLost Librarian §8> §7Sorry, but it seems like you have insufficient Experience Levels."
 
 desk:
+  title: "§5§lLost Librarian's Desk"
   cannot_examine: "§5§lLost Librarian's Desk §8> §7This item cannot be examined."
   success: "§5§lLost Librarian's Desk §8> §7Examination complete."
   no_xp: "§5§lLost Librarian's Desk §8> §7Insufficient Experience Levels."
@@ -187,6 +188,9 @@ gui:
   random: "&7[&rRandom&7]"
   cost: "§7Cost: §b{0} XP Level"
   border: " "
+  exchange_voucher: "&fExchange Voucher"
+  exchange_no_unidentified: "§5§lLibrarian §8> &cYou don't have an unidentified item."
+  exchange_success: "§5§lLibrarian §8> &aExchanged for a Garbled Voucher."
   loot_config:
     title: "Loot Config"
     categories: "Categories"

@@ -214,16 +214,21 @@ final class SlimefunHook implements SlimefunAddon {
         String[] voucherLore = zh
                 ? new String[]{"", "&7乱码凭证",
                         "", "&7远古祭坛上围8个，中间放空白符文",
-                        "&7也可合成 古代符文 [往日]"}
+                        "&7也可合成 &7古代符文 &8&l[&e&l往日&8&l]"}
                 : new String[]{"", "&7Garbled Voucher",
                         "", "&7Place 8 around an Ancient Altar with a Blank Rune",
-                        "&7to craft an Ancient Rune [Past]"};
+                        "&7to craft an &7Ancient Rune &8&l[&e&lPast&8&l]"};
         SlimefunItemStack voucherStack = new SlimefunItemStack(
                 "GARBLED_VOUCHER", Material.PAPER, voucherName, voucherLore);
 
         ItemStack voucherDeskIcon = new ItemStack(Material.CRAFTING_TABLE);
         ItemMeta voucherDeskMeta = voucherDeskIcon.getItemMeta();
-        voucherDeskMeta.setDisplayName(zh ? "§5§l兑换: 遗物鉴定桌/无魂鉴定师" : "§5§lExchange: Desk / Librarian");
+        voucherDeskMeta.setDisplayName(zh
+                ? "§f兑换"
+                : "§fExchange");
+        voucherDeskMeta.setLore(List.of(zh
+                ? "§f在 §5§l无魂鉴定师§f/§5§l遗物鉴定桌 §f处兑换"
+                : "§fExchange at the §5§lLost Librarian§f / §5§lDesk"));
         voucherDeskIcon.setItemMeta(voucherDeskMeta);
         RecipeType voucherRecipeType = new RecipeType(
                 new NamespacedKey(plugin, "voucher_exchange"), voucherDeskIcon);
