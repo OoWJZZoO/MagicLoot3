@@ -206,7 +206,7 @@ final class SlimefunHook implements SlimefunAddon {
                 ? "§7或者自我击杀"
                 : "§7Harm/Poison/Wither or self-kill",
                 zh
-                ? "§7瞬间伤害/中毒/凋零而死亡时掉落"
+                ? "§7而死亡时掉落"
                 : "§7equipment's potion affix effects"));
         skullIcon.setItemMeta(skullMeta);
 
