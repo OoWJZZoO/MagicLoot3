@@ -190,7 +190,7 @@ final class SlimefunHook implements SlimefunAddon {
         // RecipeType icon (left side): diamond sword
         ItemStack recipeTypeIcon = new ItemStack(Material.DIAMOND_SWORD);
         ItemMeta rtm = recipeTypeIcon.getItemMeta();
-        rtm.setDisplayName("§7§l自刎归天");
+        rtm.setDisplayName("§4§l自刎归天");
         recipeTypeIcon.setItemMeta(rtm);
         RecipeType suicideDrop = new RecipeType(
                 new NamespacedKey(plugin, "suicide_drop"), recipeTypeIcon);
@@ -198,7 +198,7 @@ final class SlimefunHook implements SlimefunAddon {
         // Recipe center display: skeleton skull with lore
         ItemStack skullIcon = new ItemStack(Material.SKELETON_SKULL);
         ItemMeta skullMeta = skullIcon.getItemMeta();
-        skullMeta.setDisplayName(zh ? "§4玩家自杀掉落" : "§4Player Suicide Drop");
+        skullMeta.setDisplayName(zh ? "§e玩家自杀掉落" : "§ePlayer Suicide Drop");
         skullMeta.setLore(List.of(zh
                 ? "§e玩家因自身装备的药水词缀"
                 : "§eWhen a player dies from their own",
