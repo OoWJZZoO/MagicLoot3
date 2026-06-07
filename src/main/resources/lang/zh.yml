@@ -170,11 +170,6 @@ rune:
     unidentified_blocked: "古代符文 &7&l[&3重命名&7] &8&l> &c未鉴定的物品不能重命名。"
     success: "古代符文 &7&l[&3重命名&7] &8&l> &a符文已被消耗，物品已被重命名！"
 
-machine:
-  fuel_slot_hint:
-    - "&f请在下面的格子里放入 &b&l探索的时光"
-    - "&f每次使用机器都有40%的概率消耗一个"
-
 gui:
   title: "无魂鉴定师"
   random: "&7[&r随机鉴定&7]"
@@ -219,6 +214,9 @@ cmd:
   set_sf_w_done: "&a已将 {0} 的权重设为 {1}。"
 
 machine:
+  fuel_slot_hint:
+    - "&f请在下面的格子里放入 &b&l探索的时光"
+    - "&f每次使用机器都有40%的概率消耗一个"
   equipment_splitter:
     menu_button: "§a词缀分流配置"
     save_exit: "&a保存并退出"

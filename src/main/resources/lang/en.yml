@@ -182,11 +182,6 @@ rune:
     unidentified_blocked: "&7Ancient Rune &8&l[&3&lRename&8&l] &8> &cUnidentified items cannot be renamed. Bring it to the Librarian first."
     success: "&7Ancient Rune &8&l[&3&lRename&8&l] &8> &aRune consumed, item has been renamed!"
 
-machine:
-  fuel_slot_hint:
-    - "&fPlease place &b&lAdventuring Time &fin the slot below"
-    - "&fEach use has a 40% chance to consume one"
-
 gui:
   title: "Lost Librarian"
   random: "&7[&rRandom&7]"
@@ -231,6 +226,9 @@ cmd:
   set_sf_w_done: "&aSet {0} weight to {1}."
 
 machine:
+  fuel_slot_hint:
+    - "&fPlease place &b&lAdventuring Time &fin the slot below"
+    - "&fEach use has a 40% chance to consume one"
   equipment_splitter:
     menu_button: "§aAffix Split Config"
     save_exit: "&aSave & Exit"
