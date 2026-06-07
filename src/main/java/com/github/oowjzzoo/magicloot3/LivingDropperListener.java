@@ -2,12 +2,14 @@ package com.github.oowjzzoo.magicloot3;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Dropper;
 import org.bukkit.block.data.type.Dispenser;
 import org.bukkit.entity.Item;
@@ -77,10 +79,18 @@ public class LivingDropperListener implements Listener {
 
         if (!removeFromDropper(block, toDrop)) return;
 
-        Block facingBlock = getFacingBlock(block);
-        Location dropLoc = facingBlock.getLocation().add(0.5, 0.5, 0.5);
+        // Spawn item at vanilla dropper position: block center + facing * 0.5
+        BlockFace face = getFacing(block);
+        Location dropLoc = block.getLocation().add(0.5, 0.5, 0.5)
+                .add(face.getModX() * 0.5, face.getModY() * 0.5, face.getModZ() * 0.5);
         Item itemEntity = block.getWorld().dropItem(dropLoc, toDrop);
-        itemEntity.setVelocity(new Vector(0, 0, 0));
+
+        // Dispenser-style velocity: slight push in facing direction + random spread
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        itemEntity.setVelocity(new Vector(
+                face.getModX() * 0.1 + (r.nextDouble() - 0.5) * 0.1,
+                face.getModY() * 0.1 + (r.nextDouble() - 0.5) * 0.1,
+                face.getModZ() * 0.1 + (r.nextDouble() - 0.5) * 0.1));
 
         PlayerDropItemEvent dropEvent = new PlayerDropItemEvent(bound, itemEntity);
         Bukkit.getPluginManager().callEvent(dropEvent);
@@ -178,10 +188,10 @@ public class LivingDropperListener implements Listener {
         dropper.getInventory().addItem(item);
     }
 
-    private static Block getFacingBlock(Block block) {
+    private static BlockFace getFacing(Block block) {
         if (block.getBlockData() instanceof Dispenser dispenser) {
-            return block.getRelative(dispenser.getFacing());
+            return dispenser.getFacing();
         }
-        return block.getRelative(org.bukkit.block.BlockFace.DOWN);
+        return BlockFace.DOWN;
     }
 }
