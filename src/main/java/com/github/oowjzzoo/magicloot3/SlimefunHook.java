@@ -180,6 +180,20 @@ final class SlimefunHook implements SlimefunAddon {
         new LivingDropper(itemGroup, dropperStack, RecipeType.NULL, new ItemStack[9])
                 .register(this);
 
+        // Magic Silicone Dummy
+        String dummyName = zh ? "&e魔法硅胶假人" : "&eMagic Silicone Dummy";
+        String[] dummyLore = zh
+                ? new String[]{"", "&7QQ弹弹", "&7可以用来做什么呢..."}
+                : new String[]{"", "&7Squishy and bouncy", "&7What could this be used for..."};
+        SlimefunItemStack dummyStack = new SlimefunItemStack(
+                "MAGIC_SILICONE_DUMMY", Material.ARMOR_STAND, dummyName, dummyLore);
+        ItemStack[] dummyRecipe = {
+                SlimefunItems.MAGIC_LUMP_3, new ItemStack(Material.PLAYER_HEAD), SlimefunItems.ENDER_LUMP_3,
+                SlimefunItems.BACKPACK_MEDIUM, new ItemStack(Material.ARMOR_STAND), SlimefunItems.BACKPACK_MEDIUM,
+                SlimefunItems.ENDER_LUMP_3, new ItemStack(Material.PLAYER_HEAD), SlimefunItems.MAGIC_LUMP_3};
+        new SlimefunItem(itemGroup, dummyStack, RecipeType.ANCIENT_ALTAR, dummyRecipe)
+                .register(this);
+
         // Dummy item for unidentified equipment recipe matching
         String unidName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
         String[] unidLore = zh
