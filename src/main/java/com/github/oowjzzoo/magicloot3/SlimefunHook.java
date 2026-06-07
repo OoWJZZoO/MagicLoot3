@@ -162,26 +162,6 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack[]{null, null, null, null, eggIcon, null, null, null, null})
                 .register(this);
 
-        // Living Dropper
-        String dropperName = zh
-                ? "&e投掷器 &8&l[&f&l活的!&8&l]"
-                : "&eDropper &8&l[&f&lLiving!&8&l]";
-        String[] dropperLore = zh
-                ? new String[]{"",
-                        "&7就像真的玩家一样!",
-                        "&7必须绑定玩家且玩家在线",
-                        "&7否则无法工作",
-                        "&7空手 Shift+右键 打开配置界面"}
-                : new String[]{"",
-                        "&7Just like a real player!",
-                        "&7Must be bound to an online player",
-                        "&7or it won't work",
-                        "&7Shift+Right-click with empty hand to configure"};
-        SlimefunItemStack dropperStack = new SlimefunItemStack(
-                "LIVING_DROPPER", Material.DROPPER, dropperName, dropperLore);
-        new LivingDropper(itemGroup, dropperStack, RecipeType.NULL, new ItemStack[9])
-                .register(this);
-
         // Hidden player head for recipes (obtained by suicide)
         String headIngredientName = zh ? "&e玩家的头" : "&ePlayer Head";
         SlimefunItemStack headIngredientStack = new SlimefunItemStack(
@@ -247,6 +227,30 @@ final class SlimefunHook implements SlimefunAddon {
                         SlimefunItems.ENDER_LUMP_3, new ItemStack(Material.PLAYER_HEAD), SlimefunItems.MAGIC_LUMP_3},
                 dummyStack);
 
+        // Living Dropper
+        String dropperName = zh
+                ? "&e投掷器 &8&l[&f&l活的!&8&l]"
+                : "&eDropper &8&l[&f&lLiving!&8&l]";
+        String[] dropperLore = zh
+                ? new String[]{"",
+                        "&7就像真的玩家一样!",
+                        "&7必须绑定玩家且玩家在线",
+                        "&7否则无法工作",
+                        "&7空手 Shift+右键 打开配置界面"}
+                : new String[]{"",
+                        "&7Just like a real player!",
+                        "&7Must be bound to an online player",
+                        "&7or it won't work",
+                        "&7Shift+Right-click with empty hand to configure"};
+        SlimefunItemStack dropperStack = new SlimefunItemStack(
+                "LIVING_DROPPER", Material.DROPPER, dropperName, dropperLore);
+        ItemStack[] dropperRecipe = {
+                null, new ItemStack(Material.DROPPER), null,
+                null, dummyStack, null,
+                null, SlimefunItems.ANDROID_MEMORY_CORE, null};
+        new LivingDropper(itemGroup, dropperStack, RecipeType.ENHANCED_CRAFTING_TABLE, dropperRecipe)
+                .register(this);
+
         // Dummy item for unidentified equipment recipe matching
         String unidName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
         String[] unidLore = zh
@@ -262,10 +266,12 @@ final class SlimefunHook implements SlimefunAddon {
         String voucherName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
         String[] voucherLore = zh
                 ? new String[]{"&7乱码凭证",
-                        "", "&7远古祭坛上围8个，中间放空白符文",
+                        "", "&7远古祭坛上围8个",
+                        "&7中间放空白符文",
                         "&7也可合成 &7古代符文 &8&l[&e&l往日&8&l]"}
                 : new String[]{"&7Garbled Voucher",
-                        "", "&7Place 8 around an Ancient Altar with a Blank Rune",
+                        "", "&7Place 8 around an Ancient Altar",
+                        "&7with a Blank Rune",
                         "&7to craft an &7Ancient Rune &8&l[&e&lPast&8&l]"};
         SlimefunItemStack voucherStack = new SlimefunItemStack(
                 "GARBLED_VOUCHER", Material.PAPER, voucherName, voucherLore);
