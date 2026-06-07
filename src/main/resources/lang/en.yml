@@ -15,6 +15,7 @@ desk:
   exchange_success: "§5§lLost Librarian's Desk §8> §7Exchanged for a Garbled Voucher."
 
 tiers:
+  RANDOM_NAME: "§bRandom"
   COMMON: "§aCommon"
   UNCOMMON: "§5Uncommon"
   RARE: "§9Rare"
@@ -266,3 +267,9 @@ machine:
     affix_pos_desc: "&a+ Positive effect on self"
     affix_neg_desc: "&c- Negative effect on target"
     no_affixes: "&7(none)"
+  auto_appraiser:
+    bell_title: "&fPlace Bottle o' Enchanting / Flask of Knowledge in input slot"
+    bell_lore: "&fEach bottle equals one XP level"
+    rank_button_title: "&bAppraisal Rank:"
+    rank_switch_hint: "&7Click to switch"
+    level_unit: " Level(s)"

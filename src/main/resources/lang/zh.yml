@@ -15,6 +15,7 @@ desk:
   exchange_success: "§5§l遗物鉴定桌 §8> §7已兑换为乱码凭证。"
 
 tiers:
+  RANDOM_NAME: "§b随机"
   COMMON: "§a普通"
   UNCOMMON: "§5非凡"
   RARE: "§9稀有"
@@ -254,3 +255,9 @@ machine:
     affix_pos_desc: "&a+ 给予自己的药水效果"
     affix_neg_desc: "&c- 给予目标的药水效果"
     no_affixes: "&7（无）"
+  auto_appraiser:
+    bell_title: "&f请在输入槽放入附魔之瓶/学识之瓶"
+    bell_lore: "&f每一个瓶子相当于一级经验"
+    rank_button_title: "&b鉴定档位:"
+    rank_switch_hint: "&7点击以切换"
+    level_unit: 级
