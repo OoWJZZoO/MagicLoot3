@@ -47,7 +47,7 @@ public class PotionAffixDisenchanter extends AContainer {
                                     RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
         setCapacity(512);
-        setEnergyConsumption(128);
+        setEnergyConsumption(64);
         setProcessingSpeed(5);
     }
 
