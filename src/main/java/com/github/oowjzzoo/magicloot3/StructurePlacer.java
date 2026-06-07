@@ -168,6 +168,7 @@ public final class StructurePlacer {
                         try {
                             ItemFrame frame = world.spawn(frameLoc, ItemFrame.class);
                             frame.setFacingDirection(BlockFace.UP);
+                            frame.setVisible(false);
                             SlimefunItem time = SlimefunItem.getById("TIME_OF_EXPLORATION");
                             if (time != null) frame.setItem(time.getItem().clone());
                         } catch (Exception ignored) {}
