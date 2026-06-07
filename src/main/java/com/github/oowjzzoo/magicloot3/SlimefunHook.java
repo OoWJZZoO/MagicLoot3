@@ -200,8 +200,8 @@ final class SlimefunHook implements SlimefunAddon {
         ItemMeta skullMeta = skullIcon.getItemMeta();
         skullMeta.setDisplayName(zh ? "§e玩家自杀掉落" : "§ePlayer Suicide Drop");
         skullMeta.setLore(List.of(zh
-                ? "§e玩家因自身装备的药水词缀"
-                : "§eWhen a player dies from their own",
+                ? "§7玩家因自身装备的药水词缀"
+                : "§7When a player dies from their own",
                 zh
                 ? "§7或者自我击杀"
                 : "§7Harm/Poison/Wither or self-kill",
