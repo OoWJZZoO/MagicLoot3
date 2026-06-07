@@ -19,6 +19,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -120,18 +121,25 @@ public class LivingDropperListener implements Listener {
         });
     }
 
+    // --- Clean up on close ---
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent e) {
+        if (e.getInventory().getHolder() == BINDING_HOLDER) {
+            playerToOpenLoc.remove(e.getPlayer().getUniqueId());
+        }
+    }
+
     // --- Binding GUI clicks ---
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent e) {
         if (e.getInventory().getHolder() != BINDING_HOLDER) return;
         e.setCancelled(true);
-        if (e.getClickedInventory() != e.getView().getTopInventory()) return;
-        if (e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR) return;
         if (e.getSlot() != 4) return;
 
         Player player = (Player) e.getWhoClicked();
-        Location loc = playerToOpenLoc.remove(player.getUniqueId());
+        Location loc = playerToOpenLoc.get(player.getUniqueId());
         if (loc == null) return;
 
         UUID current = LivingDropper.getBoundUUID(loc);
@@ -159,7 +167,16 @@ public class LivingDropperListener implements Listener {
         }
 
         UUID boundUUID = LivingDropper.getBoundUUID(loc);
-        ItemStack btn = new ItemStack(Material.NAME_TAG);
+        ItemStack btn;
+        if (boundUUID != null) {
+            btn = new ItemStack(Material.PLAYER_HEAD);
+            if (btn.getItemMeta() instanceof org.bukkit.inventory.meta.SkullMeta skull) {
+                skull.setOwningPlayer(Bukkit.getOfflinePlayer(boundUUID));
+                btn.setItemMeta(skull);
+            }
+        } else {
+            btn = new ItemStack(Material.NAME_TAG);
+        }
         ItemMeta meta = btn.getItemMeta();
         meta.setDisplayName(Messages.get("living_dropper.bind_button_title"));
 
