@@ -162,8 +162,8 @@ final class SlimefunHook implements SlimefunAddon {
 
         // Living Dropper
         String dropperName = zh
-                ? "&e投掷器 &7&l[&f&l活的!&7&l]"
-                : "&eDropper &7&l[&f&lLiving!&7&l]";
+                ? "&e投掷器 &8&l[&f&l活的!&8&l]"
+                : "&eDropper &8&l[&f&lLiving!&8&l]";
         String[] dropperLore = zh
                 ? new String[]{"",
                         "&7就像真的玩家一样!",
