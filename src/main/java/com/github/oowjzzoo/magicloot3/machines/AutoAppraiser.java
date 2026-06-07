@@ -51,7 +51,7 @@ public class AutoAppraiser extends AContainer {
     public AutoAppraiser(ItemGroup itemGroup, SlimefunItemStack item,
                          RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
-        setCapacity(1024);
+        setCapacity(512);
         setEnergyConsumption(96);
         setProcessingSpeed(3);
     }
