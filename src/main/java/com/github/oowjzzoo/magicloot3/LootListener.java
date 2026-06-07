@@ -15,6 +15,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Villager;
@@ -275,6 +276,21 @@ public class LootListener implements Listener {
             if (brainItem != null)
                 e.getEntity().getWorld().dropItemNaturally(
                         e.getEntity().getLocation(), brainItem.getItem().clone());
+            return;
+        }
+
+        // Magic Silicone Dummy armor stand
+        if (e.getEntity() instanceof ArmorStand stand) {
+            String name = stand.getCustomName();
+            String zhName = ChatColor.translateAlternateColorCodes('&', "&e魔法硅胶假人");
+            String enName = ChatColor.translateAlternateColorCodes('&', "&eMagic Silicone Dummy");
+            if ((name != null && name.equals(zhName)) || (name != null && name.equals(enName))) {
+                e.getDrops().clear();
+                SlimefunItem dummy = SlimefunItem.getById("MAGIC_SILICONE_DUMMY");
+                if (dummy != null)
+                    e.getEntity().getWorld().dropItemNaturally(
+                            e.getEntity().getLocation(), dummy.getItem().clone());
+            }
             return;
         }
 
