@@ -3,12 +3,16 @@ npc:
   cannot_examine: "§5§l无魂鉴定师 §8> §7嘛玩意啊，看不懂。你得拿物品名是乱码的遗物找我鉴定。"
   success: "§5§l无魂鉴定师 §8> §7鉴定好了。"
   no_xp: "§5§l无魂鉴定师 §8> §7Zako Zako，回去多练练级吧。"
+  exchange_no_unidentified: "§5§l无魂鉴定师 §8> §7你手里没有未鉴定的物品。"
+  exchange_success: "§5§l无魂鉴定师 §8> §7已兑换为乱码凭证。"
 
 desk:
   title: "§5§l遗物鉴定桌"
   cannot_examine: "§5§l遗物鉴定桌 §8> §7嘛玩意啊，鉴定不了。只有物品名是乱码的遗物才能鉴定。"
   success: "§5§l遗物鉴定桌 §8> §7鉴定大成功！"
   no_xp: "§5§l遗物鉴定桌 §8> §7经验不够，需要采集经验。"
+  exchange_no_unidentified: "§5§l遗物鉴定桌 §8> §7你手里没有未鉴定的物品。"
+  exchange_success: "§5§l遗物鉴定桌 §8> §7已兑换为乱码凭证。"
 
 tiers:
   COMMON: "§a普通"
@@ -177,8 +181,6 @@ gui:
   cost: "§7消耗：§b{0} 级经验"
   border: " "
   exchange_voucher: "&f兑换乱码凭证"
-  exchange_no_unidentified: "§5§l鉴定师 §8> &c你手里没有未鉴定的物品。"
-  exchange_success: "§5§l鉴定师 §8> &a已兑换为乱码凭证。"
   loot_config:
     title: "战利品配置"
     categories: "分类"

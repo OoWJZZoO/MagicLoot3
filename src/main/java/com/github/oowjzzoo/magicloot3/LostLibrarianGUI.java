@@ -97,16 +97,19 @@ public final class LostLibrarianGUI {
     }
 
     private static void exchangeVoucher(Player player) {
+        boolean isDesk = deskState.getOrDefault(player.getUniqueId(), false);
         ItemStack item = player.getInventory().getItemInMainHand();
         if (LootTier.get(item) != LootTier.UNKNOWN) {
-            player.sendMessage(Messages.get("gui.exchange_no_unidentified"));
+            player.sendMessage(isDesk ? Messages.get("desk.exchange_no_unidentified")
+                    : Messages.get("npc.exchange_no_unidentified"));
             return;
         }
         SlimefunItem voucher = SlimefunItem.getById("GARBLED_VOUCHER");
         if (voucher == null) return;
         item.setAmount(item.getAmount() - 1);
         player.getInventory().addItem(voucher.getItem().clone());
-        player.sendMessage(Messages.get("gui.exchange_success"));
+        player.sendMessage(isDesk ? Messages.get("desk.exchange_success")
+                : Messages.get("npc.exchange_success"));
     }
 
     private static int getCost(LootTier tier) {
