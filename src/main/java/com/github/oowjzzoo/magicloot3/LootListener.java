@@ -236,8 +236,9 @@ public class LootListener implements Listener {
             if (isPositive) {
                 if (wearer instanceof Player && SELF_DAMAGE_EFFECTS.contains(enKey)) {
                     long durationMs = (level + 1) * 3 * 1000L;
-                    selfDamageTimers.computeIfAbsent(wearer.getUniqueId(), k -> new HashMap<>())
-                            .put(enKey, System.currentTimeMillis() + durationMs);
+                    Map<String, Long> t = selfDamageTimers.computeIfAbsent(wearer.getUniqueId(), k -> new HashMap<>());
+                    t.entrySet().removeIf(e2 -> System.currentTimeMillis() >= e2.getValue());
+                    t.put(enKey, System.currentTimeMillis() + durationMs);
                 }
                 wearer.addPotionEffect(new PotionEffect(type, (level + 1) * 3 * 20, level));
             } else if (attacker != null) {
@@ -289,9 +290,6 @@ public class LootListener implements Listener {
         Map<String, Long> timers = selfDamageTimers.get(deadPlayer.getUniqueId());
 
         if (cause != null && timers != null) {
-            // Clean expired entries
-            timers.entrySet().removeIf(entry -> System.currentTimeMillis() >= entry.getValue());
-
             for (Map.Entry<String, Long> entry : timers.entrySet()) {
                 if (matchesDeathCause(entry.getKey(), cause)) {
                     potionSuicide = true;
