@@ -188,7 +188,7 @@ rune:
     success: "&7Ancient Rune &8&l[&3&lRename&8&l] &8> &aRune consumed, item has been renamed!"
 
 gui:
-  title: "Lost Librarian"
+  title: "§5§lLost Librarian"
   random: "&7[&rRandom&7]"
   cost: "§7Cost: §b{0} XP Level"
   border: " "
