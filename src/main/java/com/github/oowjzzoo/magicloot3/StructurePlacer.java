@@ -163,12 +163,14 @@ public final class StructurePlacer {
                         v.setCustomName(Messages.get("npc.name"));
                         v.setCustomNameVisible(true);
                         v.setAdult();
-                        // Spawn item frame 2 blocks below, on the top surface
-                        Location frameLoc = block.getLocation().clone().add(0.5, -1.0, 0.5);
+                        // Spawn floating invisible item frame at the librarian's location
+                        Location frameLoc = block.getLocation().clone().add(0.5, 0, 0.5);
                         try {
                             ItemFrame frame = world.spawn(frameLoc, ItemFrame.class);
-                            frame.setFacingDirection(BlockFace.UP);
+                            frame.setFacingDirection(BlockFace.NORTH);
                             frame.setVisible(false);
+                            frame.getPersistentDataContainer().set(ItemKeys.LIBRARIAN_FRAME,
+                                    org.bukkit.persistence.PersistentDataType.BOOLEAN, true);
                             SlimefunItem time = SlimefunItem.getById("TIME_OF_EXPLORATION");
                             if (time != null) frame.setItem(time.getItem().clone());
                         } catch (Exception ignored) {}

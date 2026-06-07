@@ -12,6 +12,8 @@ public final class ItemKeys {
     public static NamespacedKey EFFECTS;
     /** Tag on villager marking it as a Lost Librarian */
     public static NamespacedKey LIBRARIAN;
+    /** Tag on item frame marking it as a librarian's display frame */
+    public static NamespacedKey LIBRARIAN_FRAME;
 
     private ItemKeys() {}
 
@@ -19,5 +21,6 @@ public final class ItemKeys {
         TIER = new NamespacedKey(plugin, "tier");
         EFFECTS = new NamespacedKey(plugin, "effects");
         LIBRARIAN = new NamespacedKey(plugin, "librarian");
+        LIBRARIAN_FRAME = new NamespacedKey(plugin, "librarian_frame");
     }
 }
