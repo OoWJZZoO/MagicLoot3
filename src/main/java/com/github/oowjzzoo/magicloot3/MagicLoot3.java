@@ -75,6 +75,7 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
         RuinBuilder.ruinNames.clear();
         RuinBuilder.buildingNames.clear();
         LivingDropper.cleanup();
+        LootListener.cleanupSelfDamageTimers();
     }
 
     @EventHandler

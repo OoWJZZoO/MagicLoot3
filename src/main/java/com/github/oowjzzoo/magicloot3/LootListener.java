@@ -1,11 +1,15 @@
 package com.github.oowjzzoo.magicloot3;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -34,6 +38,9 @@ import org.bukkit.potion.PotionEffectType;
 public class LootListener implements Listener {
 
     private final Plugin plugin;
+
+    private static final Set<String> SELF_DAMAGE_EFFECTS = Set.of("instant_damage", "poison", "wither");
+    private static final Map<UUID, Map<String, Long>> selfDamageTimers = new HashMap<>();
 
     private static final List<DamageCause> CAUSES = Arrays.asList(
             DamageCause.BLOCK_EXPLOSION,
@@ -227,6 +234,11 @@ public class LootListener implements Listener {
             if (type == null) continue;
 
             if (isPositive) {
+                if (wearer instanceof Player && SELF_DAMAGE_EFFECTS.contains(enKey)) {
+                    long durationMs = (level + 1) * 3 * 1000L;
+                    selfDamageTimers.computeIfAbsent(wearer.getUniqueId(), k -> new HashMap<>())
+                            .put(enKey, System.currentTimeMillis() + durationMs);
+                }
                 wearer.addPotionEffect(new PotionEffect(type, (level + 1) * 3 * 20, level));
             } else if (attacker != null) {
                 attacker.addPotionEffect(new PotionEffect(type, (level + 1) * 3 * 20, level));
@@ -254,13 +266,61 @@ public class LootListener implements Listener {
 
     @EventHandler
     public void onDeath(EntityDeathEvent e) {
+        // Existing Librarian logic
         if (e.getEntity() instanceof Villager
                 && e.getEntity().getPersistentDataContainer().has(ItemKeys.LIBRARIAN)) {
             SlimefunItem brainItem = SlimefunItem.getById("LOST_LIBRARIAN_BRAIN");
             if (brainItem != null)
                 e.getEntity().getWorld().dropItemNaturally(
                         e.getEntity().getLocation(), brainItem.getItem().clone());
+            return;
         }
+
+        if (!(e.getEntity() instanceof Player deadPlayer)) return;
+
+        // Self-kill check: player killed themselves (e.g., arrow shot straight up)
+        Player killer = deadPlayer.getKiller();
+        boolean selfKill = killer != null && killer.equals(deadPlayer);
+
+        // Self-inflicted potion effect check
+        boolean potionSuicide = false;
+        DamageCause cause = deadPlayer.getLastDamageCause() != null
+                ? deadPlayer.getLastDamageCause().getCause() : null;
+        Map<String, Long> timers = selfDamageTimers.get(deadPlayer.getUniqueId());
+
+        if (cause != null && timers != null) {
+            // Clean expired entries
+            timers.entrySet().removeIf(entry -> System.currentTimeMillis() >= entry.getValue());
+
+            for (Map.Entry<String, Long> entry : timers.entrySet()) {
+                if (matchesDeathCause(entry.getKey(), cause)) {
+                    potionSuicide = true;
+                    break;
+                }
+            }
+        }
+
+        if (selfKill || potionSuicide) {
+            ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+            if (head.getItemMeta() instanceof org.bukkit.inventory.meta.SkullMeta skull) {
+                skull.setOwningPlayer(deadPlayer);
+                head.setItemMeta(skull);
+            }
+            deadPlayer.getWorld().dropItemNaturally(deadPlayer.getLocation(), head);
+        }
+    }
+
+    private static boolean matchesDeathCause(String effectKey, DamageCause cause) {
+        return switch (effectKey) {
+            case "instant_damage" -> cause == DamageCause.MAGIC;
+            case "poison" -> cause == DamageCause.POISON;
+            case "wither" -> cause == DamageCause.WITHER;
+            default -> false;
+        };
+    }
+
+    static void cleanupSelfDamageTimers() {
+        selfDamageTimers.clear();
     }
 
     @EventHandler(ignoreCancelled = true)
