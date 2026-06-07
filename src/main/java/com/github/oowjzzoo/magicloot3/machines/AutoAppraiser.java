@@ -4,10 +4,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nonnull;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -28,12 +32,16 @@ import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecip
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
+import me.mrCookieSlime.Slimefun.api.item_transport.ItemTransportFlow;
 
 public class AutoAppraiser extends AContainer {
 
     private static final int[] BORDER = { 0,1,2,3,4,5,6,7,8, 31, 36,37,38,39,40,41,42,43,44 };
     private static final int[] BORDER_IN = { 9,10,11,12, 18,21, 27,28,29,30 };
     private static final int[] BORDER_OUT = { 14,15,16,17, 23,26, 32,33,34,35 };
+
+    private static final int RANK_SLOT = 13;
+    private static final int PROGRESS_SLOT = 22;
 
     private static final String RANK_KEY = "appraiser_rank";
     private static final String DEFAULT_RANK = "RANDOM";
@@ -96,18 +104,44 @@ public class AutoAppraiser extends AContainer {
         bell.setItemMeta(bm);
         preset.addItem(4, bell, empty);
 
-        // Rank selector button at slot 22 — placeholder, real item set per-instance
-        preset.addMenuClickHandler(22, (player, slot, item, action) -> {
-            Location loc = player.getOpenInventory().getTopInventory().getLocation();
-            if (loc == null) return false;
-            BlockMenu menu = BlockStorage.getInventory(loc);
-            if (menu == null) return false;
-            // Don't allow switching while machine is running
-            if (getMachineProcessor().getOperation(loc.getBlock()) != null) return false;
-            cycleRank(menu);
-            updateRankButton(menu);
-            return false;
-        });
+        // Progress bar placeholder at slot 22
+        ItemStack bg = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemMeta bgm = bg.getItemMeta(); bgm.setDisplayName(" "); bg.setItemMeta(bgm);
+        preset.addItem(PROGRESS_SLOT, bg, empty);
+    }
+
+    @Override
+    public void postRegister() {
+        new BlockMenuPreset(getId(), getItemName()) {
+            @Override
+            public void init() {
+                constructMenu(this);
+            }
+            @Override
+            public void newInstance(@Nonnull BlockMenu menu, @Nonnull Block b) {
+                updateRankButton(menu);
+                menu.addMenuClickHandler(RANK_SLOT, (player, slot, item, action) -> {
+                    if (getMachineProcessor().getOperation(b) != null) return false;
+                    if (action.isRightClicked()) {
+                        cycleRankReverse(menu);
+                    } else {
+                        cycleRank(menu);
+                    }
+                    updateRankButton(menu);
+                    player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
+                    return false;
+                });
+            }
+            @Override
+            public boolean canOpen(@Nonnull Block b, @Nonnull Player p) {
+                return true;
+            }
+            @Override
+            public int[] getSlotsAccessedByItemTransport(ItemTransportFlow flow) {
+                if (flow == ItemTransportFlow.WITHDRAW) return getOutputSlots();
+                return getInputSlots();
+            }
+        };
     }
 
     // --- Rank management ---
@@ -144,7 +178,7 @@ public class AutoAppraiser extends AContainer {
         lore.add(Messages.get("machine.auto_appraiser.rank_switch_hint"));
         meta.setLore(lore);
         btn.setItemMeta(meta);
-        menu.replaceExistingItem(22, btn);
+        menu.replaceExistingItem(RANK_SLOT, btn);
     }
 
     private static void cycleRank(BlockMenu menu) {
@@ -156,6 +190,17 @@ public class AutoAppraiser extends AContainer {
         }
         String next = ranks[(idx + 1) % ranks.length];
         BlockStorage.addBlockInfo(menu.getLocation(), RANK_KEY, next);
+    }
+
+    private static void cycleRankReverse(BlockMenu menu) {
+        String current = getRank(menu.getLocation());
+        String[] ranks = {"RANDOM", "COMMON", "UNCOMMON", "RARE", "EPIC", "LEGENDARY"};
+        int idx = 0;
+        for (int i = 0; i < ranks.length; i++) {
+            if (ranks[i].equals(current)) { idx = i; break; }
+        }
+        String prev = ranks[(idx - 1 + ranks.length) % ranks.length];
+        BlockStorage.addBlockInfo(menu.getLocation(), RANK_KEY, prev);
     }
 
     static String getRank(Location loc) {
@@ -173,11 +218,10 @@ public class AutoAppraiser extends AContainer {
         if (op != null) {
             if (takeCharge(b.getLocation())) {
                 if (!op.isFinished()) {
-                    getMachineProcessor().updateProgressBar(inv, 22, op);
+                    getMachineProcessor().updateProgressBar(inv, PROGRESS_SLOT, op);
                     op.addProgress(1);
                 } else {
-                    // Reset progress bar slot
-                    inv.replaceExistingItem(22, new ItemStack(Material.AIR));
+                    inv.replaceExistingItem(PROGRESS_SLOT, new ItemStack(Material.AIR));
 
                     ItemStack[] results = op.getResults();
                     if (fitsAll(inv, results)) {
@@ -197,6 +241,10 @@ public class AutoAppraiser extends AContainer {
                     getMachineProcessor().endOperation(b);
                     pendingInputs.remove(b.getLocation());
                     updateRankButton(inv);
+                    // Restore progress bar placeholder
+                    ItemStack bg = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+                    ItemMeta bgm = bg.getItemMeta(); bgm.setDisplayName(" "); bg.setItemMeta(bgm);
+                    inv.replaceExistingItem(PROGRESS_SLOT, bg);
                 }
             }
         } else {
@@ -204,10 +252,10 @@ public class AutoAppraiser extends AContainer {
             if (next != null) {
                 op = new CraftingOperation(next);
                 getMachineProcessor().startOperation(b, op);
-                getMachineProcessor().updateProgressBar(inv, 22, op);
+                getMachineProcessor().updateProgressBar(inv, PROGRESS_SLOT, op);
             } else {
-                // Ensure rank button is visible when idle
-                ItemStack cur = inv.getItemInSlot(22);
+                // Restore rank button if progress bar overwrote it
+                ItemStack cur = inv.getItemInSlot(RANK_SLOT);
                 if (cur == null || cur.getType() != Material.PAPER) {
                     updateRankButton(inv);
                 }

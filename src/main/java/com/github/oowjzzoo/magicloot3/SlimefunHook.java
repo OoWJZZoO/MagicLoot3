@@ -309,6 +309,24 @@ final class SlimefunHook implements SlimefunAddon {
                 LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
                 LoreBuilder.speed(5), LoreBuilder.powerPerSecond(128)};
 
+        // Auto Appraiser
+        String[] appraiserLore = {"",
+                zh ? "&7将 &c未鉴定 &7装备自动鉴定为指定品级" : "&7Auto-appraises &cUnidentified &7equipment to a selected tier",
+                zh ? "&7消耗附魔之瓶或学识之瓶作为经验来源" : "&7Consumes Bottles o' Enchanting or Flasks of Knowledge as XP",
+                "",
+                LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
+                LoreBuilder.speed(3), LoreBuilder.powerPerSecond(96)};
+        String appraiserName = zh ? "&c&l自动鉴定仪" : "&c&lAuto Appraiser";
+        SlimefunItemStack appraiserStack = new SlimefunItemStack(
+                "AUTO_APPRAISER", Material.GRINDSTONE, appraiserName, appraiserLore);
+        ItemStack[] appraiserRecipe = {
+                null, SlimefunItems.NECROTIC_SKULL, null,
+                renameRuneStack, brainStack, renameRuneStack,
+                SlimefunItems.BLISTERING_INGOT_3, SlimefunItems.PROGRAMMABLE_ANDROID_2, SlimefunItems.BLISTERING_INGOT_3};
+        new AutoAppraiser(itemGroup, appraiserStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, appraiserRecipe)
+                .register(this);
+
         // Potion Affix Disenchanter
         String disName = zh ? "§6§l药水词缀祛魔机" : "§6§lPotion Affix Disenchanter";
         SlimefunItemStack disStack = new SlimefunItemStack(
@@ -335,24 +353,6 @@ final class SlimefunHook implements SlimefunAddon {
                 timeStack, SlimefunItems.NETHER_STAR_REACTOR, timeStack};
         new PotionAffixEnchanter(itemGroup, enchStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, enchRecipe)
-                .register(this);
-
-        // Auto Appraiser
-        String[] appraiserLore = {"",
-                zh ? "&7将 &c未鉴定 &7装备自动鉴定为指定品级" : "&7Auto-appraises &cUnidentified &7equipment to a selected tier",
-                zh ? "&7消耗附魔之瓶或学识之瓶作为经验来源" : "&7Consumes Bottles o' Enchanting or Flasks of Knowledge as XP",
-                "",
-                LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
-                LoreBuilder.speed(3), LoreBuilder.powerPerSecond(96)};
-        String appraiserName = zh ? "&c&l自动鉴定仪" : "&c&lAuto Appraiser";
-        SlimefunItemStack appraiserStack = new SlimefunItemStack(
-                "AUTO_APPRAISER", Material.GRINDSTONE, appraiserName, appraiserLore);
-        ItemStack[] appraiserRecipe = {
-                null, SlimefunItems.NECROTIC_SKULL, null,
-                renameRuneStack, brainStack, renameRuneStack,
-                SlimefunItems.BLISTERING_INGOT, SlimefunItems.ANDROID_MEMORY_CORE, SlimefunItems.BLISTERING_INGOT};
-        new AutoAppraiser(itemGroup, appraiserStack,
-                RecipeType.ENHANCED_CRAFTING_TABLE, appraiserRecipe)
                 .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));
