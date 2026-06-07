@@ -210,7 +210,8 @@ final class SlimefunHook implements SlimefunAddon {
                 .register(this);
 
         // Second recipe: 8 unidentified items + blank rune → 1 Ancient Rune [Past]
-        ItemStack unidIngredient = unidDummy.getItem().clone();
+        SlimefunItemStack unidIngredient = new SlimefunItemStack(
+                "MAGICLOOT_UNIDENTIFIED", unidDummy.getItem());
         RecipeType.ANCIENT_ALTAR.register(
                 new ItemStack[]{unidIngredient, unidIngredient, unidIngredient,
                         unidIngredient, SlimefunItems.BLANK_RUNE, unidIngredient,
