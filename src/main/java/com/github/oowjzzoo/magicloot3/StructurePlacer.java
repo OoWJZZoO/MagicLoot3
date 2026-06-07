@@ -14,14 +14,17 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.structure.Mirror;
 import org.bukkit.block.structure.StructureRotation;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Villager;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import org.bukkit.structure.Structure;
 import org.bukkit.util.BlockVector;
 
@@ -160,6 +163,14 @@ public final class StructurePlacer {
                         v.setCustomName(Messages.get("npc.name"));
                         v.setCustomNameVisible(true);
                         v.setAdult();
+                        // Spawn item frame 2 blocks below, on the top surface
+                        Location frameLoc = block.getLocation().clone().add(0.5, -1.0, 0.5);
+                        try {
+                            ItemFrame frame = world.spawn(frameLoc, ItemFrame.class);
+                            frame.setFacingDirection(BlockFace.UP);
+                            SlimefunItem time = SlimefunItem.getById("TIME_OF_EXPLORATION");
+                            if (time != null) frame.setItem(time.getItem().clone());
+                        } catch (Exception ignored) {}
                     }
                 }
             }
