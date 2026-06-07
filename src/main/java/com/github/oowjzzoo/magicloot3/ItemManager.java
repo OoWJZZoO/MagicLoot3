@@ -108,15 +108,10 @@ public class ItemManager {
                 }
                 case TOOL -> {
                     if (weightedToolsTotal <= 0) break;
-                    if (random.nextInt(100) < 10) {
-                        item.setType(Material.ARROW);
-                        item.setAmount(4 + random.nextInt(20));
-                    } else {
-                        item.setType(pickWeighted(weightedTools, weightedToolsCum, weightedToolsTotal));
-                        if (item.getType().getMaxDurability() == 0) break;
-                        item = applyTier(item, LootTier.getRandom());
-                        damageRandomPercent(item);
-                    }
+                    item.setType(pickWeighted(weightedTools, weightedToolsCum, weightedToolsTotal));
+                    if (item.getType().getMaxDurability() == 0) break;
+                    item = applyTier(item, LootTier.getRandom());
+                    damageRandomPercent(item);
                 }
                 case SLIMEFUN -> {
                     if (weightedSlimefunTotal > 0) {
