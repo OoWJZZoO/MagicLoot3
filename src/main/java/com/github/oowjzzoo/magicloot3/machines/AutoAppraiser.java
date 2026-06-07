@@ -285,7 +285,7 @@ public class AutoAppraiser extends AContainer {
                 outputEquipment = ItemManager.applyTier(outputEquipment, LootTier.valueOf(rankStr));
             }
 
-            int ticks = cost * 120 / getSpeed();
+            int ticks = cost * 6 / getSpeed();
             if (ticks < 1) ticks = 1;
             if (MagicLoot3.isDebug()) ticks = 1;
 
