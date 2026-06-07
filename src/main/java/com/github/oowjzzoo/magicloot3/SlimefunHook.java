@@ -158,6 +158,17 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack[]{null, null, null, null, eggIcon, null, null, null, null})
                 .register(this);
 
+        // Dummy item for unidentified equipment recipe matching
+        String unidName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
+        String[] unidLore = zh
+                ? new String[]{"", "§8品级：§b§d§e§c未鉴定", "", "§7即任意 未鉴定 的装备"}
+                : new String[]{"", "§8Tier: §b§d§e§cUnknown", "", "§7Represents any unidentified equipment"};
+        SlimefunItemStack unidStack = new SlimefunItemStack(
+                "MAGICLOOT_UNIDENTIFIED", Material.STONE_HOE, unidName, unidLore);
+        SlimefunItem unidDummy = new SlimefunItem(itemGroup, unidStack, RecipeType.NULL, new ItemStack[9]);
+        unidDummy.setHidden(true);
+        unidDummy.register(this);
+
         // --- Shared crafting materials (must be created before machines that use them) ---
 
         // Ancient Rune of Past (往日)
@@ -197,6 +208,14 @@ final class SlimefunHook implements SlimefunAddon {
         new PastRune(itemGroup, runeStack, RecipeType.ANCIENT_ALTAR, runeRecipe,
                 new SlimefunItemStack(runeStack, 3))
                 .register(this);
+
+        // Second recipe: 8 unidentified items + blank rune → 1 Ancient Rune [Past]
+        ItemStack unidIngredient = unidDummy.getItem().clone();
+        RecipeType.ANCIENT_ALTAR.register(
+                new ItemStack[]{unidIngredient, unidIngredient, unidIngredient,
+                        unidIngredient, SlimefunItems.BLANK_RUNE, unidIngredient,
+                        unidIngredient, unidIngredient, unidIngredient},
+                new SlimefunItemStack(runeStack, 1));
 
         // Ancient Rune of Rename (重命名)
         String renameRuneName = zh

@@ -158,6 +158,8 @@ public class PastRune extends SimpleSlimefunItem<ItemDropHandler> {
         meta.setLore(lore);
 
         result.setItemMeta(meta);
+        // Tag as unidentified SF item for recipe matching
+        Slimefun.getItemDataService().setItemData(result, "MAGICLOOT_UNIDENTIFIED");
         return result;
     }
 }

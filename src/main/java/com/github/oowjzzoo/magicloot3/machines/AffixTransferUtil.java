@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.github.oowjzzoo.magicloot3.ItemKeys;
@@ -254,6 +255,14 @@ public final class AffixTransferUtil {
         }
 
         item.setItemMeta(meta);
+
+        // Remove dummy SF ID from formerly unidentified items
+        Slimefun.getItemDataService().getItemData(meta).ifPresent(id -> {
+            if ("MAGICLOOT_UNIDENTIFIED".equals(id)) {
+                meta.getPersistentDataContainer().remove(Slimefun.getItemDataService().getKey());
+                item.setItemMeta(meta);
+            }
+        });
 
         // Verify
         ItemMeta verify = item.getItemMeta();
