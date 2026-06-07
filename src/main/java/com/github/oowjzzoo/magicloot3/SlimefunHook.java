@@ -161,13 +161,40 @@ final class SlimefunHook implements SlimefunAddon {
         // Dummy item for unidentified equipment recipe matching
         String unidName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
         String[] unidLore = zh
-                ? new String[]{"", "§8品级：§b§d§e§c未鉴定", "", "§7即任意 未鉴定 的装备"}
-                : new String[]{"", "§8Tier: §b§d§e§cUnknown", "", "§7Represents any unidentified equipment"};
+                ? new String[]{"", "§8品级：§b§d§e§c未鉴定", "", "§7即任意 §c未鉴定 §7的装备"}
+                : new String[]{"", "§8Tier: §b§d§e§cUnknown", "", "§7Represents any §cunidentified §7equipment"};
         SlimefunItemStack unidStack = new SlimefunItemStack(
                 "MAGICLOOT_UNIDENTIFIED", Material.STONE_HOE, unidName, unidLore);
         SlimefunItem unidDummy = new SlimefunItem(itemGroup, unidStack, RecipeType.NULL, new ItemStack[9]);
         unidDummy.setHidden(true);
         unidDummy.register(this);
+
+        // Garbled Voucher — traded for unidentified items at the desk/librarian
+        String voucherName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
+        String[] voucherLore = zh
+                ? new String[]{"&7乱码凭证",
+                        "", "&7远古祭坛上围8个，中间放空白符文",
+                        "&7也可合成 &7古代符文 &8&l[&e&l往日&8&l]"}
+                : new String[]{"&7Garbled Voucher",
+                        "", "&7Place 8 around an Ancient Altar with a Blank Rune",
+                        "&7to craft an &7Ancient Rune &8&l[&e&lPast&8&l]"};
+        SlimefunItemStack voucherStack = new SlimefunItemStack(
+                "GARBLED_VOUCHER", Material.PAPER, voucherName, voucherLore);
+
+        ItemStack voucherDeskIcon = new ItemStack(Material.CRAFTING_TABLE);
+        ItemMeta voucherDeskMeta = voucherDeskIcon.getItemMeta();
+        voucherDeskMeta.setDisplayName(zh
+                ? "§f兑换"
+                : "§fExchange");
+        voucherDeskMeta.setLore(List.of(zh
+                ? "§f在 §5§l无魂鉴定师§f/§5§l遗物鉴定桌 §f处兑换"
+                : "§fExchange at the §5§lLost Librarian§f / §5§lDesk"));
+        voucherDeskIcon.setItemMeta(voucherDeskMeta);
+        RecipeType voucherRecipeType = new RecipeType(
+                new NamespacedKey(plugin, "voucher_exchange"), voucherDeskIcon);
+        new SlimefunItem(itemGroup, voucherStack, voucherRecipeType,
+                new ItemStack[]{null, null, null, null, unidDummy.getItem(), null, null, null, null})
+                .register(this);
 
         // --- Shared crafting materials (must be created before machines that use them) ---
 
@@ -207,33 +234,6 @@ final class SlimefunHook implements SlimefunAddon {
 
         new PastRune(itemGroup, runeStack, RecipeType.ANCIENT_ALTAR, runeRecipe,
                 new SlimefunItemStack(runeStack, 3))
-                .register(this);
-
-        // Garbled Voucher — traded for unidentified items at the desk/librarian
-        String voucherName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
-        String[] voucherLore = zh
-                ? new String[]{"", "&7乱码凭证",
-                        "", "&7远古祭坛上围8个，中间放空白符文",
-                        "&7也可合成 &7古代符文 &8&l[&e&l往日&8&l]"}
-                : new String[]{"", "&7Garbled Voucher",
-                        "", "&7Place 8 around an Ancient Altar with a Blank Rune",
-                        "&7to craft an &7Ancient Rune &8&l[&e&lPast&8&l]"};
-        SlimefunItemStack voucherStack = new SlimefunItemStack(
-                "GARBLED_VOUCHER", Material.PAPER, voucherName, voucherLore);
-
-        ItemStack voucherDeskIcon = new ItemStack(Material.CRAFTING_TABLE);
-        ItemMeta voucherDeskMeta = voucherDeskIcon.getItemMeta();
-        voucherDeskMeta.setDisplayName(zh
-                ? "§f兑换"
-                : "§fExchange");
-        voucherDeskMeta.setLore(List.of(zh
-                ? "§f在 §5§l无魂鉴定师§f/§5§l遗物鉴定桌 §f处兑换"
-                : "§fExchange at the §5§lLost Librarian§f / §5§lDesk"));
-        voucherDeskIcon.setItemMeta(voucherDeskMeta);
-        RecipeType voucherRecipeType = new RecipeType(
-                new NamespacedKey(plugin, "voucher_exchange"), voucherDeskIcon);
-        new SlimefunItem(itemGroup, voucherStack, voucherRecipeType,
-                new ItemStack[]{null, null, null, null, unidDummy.getItem(), null, null, null, null})
                 .register(this);
 
         // Second recipe: 8 vouchers + blank rune → 1 Ancient Rune [Past]
