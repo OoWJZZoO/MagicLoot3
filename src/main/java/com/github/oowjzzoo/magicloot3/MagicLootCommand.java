@@ -223,7 +223,7 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                 List<String> matches = new ArrayList<>();
                 if (Bukkit.getPluginManager().isPluginEnabled("Slimefun")) {
                     for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
-                        if (item.getId().startsWith("JEG") || "MAGICLOOT_UNIDENTIFIED".equals(item.getId())) continue;
+                        if (item.getId().startsWith("JEG") || "MAGICLOOT_UNIDENTIFIED".equals(item.getId()) || "MAGICLOOT_PLAYER_HEAD".equals(item.getId())) continue;
                         if (item.getId().startsWith(prefix)) matches.add(item.getId());
                     }
                 }

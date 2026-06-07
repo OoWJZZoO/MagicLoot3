@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
@@ -12,6 +13,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkEffectMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -180,6 +182,28 @@ final class SlimefunHook implements SlimefunAddon {
         new LivingDropper(itemGroup, dropperStack, RecipeType.NULL, new ItemStack[9])
                 .register(this);
 
+        // Hidden player head for recipes (obtained by suicide)
+        String headIngredientName = zh ? "&e玩家的头" : "&ePlayer Head";
+        SlimefunItemStack headIngredientStack = new SlimefunItemStack(
+                "MAGICLOOT_PLAYER_HEAD", Material.PLAYER_HEAD, headIngredientName, new String[0]);
+        ItemStack skullIcon = new ItemStack(Material.SKELETON_SKULL);
+        ItemMeta skullMeta = skullIcon.getItemMeta();
+        skullMeta.setDisplayName(zh ? "&4玩家自杀掉落" : "&4Player Suicide Drop");
+        skullMeta.setLore(List.of(zh
+                ? "&7玩家因自身装备的药水词缀"
+                : "&7When a player dies from their own",
+                zh
+                ? "&7（瞬间伤害/中毒/凋零）而死亡时掉落"
+                : "&7equipment's potion affix effects",
+                zh ? "&7或者自我击杀" : "&7(Harm/Poison/Wither) or self-kill"));
+        skullIcon.setItemMeta(skullMeta);
+        RecipeType suicideDrop = new RecipeType(
+                new NamespacedKey(plugin, "suicide_drop"), skullIcon);
+        SlimefunItem headIngredient = new SlimefunItem(itemGroup, headIngredientStack,
+                suicideDrop, new ItemStack[]{null, null, null, null, skullIcon, null, null, null, null});
+        headIngredient.setHidden(true);
+        headIngredient.register(this);
+
         // Magic Silicone Dummy
         String dummyName = zh ? "&e魔法硅胶假人" : "&eMagic Silicone Dummy";
         String[] dummyLore = zh
@@ -187,12 +211,24 @@ final class SlimefunHook implements SlimefunAddon {
                 : new String[]{"", "&7Squishy and bouncy", "&7What could this be used for..."};
         SlimefunItemStack dummyStack = new SlimefunItemStack(
                 "MAGIC_SILICONE_DUMMY", Material.ARMOR_STAND, dummyName, dummyLore);
+        // Display recipe: uses hidden head ingredient
         ItemStack[] dummyRecipe = {
-                SlimefunItems.MAGIC_LUMP_3, new ItemStack(Material.PLAYER_HEAD), SlimefunItems.ENDER_LUMP_3,
+                SlimefunItems.MAGIC_LUMP_3, headIngredientStack, SlimefunItems.ENDER_LUMP_3,
                 SlimefunItems.BACKPACK_MEDIUM, new ItemStack(Material.ARMOR_STAND), SlimefunItems.BACKPACK_MEDIUM,
-                SlimefunItems.ENDER_LUMP_3, new ItemStack(Material.PLAYER_HEAD), SlimefunItems.MAGIC_LUMP_3};
+                SlimefunItems.ENDER_LUMP_3, headIngredientStack, SlimefunItems.MAGIC_LUMP_3};
         new SlimefunItem(itemGroup, dummyStack, RecipeType.ANCIENT_ALTAR, dummyRecipe)
                 .register(this);
+        // Implicit recipe: real PLAYER_HEAD with Notch skin for actual matching
+        ItemStack notchHead = new ItemStack(Material.PLAYER_HEAD);
+        if (notchHead.getItemMeta() instanceof SkullMeta skull) {
+            skull.setOwningPlayer(Bukkit.getOfflinePlayer("Notch"));
+            notchHead.setItemMeta(skull);
+        }
+        RecipeType.ANCIENT_ALTAR.register(
+                new ItemStack[]{SlimefunItems.MAGIC_LUMP_3, notchHead, SlimefunItems.ENDER_LUMP_3,
+                        SlimefunItems.BACKPACK_MEDIUM, new ItemStack(Material.ARMOR_STAND), SlimefunItems.BACKPACK_MEDIUM,
+                        SlimefunItems.ENDER_LUMP_3, notchHead, SlimefunItems.MAGIC_LUMP_3},
+                dummyStack);
 
         // Dummy item for unidentified equipment recipe matching
         String unidName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";

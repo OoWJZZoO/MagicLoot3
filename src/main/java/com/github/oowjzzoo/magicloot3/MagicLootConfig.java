@@ -188,7 +188,7 @@ public class MagicLootConfig {
                 if (sfItem instanceof MultiBlockMachine) {
                     configItems.getYaml().set("slimefun." + key, -1);
                     configItems.save();
-                } else if (sfItem != null && !key.startsWith("JEG") && !"MAGICLOOT_UNIDENTIFIED".equals(key)) {
+                } else if (sfItem != null && !key.startsWith("JEG") && !"MAGICLOOT_UNIDENTIFIED".equals(key) && !"MAGICLOOT_PLAYER_HEAD".equals(key)) {
                     sfItems.add(sfItem.getItem());
                     sfWeights.add(w);
                 }
@@ -234,7 +234,7 @@ public class MagicLootConfig {
     private static void writeSfDefaults(ConfigManager cfg) {
         if (!Bukkit.getPluginManager().isPluginEnabled("Slimefun")) return;
         for (SlimefunItem item : Slimefun.getRegistry().getAllSlimefunItems()) {
-            if (item.getId().startsWith("JEG") || "MAGICLOOT_UNIDENTIFIED".equals(item.getId())) continue;
+            if (item.getId().startsWith("JEG") || "MAGICLOOT_UNIDENTIFIED".equals(item.getId()) || "MAGICLOOT_PLAYER_HEAD".equals(item.getId())) continue;
             cfg.setDefaultValue("slimefun." + item.getId(), 100);
         }
     }
