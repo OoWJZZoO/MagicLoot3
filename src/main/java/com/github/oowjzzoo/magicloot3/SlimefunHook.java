@@ -125,6 +125,39 @@ final class SlimefunHook implements SlimefunAddon {
                 RecipeType.ENHANCED_CRAFTING_TABLE, splitterRecipe)
                 .register(this);
 
+        // Lost Librarian's Brain
+        String brainName = zh ? "§2无魂鉴定师之脑" : "§2Lost Librarian's Brain";
+        String[] brainLore = zh
+                ? new String[]{"", "&7无魂鉴定师免疫物理攻击",
+                        "&7不免疫魔法(药水效果)攻击",
+                        "&7不过说真的",
+                        "&7这不太道德..."}
+                : new String[]{"", "&7The Lost Librarian is immune to physical attacks",
+                        "&7But not immune to magic (potion effects)",
+                        "&7Though honestly...",
+                        "&7This feels unethical"};
+        SlimefunItemStack brainStack = new SlimefunItemStack(
+                "LOST_LIBRARIAN_BRAIN", Material.ROTTEN_FLESH, brainName, brainLore);
+        ItemStack eggIcon = new ItemStack(Material.VILLAGER_SPAWN_EGG);
+        ItemMeta eggMeta = eggIcon.getItemMeta();
+        eggMeta.setDisplayName("§5§l无魂鉴定师");
+        eggMeta.setLore(List.of("",
+                "§f自然生成在失落图书馆中",
+                "§f免疫物理伤害",
+                "§f使用带有伤害型药水词缀的武器杀死",
+                "§f或者使用喷溅型药水杀死"));
+        eggIcon.setItemMeta(eggMeta);
+
+        ItemStack dropIcon = new ItemStack(Material.IRON_SWORD);
+        ItemMeta dropMeta = dropIcon.getItemMeta();
+        dropMeta.setDisplayName("§5§l无魂鉴定师掉落");
+        dropIcon.setItemMeta(dropMeta);
+        RecipeType librarianDrop = new RecipeType(
+                new NamespacedKey(plugin, "librarian_drop"), dropIcon);
+        new SlimefunItem(itemGroup, brainStack, librarianDrop,
+                new ItemStack[]{null, null, null, null, eggIcon, null, null, null, null})
+                .register(this);
+
         // --- Shared crafting materials (must be created before machines that use them) ---
 
         // Ancient Rune of Past (往日)
@@ -165,45 +198,12 @@ final class SlimefunHook implements SlimefunAddon {
                 new SlimefunItemStack(runeStack, 3))
                 .register(this);
 
-        // Lost Librarian's Brain
-        String brainName = zh ? "§2无魂鉴定师之脑" : "§2Lost Librarian's Brain";
-        String[] brainLore = zh
-                ? new String[]{"", "&7无魂鉴定师免疫物理攻击",
-                        "&7不免疫魔法(药水效果)攻击",
-                        "&7不过说真的",
-                        "&7这不太道德..."}
-                : new String[]{"", "&7The Lost Librarian is immune to physical attacks",
-                        "&7But not immune to magic (potion effects)",
-                        "&7Though honestly...",
-                        "&7This feels unethical"};
-        SlimefunItemStack brainStack = new SlimefunItemStack(
-                "LOST_LIBRARIAN_BRAIN", Material.ROTTEN_FLESH, brainName, brainLore);
-        ItemStack eggIcon = new ItemStack(Material.VILLAGER_SPAWN_EGG);
-        ItemMeta eggMeta = eggIcon.getItemMeta();
-        eggMeta.setDisplayName("§5§l无魂鉴定师");
-        eggMeta.setLore(List.of("",
-                "§f自然生成在失落图书馆中",
-                "§f免疫物理伤害",
-                "§f使用带有伤害型药水词缀的武器杀死",
-                "§f或者使用喷溅型药水杀死"));
-        eggIcon.setItemMeta(eggMeta);
-
-        ItemStack dropIcon = new ItemStack(Material.IRON_SWORD);
-        ItemMeta dropMeta = dropIcon.getItemMeta();
-        dropMeta.setDisplayName("§5§l无魂鉴定师掉落");
-        dropIcon.setItemMeta(dropMeta);
-        RecipeType librarianDrop = new RecipeType(
-                new NamespacedKey(plugin, "librarian_drop"), dropIcon);
-        new SlimefunItem(itemGroup, brainStack, librarianDrop,
-                new ItemStack[]{null, null, null, null, eggIcon, null, null, null, null})
-                .register(this);
-
         // Ancient Rune of Rename (重命名)
         String renameRuneName = zh
                 ? "§7古代符文 §8§l[§3§l重命名§8§l]"
                 : "§7Ancient Rune §8§l[§3§lRename§8§l]";
         String[] renameRuneLore = zh
-                ? new String[]{"", "&e把符文丢向你已经丢出的物品",
+                ? new String[]{"&e把符文丢向你已经丢出的物品",
                         "&e该物品会被随机重命名",
                         "",
                         "&7为什么我的神剑叫做雷霆大内裤",
@@ -211,7 +211,7 @@ final class SlimefunHook implements SlimefunAddon {
                         "",
                         "&4&l对于特殊物品请谨慎使用",
                         "&4&l可能导致它们无法被识别"}
-                : new String[]{"", "&eDrop this rune onto a dropped item",
+                : new String[]{"&eDrop this rune onto a dropped item",
                         "&eThe item will be randomly renamed",
                         "",
                         "&7Why is my legendary sword called",

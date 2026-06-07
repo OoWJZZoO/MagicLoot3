@@ -15,8 +15,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import com.github.oowjzzoo.magicloot3.ItemKeys;
 import com.github.oowjzzoo.magicloot3.ItemManager;
 import com.github.oowjzzoo.magicloot3.Messages;
+
+import org.bukkit.persistence.PersistentDataType;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
@@ -102,7 +105,12 @@ public class RenameRune extends SimpleSlimefunItem<ItemDropHandler> {
         if (!(entity instanceof Item item)) return false;
         ItemStack stack = item.getItemStack();
         if (isItem(stack)) return false; // don't target another RenameRune
-        return !stack.getType().isAir();
+        if (stack.getType().isAir()) return false;
+        // Can't rename unidentified items
+        ItemMeta meta = stack.getItemMeta();
+        if (meta != null && meta.getPersistentDataContainer()
+                .has(ItemKeys.TIER, PersistentDataType.STRING)) return false;
+        return true;
     }
 
     private static void renameItem(ItemStack item) {
