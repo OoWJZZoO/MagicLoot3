@@ -161,10 +161,20 @@ final class SlimefunHook implements SlimefunAddon {
                 .register(this);
 
         // Living Dropper
-        String dropperName = zh ? "&f投掷器(活的!)" : "&fLiving Dropper";
+        String dropperName = zh
+                ? "&e投掷器 &7&l[&f&l活的!&7&l]"
+                : "&eDropper &7&l[&f&lLiving!&7&l]";
         String[] dropperLore = zh
-                ? new String[]{"", "&7就像真的玩家一样!", "&7绑定的玩家在线时就能工作", "&7Shift+右键 打开配置界面"}
-                : new String[]{"", "&7Just like a real player!", "&7Works when the bound player is online", "&7Shift+Right-click to configure"};
+                ? new String[]{"",
+                        "&7就像真的玩家一样!",
+                        "&7必须绑定玩家且玩家在线",
+                        "&7否则无法工作",
+                        "&7空手 Shift+右键 打开配置界面"}
+                : new String[]{"",
+                        "&7Just like a real player!",
+                        "&7Must be bound to an online player",
+                        "&7or it won't work",
+                        "&7Shift+Right-click with empty hand to configure"};
         SlimefunItemStack dropperStack = new SlimefunItemStack(
                 "LIVING_DROPPER", Material.DROPPER, dropperName, dropperLore);
         new LivingDropper(itemGroup, dropperStack, RecipeType.NULL, new ItemStack[9])
