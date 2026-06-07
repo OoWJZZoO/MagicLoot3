@@ -21,6 +21,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -29,6 +30,11 @@ import org.bukkit.util.Vector;
 import com.github.oowjzzoo.magicloot3.machines.LivingDropper;
 
 public class LivingDropperListener implements Listener {
+
+    /** Unique holder to identify our binding GUI inventory. */
+    private static final InventoryHolder BINDING_HOLDER = new InventoryHolder() {
+        @Override public Inventory getInventory() { return null; }
+    };
 
     private static final String GUI_TITLE = ChatColor.translateAlternateColorCodes('&',
             Messages.get("living_dropper.gui_title"));
@@ -87,9 +93,9 @@ public class LivingDropperListener implements Listener {
 
     // --- Binding GUI clicks ---
 
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent e) {
-        if (!e.getView().getTitle().equals(GUI_TITLE)) return;
+        if (e.getInventory().getHolder() != BINDING_HOLDER) return;
         e.setCancelled(true);
         if (e.getClickedInventory() != e.getView().getTopInventory()) return;
         if (e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR) return;
@@ -114,7 +120,7 @@ public class LivingDropperListener implements Listener {
     private static final java.util.Map<UUID, Location> playerToOpenLoc = new java.util.HashMap<>();
 
     static void openBindingGUI(Player player, Location loc) {
-        Inventory inv = Bukkit.createInventory(null, 9, GUI_TITLE);
+        Inventory inv = Bukkit.createInventory(BINDING_HOLDER, 9, GUI_TITLE);
         playerToOpenLoc.put(player.getUniqueId(), loc);
 
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);

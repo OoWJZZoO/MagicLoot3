@@ -58,7 +58,8 @@ public class LivingDropper extends SlimefunItem {
             public void onPlayerBreak(BlockBreakEvent e, ItemStack item, List<ItemStack> drops) {
                 Block b = e.getBlock();
                 Location loc = b.getLocation();
-                drops.clear();
+                // SF's BlockListener adds sfItem.getDrops() after this handler.
+                // We only add dropper contents; SF adds the LivingDropper item itself.
                 if (b.getState() instanceof Dropper dropper) {
                     for (ItemStack content : dropper.getInventory().getContents()) {
                         if (content != null && content.getType() != Material.AIR) {
@@ -67,7 +68,6 @@ public class LivingDropper extends SlimefunItem {
                     }
                     dropper.getInventory().clear();
                 }
-                drops.add(getItem().clone());
                 locations.remove(loc);
                 bindings.remove(loc);
                 saveData();
