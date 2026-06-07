@@ -186,19 +186,30 @@ final class SlimefunHook implements SlimefunAddon {
         String headIngredientName = zh ? "&e玩家的头" : "&ePlayer Head";
         SlimefunItemStack headIngredientStack = new SlimefunItemStack(
                 "MAGICLOOT_PLAYER_HEAD", Material.PLAYER_HEAD, headIngredientName, new String[0]);
+
+        // RecipeType icon (left side): diamond sword
+        ItemStack recipeTypeIcon = new ItemStack(Material.DIAMOND_SWORD);
+        ItemMeta rtm = recipeTypeIcon.getItemMeta();
+        rtm.setDisplayName("§7§l自刎归天");
+        recipeTypeIcon.setItemMeta(rtm);
+        RecipeType suicideDrop = new RecipeType(
+                new NamespacedKey(plugin, "suicide_drop"), recipeTypeIcon);
+
+        // Recipe center display: skeleton skull with lore
         ItemStack skullIcon = new ItemStack(Material.SKELETON_SKULL);
         ItemMeta skullMeta = skullIcon.getItemMeta();
-        skullMeta.setDisplayName(zh ? "&4玩家自杀掉落" : "&4Player Suicide Drop");
+        skullMeta.setDisplayName(zh ? "§4玩家自杀掉落" : "§4Player Suicide Drop");
         skullMeta.setLore(List.of(zh
-                ? "&7玩家因自身装备的药水词缀"
-                : "&7When a player dies from their own",
+                ? "§e玩家因自身装备的药水词缀"
+                : "§eWhen a player dies from their own",
                 zh
-                ? "&7（瞬间伤害/中毒/凋零）而死亡时掉落"
-                : "&7equipment's potion affix effects",
-                zh ? "&7或者自我击杀" : "&7(Harm/Poison/Wither) or self-kill"));
+                ? "§7或者自我击杀"
+                : "§7Harm/Poison/Wither or self-kill",
+                zh
+                ? "§7瞬间伤害/中毒/凋零而死亡时掉落"
+                : "§7equipment's potion affix effects"));
         skullIcon.setItemMeta(skullMeta);
-        RecipeType suicideDrop = new RecipeType(
-                new NamespacedKey(plugin, "suicide_drop"), skullIcon);
+
         SlimefunItem headIngredient = new SlimefunItem(itemGroup, headIngredientStack,
                 suicideDrop, new ItemStack[]{null, null, null, null, skullIcon, null, null, null, null});
         headIngredient.setHidden(true);
@@ -228,6 +239,12 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack[]{SlimefunItems.MAGIC_LUMP_3, notchHead, SlimefunItems.ENDER_LUMP_3,
                         SlimefunItems.BACKPACK_MEDIUM, new ItemStack(Material.ARMOR_STAND), SlimefunItems.BACKPACK_MEDIUM,
                         SlimefunItems.ENDER_LUMP_3, notchHead, SlimefunItems.MAGIC_LUMP_3},
+                dummyStack);
+        // Robustness: also accept plain PLAYER_HEAD with no meta
+        RecipeType.ANCIENT_ALTAR.register(
+                new ItemStack[]{SlimefunItems.MAGIC_LUMP_3, new ItemStack(Material.PLAYER_HEAD), SlimefunItems.ENDER_LUMP_3,
+                        SlimefunItems.BACKPACK_MEDIUM, new ItemStack(Material.ARMOR_STAND), SlimefunItems.BACKPACK_MEDIUM,
+                        SlimefunItems.ENDER_LUMP_3, new ItemStack(Material.PLAYER_HEAD), SlimefunItems.MAGIC_LUMP_3},
                 dummyStack);
 
         // Dummy item for unidentified equipment recipe matching
