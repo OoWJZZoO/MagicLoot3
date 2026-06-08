@@ -1,16 +1,11 @@
 package com.github.oowjzzoo.magicloot3.machines;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.github.oowjzzoo.magicloot3.MagicLoot3;
-import com.github.oowjzzoo.magicloot3.Messages;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
@@ -34,12 +29,11 @@ public class DirtGenerator extends AContainer {
     };
     private static final int[] OUTPUT = {
         10,11,12,13,14,15,16,
-        19,20,21,     23,24,25,
+        19,20,21,22,23,24,25,
         28,29,30,31,32,33,34,
         37,38,39,40,41,42,43
     };
-    private static final int HINT_SLOT = 4;
-    private static final int PROGRESS_SLOT = 22;
+    private static final int PROGRESS_SLOT = 4;
     private static final int DIRT_PER_CYCLE = 8;
     private static final int PROCESS_TICKS = 4;
     private static final ItemStack DUMMY_INPUT = new ItemStack(Material.DIRT, 1);
@@ -72,29 +66,10 @@ public class DirtGenerator extends AContainer {
         var empty = ChestMenuUtils.getEmptyClickHandler();
         for (int i : BORDER) preset.addItem(i, ChestMenuUtils.getBackground(), empty);
 
-        // Hint bell
-        List<String> lines = Messages.getList("machine.dirt_generator.hint");
-        String hintName = lines.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', lines.get(0));
-        ItemStack hint = new ItemStack(Material.BELL);
-        ItemMeta hm = hint.getItemMeta();
-        hm.setDisplayName(hintName);
-        if (lines.size() > 1) {
-            List<String> lore = new ArrayList<>();
-            for (int i = 1; i < lines.size(); i++) {
-                lore.add(ChatColor.translateAlternateColorCodes('&', lines.get(i)));
-            }
-            hm.setLore(lore);
-        }
-        hint.setItemMeta(hm);
-        preset.addItem(HINT_SLOT, hint, empty);
-
-        // Progress bar placeholder
+        // Progress bar placeholder at slot 4
         ItemStack pg = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
         ItemMeta pgm = pg.getItemMeta(); pgm.setDisplayName(" "); pg.setItemMeta(pgm);
         preset.addItem(PROGRESS_SLOT, pg, empty);
-
-        // Output slots: leave empty (no texture items)
-        for (int i : OUTPUT) preset.addItem(i, null, empty);
     }
 
     @Override
@@ -111,6 +86,7 @@ public class DirtGenerator extends AContainer {
                     ItemStack pane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
                     ItemMeta pm = pane.getItemMeta(); pm.setDisplayName(" "); pane.setItemMeta(pm);
                     inv.replaceExistingItem(PROGRESS_SLOT, pane);
+
                     ItemStack[] results = op.getResults();
                     if (fitsAll(inv, results)) {
                         for (ItemStack output : results) {
