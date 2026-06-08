@@ -24,8 +24,8 @@ dummy:
 tiers:
   RANDOM_NAME: "§b随机"
   COMMON: "§a普通"
-  UNCOMMON: "§5非凡"
-  RARE: "§9稀有"
+  UNCOMMON: "§9稀有"
+  RARE: "§5非凡"
   EPIC: "§e§l史诗"
   LEGENDARY: "§6§l传说"
   UNKNOWN: "§c未鉴定"
