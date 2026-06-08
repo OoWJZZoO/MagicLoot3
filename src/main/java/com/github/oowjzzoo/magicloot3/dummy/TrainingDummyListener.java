@@ -67,9 +67,8 @@ public class TrainingDummyListener implements Listener {
         Location loc = e.getClickedBlock().getRelative(e.getBlockFace()).getLocation().add(0.5, 0, 0.5);
 
         // Spawn piglin directly instead of armor stand
-        Piglin piglin = TrainingDummy.spawn(loc);
-        piglin.getWorld().playSound(loc, Sound.BLOCK_WOOD_PLACE, SoundCategory.BLOCKS, 1, 1);
-        player.sendMessage(ChatColor.GREEN + "训练假人已放置!");
+        TrainingDummy.spawn(loc);
+        player.getWorld().playSound(loc, Sound.BLOCK_WOOD_PLACE, SoundCategory.BLOCKS, 1, 1);
     }
 
     // --- Damage: display number + record DPS + heal ---
@@ -112,6 +111,12 @@ public class TrainingDummyListener implements Listener {
         if (sfItem != null)
             piglin.getWorld().dropItemNaturally(piglin.getLocation(), sfItem.getItem().clone());
         TrainingDummy.removeDummy(piglin);
+
+        Player killer = piglin.getKiller();
+        if (killer != null) {
+            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
+                    "&e" + killer.getName() + " &b&l居然真的把训练假人打死了!"));
+        }
     }
 
     // --- Player interaction ---

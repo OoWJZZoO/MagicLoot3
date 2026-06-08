@@ -204,9 +204,9 @@ final class SlimefunHook implements SlimefunAddon {
                 "MAGIC_SILICONE_DUMMY", Material.ARMOR_STAND, dummyName, dummyLore);
         // Display recipe: uses hidden head ingredient
         ItemStack[] dummyRecipe = {
-                SlimefunItems.MAGIC_LUMP_3, headIngredientStack, SlimefunItems.ENDER_LUMP_3,
+                SlimefunItems.MAGIC_LUMP_3, headIngredientStack, SlimefunItems.MAGIC_LUMP_3,
                 SlimefunItems.BACKPACK_MEDIUM, new ItemStack(Material.ARMOR_STAND), SlimefunItems.BACKPACK_MEDIUM,
-                SlimefunItems.ENDER_LUMP_3, headIngredientStack, SlimefunItems.MAGIC_LUMP_3};
+                SlimefunItems.MAGIC_LUMP_3, headIngredientStack, SlimefunItems.MAGIC_LUMP_3};
         new SlimefunItem(itemGroup, dummyStack, RecipeType.ANCIENT_ALTAR, dummyRecipe)
                 .register(this);
         // Implicit recipe: real PLAYER_HEAD with Notch skin for actual matching
@@ -216,15 +216,15 @@ final class SlimefunHook implements SlimefunAddon {
             notchHead.setItemMeta(skull);
         }
         RecipeType.ANCIENT_ALTAR.register(
-                new ItemStack[]{SlimefunItems.MAGIC_LUMP_3, notchHead, SlimefunItems.ENDER_LUMP_3,
+                new ItemStack[]{SlimefunItems.MAGIC_LUMP_3, notchHead, SlimefunItems.MAGIC_LUMP_3,
                         SlimefunItems.BACKPACK_MEDIUM, new ItemStack(Material.ARMOR_STAND), SlimefunItems.BACKPACK_MEDIUM,
-                        SlimefunItems.ENDER_LUMP_3, notchHead, SlimefunItems.MAGIC_LUMP_3},
+                        SlimefunItems.MAGIC_LUMP_3, notchHead, SlimefunItems.MAGIC_LUMP_3},
                 dummyStack);
         // Robustness: also accept plain PLAYER_HEAD with no meta
         RecipeType.ANCIENT_ALTAR.register(
-                new ItemStack[]{SlimefunItems.MAGIC_LUMP_3, new ItemStack(Material.PLAYER_HEAD), SlimefunItems.ENDER_LUMP_3,
+                new ItemStack[]{SlimefunItems.MAGIC_LUMP_3, new ItemStack(Material.PLAYER_HEAD), SlimefunItems.MAGIC_LUMP_3,
                         SlimefunItems.BACKPACK_MEDIUM, new ItemStack(Material.ARMOR_STAND), SlimefunItems.BACKPACK_MEDIUM,
-                        SlimefunItems.ENDER_LUMP_3, new ItemStack(Material.PLAYER_HEAD), SlimefunItems.MAGIC_LUMP_3},
+                        SlimefunItems.MAGIC_LUMP_3, new ItemStack(Material.PLAYER_HEAD), SlimefunItems.MAGIC_LUMP_3},
                 dummyStack);
 
         // Living Dropper
@@ -255,9 +255,19 @@ final class SlimefunHook implements SlimefunAddon {
         String dummyName2 = zh
                 ? "&e训练假人 &8&l[&f&l普通&8&l]"
                 : "&eTraining Dummy &8&l[&f&lNormal&8&l]";
+        String[] trainingDummyLore = zh
+                ? new String[]{"", "&7这不对吧", "&7它摸起来是温的，还是软的!", "&7安心啦，这是魔法的效果",
+                        "&7尽情使用它吧"}
+                : new String[]{"", "&7This can't be right", "&7It's warm and soft!", "&7Don't worry, it's magic",
+                        "&7Use it to your heart's content"};
         SlimefunItemStack trainingDummyStack = new SlimefunItemStack(
-                "TRAINING_DUMMY", Material.ARMOR_STAND, dummyName2, new String[0]);
-        new SlimefunItem(itemGroup, trainingDummyStack, RecipeType.NULL, new ItemStack[9])
+                "TRAINING_DUMMY", Material.ARMOR_STAND, dummyName2, trainingDummyLore);
+        ItemStack[] trainingDummyRecipe = {
+                null, new ItemStack(Material.OBSERVER), null,
+                null, dummyStack, null,
+                null, SlimefunItems.GOLD_24K, null};
+        new SlimefunItem(itemGroup, trainingDummyStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, trainingDummyRecipe)
                 .register(this);
 
         // Dummy item for unidentified equipment recipe matching

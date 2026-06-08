@@ -32,7 +32,7 @@ public final class TrainingDummy {
     private static final long IDLE_TIMEOUT_MS = 3000;
 
     private record HitRecord(long time, double damage) {}
-    private static final long SLIDING_WINDOW_MS = 4000;
+    private static final long SLIDING_WINDOW_MS = 2000;
 
     private static final class DummyStats {
         long firstHitMs, lastHitMs;
