@@ -50,7 +50,6 @@ public class LivingDropper extends SlimefunItem {
             public void onPlayerPlace(@Nonnull BlockPlaceEvent e) {
                 String key = locToKey(e.getBlock().getLocation());
                 locationKeys.add(key);
-                saveData();
             }
         });
 
@@ -112,19 +111,16 @@ public class LivingDropper extends SlimefunItem {
 
     public static void bind(Location loc, UUID uuid) {
         bindings.put(locToKey(loc), uuid);
-        saveData();
     }
 
     public static void unbind(Location loc) {
         bindings.remove(locToKey(loc));
-        saveData();
     }
 
     private static void unregister(Location loc) {
         String key = locToKey(loc);
         locationKeys.remove(key);
         bindings.remove(key);
-        saveData();
     }
 
     // --- Persistence ---
@@ -139,6 +135,7 @@ public class LivingDropper extends SlimefunItem {
     }
 
     public static void cleanup() {
+        saveData();
         locationKeys.clear();
         bindings.clear();
         deferredEntries.clear();
@@ -217,7 +214,7 @@ public class LivingDropper extends SlimefunItem {
         }
     }
 
-    private static void saveData() {
+    public static void saveData() {
         if (dataFile == null) return;
         YamlConfiguration yaml = new YamlConfiguration();
 

@@ -28,6 +28,7 @@ import org.bukkit.plugin.Plugin;
 public final class TrainingDummy {
 
     public static NamespacedKey DUMMY_KEY;
+    private static Plugin plugin;
     private static final Map<UUID, DummyStats> stats = new ConcurrentHashMap<>();
     private static final Map<UUID, LivingEntity> dummies = new ConcurrentHashMap<>();
     private static final Map<UUID, String> dummyType = new ConcurrentHashMap<>();
@@ -47,7 +48,8 @@ public final class TrainingDummy {
 
     private TrainingDummy() {}
 
-    public static void init(Plugin plugin) {
+    public static void init(Plugin p) {
+        plugin = p;
         DUMMY_KEY = new NamespacedKey(plugin, "training_dummy");
     }
 
@@ -115,8 +117,7 @@ public final class TrainingDummy {
             as.setVisible(false); as.setMarker(true); as.setCustomNameVisible(true);
             as.setCustomName("§c§l" + String.format("%.1f", damage));
         });
-        Bukkit.getScheduler().runTaskLater(
-                Bukkit.getPluginManager().getPlugin("MagicLoot3"), display::remove, 30L);
+        Bukkit.getScheduler().runTaskLater(plugin, display::remove, 30L);
     }
 
     // --- DPS name ticker ---
