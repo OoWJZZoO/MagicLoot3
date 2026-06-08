@@ -26,6 +26,18 @@ public final class LostLibrarianGUI {
 
     private LostLibrarianGUI() {}
 
+    static int cleanupStaleDeskState() {
+        int removed = 0;
+        var it = deskState.entrySet().iterator();
+        while (it.hasNext()) {
+            if (Bukkit.getPlayer(it.next().getKey()) == null) {
+                it.remove();
+                removed++;
+            }
+        }
+        return removed;
+    }
+
     public static Inventory create(Player player, boolean isDesk) {
         deskState.put(player.getUniqueId(), isDesk);
         String title = isDesk ? Messages.get("desk.title") : getTitle();

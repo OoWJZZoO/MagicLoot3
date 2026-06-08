@@ -234,4 +234,16 @@ public class LivingDropperListener implements Listener {
         }
         return BlockFace.DOWN;
     }
+
+    static int cleanupStalePlayerLocs() {
+        int removed = 0;
+        var it = playerToOpenLoc.entrySet().iterator();
+        while (it.hasNext()) {
+            if (Bukkit.getPlayer(it.next().getKey()) == null) {
+                it.remove();
+                removed++;
+            }
+        }
+        return removed;
+    }
 }

@@ -60,6 +60,9 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
             // DPS name updater for training dummies (every 0.5s)
             getServer().getScheduler().runTaskTimer(this,
                     () -> TrainingDummy.tickAllDummies(), 10L, 10L);
+
+            // Periodic stale data cleanup (every 60s)
+            Housekeeper.start(this);
             getLogger().info(Messages.get("log.loaded"));
         }, 10L);
     }
@@ -83,7 +86,7 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
         RuinBuilder.ruinNames.clear();
         RuinBuilder.buildingNames.clear();
         LivingDropper.cleanup();
-        LootListener.cleanupSelfDamageTimers();
+        LootListener.clearSelfDamageTimers();
         TrainingDummy.cleanup();
     }
 

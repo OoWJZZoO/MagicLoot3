@@ -129,20 +129,23 @@ public class LivingDropper extends SlimefunItem {
 
     // --- Persistence ---
 
+    // Deferred entries: key → uuidString, loaded before worlds are ready
+    private static final Map<String, String> deferredEntries = new ConcurrentHashMap<>();
+
     public static void init(File dataFolder) {
         dataFile = new File(dataFolder, "data" + File.separator + "living_droppers.yml");
-        loadData();
+        loadDeferred();
         scheduleValidate();
     }
 
     public static void cleanup() {
         locationKeys.clear();
         bindings.clear();
+        deferredEntries.clear();
     }
 
-    private static void loadData() {
-        locationKeys.clear();
-        bindings.clear();
+    private static void loadDeferred() {
+        deferredEntries.clear();
         if (!dataFile.exists()) return;
 
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(dataFile);
@@ -150,25 +153,42 @@ public class LivingDropper extends SlimefunItem {
         if (droppers == null) return;
 
         for (String worldName : droppers.getKeys(false)) {
-            World world = Bukkit.getWorld(worldName);
-            if (world == null) continue; // world deleted — entry silently dropped
             ConfigurationSection coords = droppers.getConfigurationSection(worldName);
             if (coords == null) continue;
             for (String coordKey : coords.getKeys(false)) {
                 String key = worldName + "!" + coordKey.replace(",", "!");
-                if (world.getBlockAt(
-                        Integer.parseInt(coordKey.split(",")[0]),
-                        Integer.parseInt(coordKey.split(",")[1]),
-                        Integer.parseInt(coordKey.split(",")[2])).getType() != Material.DROPPER) {
-                    continue; // block was replaced — skip
+                String uuidStr = coords.getString(coordKey);
+                deferredEntries.put(key, uuidStr != null ? uuidStr : "");
+            }
+        }
+    }
+
+    private static void migrateDeferred() {
+        for (var it = deferredEntries.entrySet().iterator(); it.hasNext(); ) {
+            var entry = it.next();
+            String key = entry.getKey();
+            String[] parts = key.split("!");
+            if (parts.length != 4) { it.remove(); continue; }
+            World world = Bukkit.getWorld(parts[0]);
+            if (world == null) continue; // still not loaded, try again next validate cycle
+            try {
+                int x = Integer.parseInt(parts[1]);
+                int y = Integer.parseInt(parts[2]);
+                int z = Integer.parseInt(parts[3]);
+                if (world.getBlockAt(x, y, z).getType() != Material.DROPPER) {
+                    it.remove(); // block was replaced, drop entry
+                    continue;
                 }
                 locationKeys.add(key);
-                String uuidStr = coords.getString(coordKey);
+                String uuidStr = entry.getValue();
                 if (uuidStr != null && !uuidStr.isEmpty()) {
                     try {
                         bindings.put(key, UUID.fromString(uuidStr));
                     } catch (IllegalArgumentException ignored) {}
                 }
+                it.remove(); // migrated
+            } catch (NumberFormatException ignored) {
+                it.remove();
             }
         }
     }
@@ -196,8 +216,11 @@ public class LivingDropper extends SlimefunItem {
     }
 
     private static void scheduleValidate() {
-        // Delay 3s: let all worlds/chunks load after startup, then purge ghosts
+        // Delay 3s: let all worlds/chunks load, then migrate deferred + purge ghosts
         Bukkit.getScheduler().runTaskLater(MagicLoot3.getInstance(), () -> {
+            // Step 1: migrate deferred entries (worlds now loaded)
+            migrateDeferred();
+            // Step 2: purge ghosts (blocks replaced or PDC lost)
             int removed = 0;
             for (String key : locationKeys.toArray(new String[0])) {
                 Location loc = keyToLoc(key);
@@ -215,10 +238,11 @@ public class LivingDropper extends SlimefunItem {
                     removed++;
                 }
             }
-            if (removed > 0) {
+            if (removed > 0 || !deferredEntries.isEmpty()) {
                 saveData();
                 MagicLoot3.getInstance().getLogger().info(
-                        "LivingDropper: purged " + removed + " stale entries");
+                        "LivingDropper: purged " + removed + " stale, "
+                                + deferredEntries.size() + " deferred remaining");
             }
         }, 60L); // 3 seconds
     }

@@ -136,8 +136,6 @@ public final class TrainingDummy {
             }
             if (piglin == null || !piglin.isValid()) {
                 it.remove();
-                dummies.remove(id);
-                dummyAttackers.remove(id);
                 continue;
             }
             if (now - s.lastHitMs > IDLE_TIMEOUT_MS) {
@@ -176,6 +174,23 @@ public final class TrainingDummy {
         stats.remove(id);
         dummies.remove(id);
         dummyAttackers.remove(id);
+    }
+
+    public static int cleanupStaleDummies() {
+        int removed = 0;
+        var it = dummies.entrySet().iterator();
+        while (it.hasNext()) {
+            var entry = it.next();
+            Piglin p = entry.getValue();
+            if (p == null || !p.isValid()) {
+                UUID id = entry.getKey();
+                stats.remove(id);
+                dummyAttackers.remove(id);
+                it.remove();
+                removed++;
+            }
+        }
+        return removed;
     }
 
     public static boolean isDummy(Piglin piglin) {

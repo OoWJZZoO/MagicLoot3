@@ -337,7 +337,18 @@ public class LootListener implements Listener {
         };
     }
 
-    static void cleanupSelfDamageTimers() {
+    static int cleanupStaleSelfDamageTimers() {
+        int removed = 0;
+        var it = selfDamageTimers.entrySet().iterator();
+        while (it.hasNext()) {
+            var entry = it.next();
+            entry.getValue().entrySet().removeIf(e -> System.currentTimeMillis() >= e.getValue());
+            if (entry.getValue().isEmpty()) { it.remove(); removed++; }
+        }
+        return removed;
+    }
+
+    static void clearSelfDamageTimers() {
         selfDamageTimers.clear();
     }
 
