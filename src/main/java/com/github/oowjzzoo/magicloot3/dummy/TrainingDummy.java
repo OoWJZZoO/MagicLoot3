@@ -41,14 +41,22 @@ public final class TrainingDummy {
         piglin.setAI(false);
         piglin.setCollidable(false);
         piglin.setImmuneToZombification(true);
-        piglin.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(2048);
-        piglin.setHealth(2048);
         piglin.getPersistentDataContainer().set(DUMMY_KEY, PersistentDataType.BOOLEAN, true);
         piglin.setCustomName(DEFAULT_NAME);
         piglin.setCustomNameVisible(true);
-        // Clear default equipment (gold sword / crossbow)
+        // Clear default equipment
         EntityEquipment equip = piglin.getEquipment();
-        if (equip != null) equip.clear();
+        if (equip != null) {
+            equip.setHelmet(null);
+            equip.setChestplate(null);
+            equip.setLeggings(null);
+            equip.setBoots(null);
+            equip.setItemInMainHand(null);
+            equip.setItemInOffHand(null);
+        }
+        // Set max health then heal to full
+        piglin.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(1024);
+        piglin.setHealth(1024);
         dummies.put(piglin.getUniqueId(), piglin);
         return piglin;
     }

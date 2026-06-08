@@ -87,8 +87,7 @@ public class TrainingDummyListener implements Listener {
 
         // Heal to full next tick
         Bukkit.getScheduler().runTask(plugin, () -> {
-            if (piglin.isValid())
-                piglin.setHealth(piglin.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue());
+            if (piglin.isValid()) piglin.setHealth(1024);
         });
     }
 
