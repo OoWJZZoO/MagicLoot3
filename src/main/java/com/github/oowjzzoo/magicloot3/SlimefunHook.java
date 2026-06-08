@@ -236,12 +236,14 @@ final class SlimefunHook implements SlimefunAddon {
                         "&7就像真的玩家一样!",
                         "&7必须绑定玩家且玩家在线",
                         "&7否则无法工作",
-                        "&7空手 Shift+右键 打开配置界面"}
+                        "",
+                        "&a空手 Shift+右键 打开配置界面"}
                 : new String[]{"",
                         "&7Just like a real player!",
                         "&7Must be bound to an online player",
                         "&7or it won't work",
-                        "&7Shift+Right-click with empty hand to configure"};
+                        "",
+                        "&aShift+Right-click with empty hand to configure"};
         SlimefunItemStack dropperStack = new SlimefunItemStack(
                 "LIVING_DROPPER", Material.DROPPER, dropperName, dropperLore);
         ItemStack[] dropperRecipe = {
@@ -257,9 +259,9 @@ final class SlimefunHook implements SlimefunAddon {
                 : "&eTraining Dummy &8&l[&b&lNormal&8&l]";
         String[] trainingDummyLore = zh
                 ? new String[]{"", "&7这不对吧", "&7它摸起来是温的，还是软的!", "&7安心啦，这是魔法的效果",
-                        "&7尽情使用它吧", "", "&7Shift+右键 拆除假人"}
+                        "&7尽情使用它吧", "", "&aShift+右键 拆除假人"}
                 : new String[]{"", "&7This can't be right", "&7It's warm and soft!", "&7Don't worry, it's magic",
-                        "&7Use it to your heart's content", "", "&7Shift+Right-click to dismantle"};
+                        "&7Use it to your heart's content", "", "&aShift+Right-click to dismantle"};
         SlimefunItemStack trainingDummyStack = new SlimefunItemStack(
                 "TRAINING_DUMMY", Material.ARMOR_STAND, dummyName2, trainingDummyLore);
         ItemStack[] trainingDummyRecipe = {
@@ -277,10 +279,10 @@ final class SlimefunHook implements SlimefunAddon {
         String[] undeadLore = zh
                 ? new String[]{"", "&7...这太血腥了",
                         "&7另外，把血肉拆掉变成骨头架子", "&7就真的是亡灵生物了吗",
-                        "&7魔法，神奇吧!", "", "&7Shift+右键 拆除假人"}
+                        "&7魔法，神奇吧!", "", "&aShift+右键 拆除假人"}
                 : new String[]{"", "&7...This is gruesome",
                         "&7And also, stripping flesh to make a skeleton", "&7Is that really undead?",
-                        "&7Magic, right!", "", "&7Shift+Right-click to dismantle"};
+                        "&7Magic, right!", "", "&aShift+Right-click to dismantle"};
         ItemStack[] undeadRecipe = {
                 null, null, null,
                 new ItemStack(Material.IRON_SWORD), trainingDummyStack, new ItemStack(Material.IRON_AXE),
