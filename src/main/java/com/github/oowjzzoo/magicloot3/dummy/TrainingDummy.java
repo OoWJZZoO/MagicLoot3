@@ -78,6 +78,7 @@ public final class TrainingDummy {
         if (attacker != null) {
             dummyAttackers.computeIfAbsent(id, k -> new HashSet<>()).add(attacker.getUniqueId());
         }
+        Bukkit.getLogger().info("[TrainingDummy] recordHit id=" + id + " dmg=" + damage + " totalDmg=" + stats.get(id).totalDamage() + " inStats=" + stats.containsKey(id));
     }
 
     // --- Damage display armor stand ---
@@ -106,6 +107,7 @@ public final class TrainingDummy {
 
     public static void tickAllDummies() {
         long now = System.currentTimeMillis();
+        Bukkit.getLogger().info("[TrainingDummy] tick running, stats size=" + stats.size() + " dummies size=" + dummies.size());
         for (var it = stats.entrySet().iterator(); it.hasNext();) {
             var entry = it.next();
             UUID id = entry.getKey();
