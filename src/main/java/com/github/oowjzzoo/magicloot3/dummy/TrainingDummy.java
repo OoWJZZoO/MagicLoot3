@@ -29,11 +29,8 @@ public final class TrainingDummy {
     private static final String DEFAULT_NAME = "§e训练假人";
     private static final long IDLE_TIMEOUT_MS = 3000;
 
-    private static final class DummyStats {
-        long firstHitMs, lastHitMs;
-        double totalDamage;
-        final Set<UUID> attackers = new HashSet<>();
-    }
+    private record DummyStats(long firstHitMs, long lastHitMs, double totalDamage) {}
+    private static final Map<UUID, Set<UUID>> dummyAttackers = new ConcurrentHashMap<>();
 
     private TrainingDummy() {}
 
@@ -73,18 +70,13 @@ public final class TrainingDummy {
         long now = System.currentTimeMillis();
         UUID id = piglin.getUniqueId();
         DummyStats s = stats.get(id);
-        if (s == null || now - s.lastHitMs > IDLE_TIMEOUT_MS) {
-            s = new DummyStats();
-            s.firstHitMs = now;
-            s.lastHitMs = now;
-            s.totalDamage = damage;
-            if (attacker != null) s.attackers.add(attacker.getUniqueId());
-            stats.put(id, s);
+        if (s == null || now - s.lastHitMs() > IDLE_TIMEOUT_MS) {
+            stats.put(id, new DummyStats(now, now, damage));
         } else {
-            s.lastHitMs = now;
-            s.totalDamage += damage;
-            if (attacker != null) s.attackers.add(attacker.getUniqueId());
-            stats.put(id, s);
+            stats.put(id, new DummyStats(s.firstHitMs(), now, s.totalDamage() + damage));
+        }
+        if (attacker != null) {
+            dummyAttackers.computeIfAbsent(id, k -> new HashSet<>()).add(attacker.getUniqueId());
         }
     }
 
@@ -122,22 +114,25 @@ public final class TrainingDummy {
             if (piglin == null || !piglin.isValid()) {
                 it.remove();
                 dummies.remove(id);
+                dummyAttackers.remove(id);
                 continue;
             }
-            if (now - s.lastHitMs > IDLE_TIMEOUT_MS) {
+            if (now - s.lastHitMs() > IDLE_TIMEOUT_MS) {
                 piglin.setCustomName(DEFAULT_NAME);
                 piglin.setCustomNameVisible(true);
-                s.attackers.clear();
+                dummyAttackers.remove(id);
                 it.remove();
             } else {
-                double dps = s.totalDamage / ((now - s.firstHitMs + 10) / 1000.0);
+                double dps = s.totalDamage() / ((now - s.firstHitMs() + 10) / 1000.0);
                 piglin.setCustomName(String.format("§7DPS: §f§l%.1f", dps));
                 piglin.setCustomNameVisible(true);
-                // Send action bar to all attackers
                 String actionMsg = String.format("§7DPS: §f§l%.1f", dps);
-                for (UUID aid : s.attackers) {
-                    Player ap = Bukkit.getPlayer(aid);
-                    if (ap != null && ap.isOnline()) ap.sendActionBar(actionMsg);
+                Set<UUID> attackers = dummyAttackers.get(id);
+                if (attackers != null) {
+                    for (UUID aid : attackers) {
+                        Player ap = Bukkit.getPlayer(aid);
+                        if (ap != null && ap.isOnline()) ap.sendActionBar(actionMsg);
+                    }
                 }
             }
         }
@@ -147,6 +142,7 @@ public final class TrainingDummy {
         UUID id = piglin.getUniqueId();
         stats.remove(id);
         dummies.remove(id);
+        dummyAttackers.remove(id);
     }
 
     public static boolean isDummy(Piglin piglin) {
@@ -156,6 +152,7 @@ public final class TrainingDummy {
     public static void cleanup() {
         stats.clear();
         dummies.clear();
+        dummyAttackers.clear();
     }
 
     // --- Equipment helpers ---
