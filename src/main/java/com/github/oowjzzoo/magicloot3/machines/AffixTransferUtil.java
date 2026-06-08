@@ -191,7 +191,7 @@ public final class AffixTransferUtil {
     // --- Private helpers ---
 
     /** Insert new lore lines before the last blank-line+tier-line section, or append if none found. */
-    private static List<String> insertBeforeTierLine(List<String> lore, List<String> newLines) {
+    public static List<String> insertBeforeTierLine(List<String> lore, List<String> newLines) {
         if (newLines.isEmpty()) return lore;
         String tierPrefix = ChatColor.translateAlternateColorCodes('&', Messages.get("tier_lore_prefix"));
         int tierIdx = -1;

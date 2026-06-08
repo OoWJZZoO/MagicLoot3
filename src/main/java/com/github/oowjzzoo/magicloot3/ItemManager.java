@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
@@ -30,6 +31,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 
+import com.github.oowjzzoo.magicloot3.machines.AffixTransferUtil;
 import com.github.oowjzzoo.magicloot3.util.SkullCreator;
 
 public class ItemManager {
@@ -175,6 +177,7 @@ public class ItemManager {
 
         if (effectsMax > 0 && !potionEffectTypes.isEmpty()) {
             int range = Math.max(effectsMax - effectsMin, 1);
+            Map<String, AffixTransferUtil.EffectEntry> effectMap = new LinkedHashMap<>();
             for (int i = 0; i < random.nextInt(range) + effectsMin; i++) {
                 PotionEffectType e = potionEffectTypes.get(random.nextInt(potionEffectTypes.size()));
                 String enKey = e.getKey().getKey();
@@ -182,10 +185,17 @@ public class ItemManager {
                 if (maxLvl <= 0) continue;
                 int level = random.nextInt(maxLvl);
                 String apply = random.nextInt(10) > 5 ? "+" : "-";
-                effectData.add(enKey + ":" + apply + ":" + level);
-                String displayName = ItemManager.effectNames.getOrDefault(enKey, enKey);
+                String key = enKey + ":" + apply;
+                AffixTransferUtil.EffectEntry existing = effectMap.get(key);
+                if (existing == null || level > existing.level()) {
+                    effectMap.put(key, new AffixTransferUtil.EffectEntry(enKey, "+".equals(apply), level));
+                }
+            }
+            for (AffixTransferUtil.EffectEntry entry : effectMap.values()) {
+                effectData.add(entry.effectKey() + ":" + (entry.positive() ? "+" : "-") + ":" + entry.level());
+                String displayName = ItemManager.effectNames.getOrDefault(entry.effectKey(), entry.effectKey());
                 lore.add(ChatColor.translateAlternateColorCodes('&',
-                        colorCodes.get(random.nextInt(colorCodes.size())) + apply + " " + displayName + " " + (level + 1)));
+                        colorCodes.get(random.nextInt(colorCodes.size())) + (entry.positive() ? "+" : "-") + " " + displayName + " " + (entry.level() + 1)));
             }
         }
 
@@ -279,22 +289,30 @@ public class ItemManager {
         }
         String displayName = effectNames.getOrDefault(enKey, enKey);
 
-        // Update PDC effects
+        // Merge with existing effects (same type + polarity → keep highest level)
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
-        String existing = meta.getPersistentDataContainer().get(ItemKeys.EFFECTS,
+        String existingPdc = meta.getPersistentDataContainer().get(ItemKeys.EFFECTS,
                 org.bukkit.persistence.PersistentDataType.STRING);
-        String newData = (existing != null && !existing.isEmpty())
-                ? existing + "," + enKey + ":" + apply + ":" + level
-                : enKey + ":" + apply + ":" + level;
-        meta.getPersistentDataContainer().set(ItemKeys.EFFECTS,
-                org.bukkit.persistence.PersistentDataType.STRING, newData);
+        Map<String, AffixTransferUtil.EffectEntry> merged = new LinkedHashMap<>();
+        for (AffixTransferUtil.EffectEntry e : AffixTransferUtil.parseEffects(existingPdc)) {
+            merged.put(e.effectKey() + ":" + (e.positive() ? "+" : "-"), e);
+        }
+        String key = enKey + ":" + apply;
+        AffixTransferUtil.EffectEntry existingEntry = merged.get(key);
+        if (existingEntry == null || level > existingEntry.level()) {
+            merged.put(key, new AffixTransferUtil.EffectEntry(enKey, "+".equals(apply), level));
+        }
 
-        // Update lore
+        // Write merged PDC
+        List<AffixTransferUtil.EffectEntry> mergedList = new ArrayList<>(merged.values());
+        meta.getPersistentDataContainer().set(ItemKeys.EFFECTS,
+                org.bukkit.persistence.PersistentDataType.STRING, AffixTransferUtil.serializeEffects(mergedList));
+
+        // Rebuild lore: strip old effect lines, insert merged ones before tier line
         List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
-        lore.add(ChatColor.translateAlternateColorCodes('&',
-                (colorCodes.isEmpty() ? "&e" : colorCodes.get(r.nextInt(colorCodes.size())))
-                        + apply + " " + displayName + " " + (level + 1)));
+        lore = AffixTransferUtil.removeEffectLoreLines(lore);
+        lore = AffixTransferUtil.insertBeforeTierLine(lore, AffixTransferUtil.buildEffectLore(mergedList));
         meta.setLore(lore);
         item.setItemMeta(meta);
 
