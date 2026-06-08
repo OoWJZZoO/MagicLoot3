@@ -34,7 +34,6 @@ public final class TrainingDummy {
     private static final Map<UUID, Set<UUID>> dummyAttackers = new ConcurrentHashMap<>();
 
     private static final String DEFAULT_NAME = "§e训练假人";
-    private static final String DEFAULT_NAME_UNDEAD = "§e训练假人 §8§l[§f§l亡灵§8§l]";
     private static final long IDLE_TIMEOUT_MS = 3000;
 
     private record HitRecord(long time, double damage) {}
@@ -58,6 +57,7 @@ public final class TrainingDummy {
         Piglin e = (Piglin) loc.getWorld().spawnEntity(loc, EntityType.PIGLIN);
         e.setAI(false);
         e.setImmuneToZombification(true);
+        e.setAdult();
         configureCommon(e, loc, DEFAULT_NAME, "TRAINING_DUMMY");
         return e;
     }
@@ -66,7 +66,7 @@ public final class TrainingDummy {
         Skeleton e = (Skeleton) loc.getWorld().spawnEntity(loc, EntityType.SKELETON);
         e.setAI(false);
         e.setShouldBurnInDay(false);
-        configureCommon(e, loc, DEFAULT_NAME_UNDEAD, "TRAINING_DUMMY_UNDEAD");
+        configureCommon(e, loc, DEFAULT_NAME, "TRAINING_DUMMY_UNDEAD");
         return e;
     }
 
@@ -136,9 +136,7 @@ public final class TrainingDummy {
                 it.remove(); dummies.remove(id); dummyAttackers.remove(id); continue;
             }
             if (now - s.lastHitMs > IDLE_TIMEOUT_MS) {
-                String defaultName = "TRAINING_DUMMY_UNDEAD".equals(dummyType.get(id))
-                        ? DEFAULT_NAME_UNDEAD : DEFAULT_NAME;
-                dummy.setCustomName(defaultName);
+                dummy.setCustomName(DEFAULT_NAME);
                 dummy.setCustomNameVisible(true);
                 dummyAttackers.remove(id); it.remove();
             } else {

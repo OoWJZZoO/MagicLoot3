@@ -253,8 +253,8 @@ final class SlimefunHook implements SlimefunAddon {
 
         // Training Dummy
         String dummyName2 = zh
-                ? "&e训练假人 &8&l[&f&l普通&8&l]"
-                : "&eTraining Dummy &8&l[&f&lNormal&8&l]";
+                ? "&e训练假人 &8&l[&b&l普通&8&l]"
+                : "&eTraining Dummy &8&l[&b&lNormal&8&l]";
         String[] trainingDummyLore = zh
                 ? new String[]{"", "&7这不对吧", "&7它摸起来是温的，还是软的!", "&7安心啦，这是魔法的效果",
                         "&7尽情使用它吧"}
