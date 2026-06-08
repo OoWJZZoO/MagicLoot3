@@ -170,7 +170,7 @@ public class TrainingDummyListener implements Listener {
             ItemStack oneItem = hand.clone();
             oneItem.setAmount(1);
             ItemStack returned = TrainingDummy.equipToPiglin(piglin, oneItem);
-            if (returned == oneItem) {
+            if (returned != null && returned.isSimilar(oneItem) && returned.getAmount() == oneItem.getAmount()) {
                 // Nothing equipped (all slots full or not appropriate)
                 return;
             }

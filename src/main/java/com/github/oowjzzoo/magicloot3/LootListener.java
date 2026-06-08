@@ -165,20 +165,17 @@ public class LootListener implements Listener {
 
         if (!CAUSES.contains(e.getCause())) return;
 
-        try {
-            if (e instanceof EntityDamageByEntityEvent damageEvent) {
-                if (damageEvent.getDamager() instanceof LivingEntity attacker) {
-                    applyWeaponEffects(attacker, victim);
-                } else if (damageEvent.getDamager() instanceof Projectile projectile
-                        && projectile.getShooter() instanceof LivingEntity shooter) {
-                    applyWeaponEffects(shooter, victim);
-                }
+        if (e instanceof EntityDamageByEntityEvent damageEvent) {
+            if (damageEvent.getDamager() instanceof LivingEntity attacker) {
+                applyWeaponEffects(attacker, victim);
+            } else if (damageEvent.getDamager() instanceof Projectile projectile
+                    && projectile.getShooter() instanceof LivingEntity shooter) {
+                applyWeaponEffects(shooter, victim);
             }
-            // Armor effects on victim
-            for (ItemStack armor : getArmorContents(victim)) {
-                applyArmorEffects(victim, armor, e);
-            }
-        } catch (NumberFormatException ignored) {
+        }
+        // Armor effects on victim
+        for (ItemStack armor : getArmorContents(victim)) {
+            applyArmorEffects(victim, armor, e);
         }
     }
 
