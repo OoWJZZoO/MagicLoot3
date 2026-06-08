@@ -31,8 +31,8 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 public class TrainingDummyListener implements Listener {
 
     private final Plugin plugin;
-    // Pending transformations: player UUID → expected placement time
-    private static final java.util.Map<UUID, Long> pendingPlacements = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.Map<UUID, Long> lastInteract = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long INTERACT_COOLDOWN = 300;
 
     public TrainingDummyListener(Plugin plugin) {
         this.plugin = plugin;
@@ -100,6 +100,11 @@ public class TrainingDummyListener implements Listener {
         e.setCancelled(true);
 
         Player player = e.getPlayer();
+        long now = System.currentTimeMillis();
+        UUID pid = player.getUniqueId();
+        Long last = lastInteract.get(pid);
+        if (last != null && now - last < INTERACT_COOLDOWN) return;
+        lastInteract.put(pid, now);
         ItemStack hand = player.getInventory().getItemInMainHand();
         boolean emptyHand = hand == null || hand.getType().isAir();
         boolean sneaking = player.isSneaking();
