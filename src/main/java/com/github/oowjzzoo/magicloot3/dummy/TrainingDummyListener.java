@@ -126,6 +126,7 @@ public class TrainingDummyListener implements Listener {
             } else {
                 player.getInventory().setItemInMainHand(null);
             }
+            player.updateInventory();
             // Return displaced item to player or drop
             if (returned != null) {
                 var leftover = player.getInventory().addItem(returned);
@@ -142,6 +143,7 @@ public class TrainingDummyListener implements Listener {
                 for (var drop : leftover.values()) {
                     piglin.getWorld().dropItemNaturally(piglin.getLocation(), drop);
                 }
+                player.updateInventory();
                 piglin.getWorld().playSound(piglin.getLocation(), Sound.ITEM_ARMOR_EQUIP_GENERIC, SoundCategory.BLOCKS, 1, 1);
             }
         }
