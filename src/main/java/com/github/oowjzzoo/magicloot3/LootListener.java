@@ -285,7 +285,7 @@ public class LootListener implements Listener {
             String zhName = ChatColor.translateAlternateColorCodes('&', "&e魔法硅胶假人");
             String enName = ChatColor.translateAlternateColorCodes('&', "&eMagic Silicone Dummy");
             if ((name != null && name.equals(zhName)) || (name != null && name.equals(enName))) {
-                e.getDrops().clear();
+                e.getDrops().removeIf(drop -> drop.getType() == Material.ARMOR_STAND);
                 SlimefunItem dummy = SlimefunItem.getById("MAGIC_SILICONE_DUMMY");
                 if (dummy != null)
                     e.getEntity().getWorld().dropItemNaturally(
