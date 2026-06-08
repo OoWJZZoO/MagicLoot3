@@ -1,6 +1,8 @@
 package com.github.oowjzzoo.magicloot3.dummy;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -29,7 +31,15 @@ public final class TrainingDummy {
     private static final String DEFAULT_NAME = "§e训练假人";
     private static final long IDLE_TIMEOUT_MS = 3000;
 
-    private record DummyStats(long firstHitMs, long lastHitMs, double totalDamage) {}
+    private record HitRecord(long time, double damage) {}
+    private static final long SLIDING_WINDOW_MS = 4000;
+
+    private static final class DummyStats {
+        long firstHitMs, lastHitMs;
+        double totalDamage;
+        final List<HitRecord> hits = new ArrayList<>();
+        double recentDps;
+    }
     private static final Map<UUID, Set<UUID>> dummyAttackers = new ConcurrentHashMap<>();
 
     private TrainingDummy() {}
@@ -72,11 +82,14 @@ public final class TrainingDummy {
         // Recover from reload
         if (!dummies.containsKey(id)) dummies.put(id, piglin);
         DummyStats s = stats.get(id);
-        if (s == null || now - s.lastHitMs() > IDLE_TIMEOUT_MS) {
-            stats.put(id, new DummyStats(now, now, damage));
-        } else {
-            stats.put(id, new DummyStats(s.firstHitMs(), now, s.totalDamage() + damage));
+        if (s == null || now - s.lastHitMs > IDLE_TIMEOUT_MS) {
+            s = new DummyStats();
+            s.firstHitMs = now;
         }
+        s.lastHitMs = now;
+        s.totalDamage += damage;
+        s.hits.add(new HitRecord(now, damage));
+        stats.put(id, s);
         if (attacker != null) {
             dummyAttackers.computeIfAbsent(id, k -> new HashSet<>()).add(attacker.getUniqueId());
         }
@@ -127,13 +140,23 @@ public final class TrainingDummy {
                 dummyAttackers.remove(id);
                 continue;
             }
-            if (now - s.lastHitMs() > IDLE_TIMEOUT_MS) {
+            if (now - s.lastHitMs > IDLE_TIMEOUT_MS) {
                 piglin.setCustomName(DEFAULT_NAME);
                 piglin.setCustomNameVisible(true);
                 dummyAttackers.remove(id);
                 it.remove();
             } else {
-                double dps = s.totalDamage() / ((now - s.firstHitMs() + 10) / 1000.0);
+                long cutoff = now - SLIDING_WINDOW_MS;
+                s.hits.removeIf(h -> h.time < cutoff);
+                double dps;
+                long elapsed = now - s.firstHitMs;
+                if (elapsed < SLIDING_WINDOW_MS) {
+                    dps = s.totalDamage / ((elapsed + 10) / 1000.0);
+                } else {
+                    double recentDmg = 0;
+                    for (HitRecord h : s.hits) recentDmg += h.damage;
+                    dps = recentDmg / (SLIDING_WINDOW_MS / 1000.0);
+                }
                 piglin.setCustomName(String.format("§7DPS: §f§l%.1f", dps));
                 piglin.setCustomNameVisible(true);
                 String actionMsg = String.format("§7DPS: §f§l%.1f", dps);
