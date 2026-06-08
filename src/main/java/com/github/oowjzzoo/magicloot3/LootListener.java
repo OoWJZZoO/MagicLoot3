@@ -341,7 +341,6 @@ public class LootListener implements Listener {
         selfDamageTimers.clear();
     }
 
-    @EventHandler(ignoreCancelled = true)
     @EventHandler
     public void onTarget(EntityTargetLivingEntityEvent e) {
         if (e.getTarget() instanceof Villager v
@@ -350,6 +349,7 @@ public class LootListener implements Listener {
         }
     }
 
+    @EventHandler(ignoreCancelled = true)
     public void onHangingBreak(HangingBreakEvent e) {
         if (e.getEntity().getPersistentDataContainer()
                 .has(ItemKeys.LIBRARIAN_FRAME, org.bukkit.persistence.PersistentDataType.BOOLEAN)) {
