@@ -27,6 +27,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
@@ -341,6 +342,14 @@ public class LootListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
+    @EventHandler
+    public void onTarget(EntityTargetLivingEntityEvent e) {
+        if (e.getTarget() instanceof Villager v
+                && v.getPersistentDataContainer().has(ItemKeys.LIBRARIAN)) {
+            e.setCancelled(true);
+        }
+    }
+
     public void onHangingBreak(HangingBreakEvent e) {
         if (e.getEntity().getPersistentDataContainer()
                 .has(ItemKeys.LIBRARIAN_FRAME, org.bukkit.persistence.PersistentDataType.BOOLEAN)) {
