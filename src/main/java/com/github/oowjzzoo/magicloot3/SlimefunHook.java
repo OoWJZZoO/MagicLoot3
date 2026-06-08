@@ -257,9 +257,9 @@ final class SlimefunHook implements SlimefunAddon {
                 : "&eTraining Dummy &8&l[&b&lNormal&8&l]";
         String[] trainingDummyLore = zh
                 ? new String[]{"", "&7这不对吧", "&7它摸起来是温的，还是软的!", "&7安心啦，这是魔法的效果",
-                        "&7尽情使用它吧"}
+                        "&7尽情使用它吧", "", "&7Shift+右键 拆除假人"}
                 : new String[]{"", "&7This can't be right", "&7It's warm and soft!", "&7Don't worry, it's magic",
-                        "&7Use it to your heart's content"};
+                        "&7Use it to your heart's content", "", "&7Shift+Right-click to dismantle"};
         SlimefunItemStack trainingDummyStack = new SlimefunItemStack(
                 "TRAINING_DUMMY", Material.ARMOR_STAND, dummyName2, trainingDummyLore);
         ItemStack[] trainingDummyRecipe = {
@@ -274,9 +274,21 @@ final class SlimefunHook implements SlimefunAddon {
         String undeadName = zh
                 ? "&e训练假人 &8&l[&f&l亡灵&8&l]"
                 : "&eTraining Dummy &8&l[&f&lUndead&8&l]";
+        String[] undeadLore = zh
+                ? new String[]{"", "&7...这太血腥了",
+                        "&7另外，把血肉拆掉变成骨头架子", "&7就真的是亡灵生物了吗",
+                        "&7魔法，神奇吧!", "", "&7Shift+右键 拆除假人"}
+                : new String[]{"", "&7...This is gruesome",
+                        "&7And also, stripping flesh to make a skeleton", "&7Is that really undead?",
+                        "&7Magic, right!", "", "&7Shift+Right-click to dismantle"};
+        ItemStack[] undeadRecipe = {
+                null, null, null,
+                new ItemStack(Material.IRON_SWORD), trainingDummyStack, new ItemStack(Material.IRON_AXE),
+                null, new ItemStack(Material.BONE), null};
         SlimefunItemStack undeadStack = new SlimefunItemStack(
-                "TRAINING_DUMMY_UNDEAD", Material.ARMOR_STAND, undeadName, new String[0]);
-        new SlimefunItem(itemGroup, undeadStack, RecipeType.NULL, new ItemStack[9])
+                "TRAINING_DUMMY_UNDEAD", Material.ARMOR_STAND, undeadName, undeadLore);
+        new SlimefunItem(itemGroup, undeadStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, undeadRecipe)
                 .register(this);
 
         // Dummy item for unidentified equipment recipe matching
