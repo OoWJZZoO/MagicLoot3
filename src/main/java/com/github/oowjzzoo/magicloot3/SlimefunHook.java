@@ -270,6 +270,15 @@ final class SlimefunHook implements SlimefunAddon {
                 RecipeType.ENHANCED_CRAFTING_TABLE, trainingDummyRecipe)
                 .register(this);
 
+        // Training Dummy [Undead] (Skeleton variant)
+        String undeadName = zh
+                ? "&e训练假人 &8&l[&f&l亡灵&8&l]"
+                : "&eTraining Dummy &8&l[&f&lUndead&8&l]";
+        SlimefunItemStack undeadStack = new SlimefunItemStack(
+                "TRAINING_DUMMY_UNDEAD", Material.ARMOR_STAND, undeadName, new String[0]);
+        new SlimefunItem(itemGroup, undeadStack, RecipeType.NULL, new ItemStack[9])
+                .register(this);
+
         // Dummy item for unidentified equipment recipe matching
         String unidName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
         String[] unidLore = zh
