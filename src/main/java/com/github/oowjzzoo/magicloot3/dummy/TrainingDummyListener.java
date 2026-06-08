@@ -81,9 +81,13 @@ public class TrainingDummyListener implements Listener {
 
         double finalDamage = e.getFinalDamage();
         Player attacker = null;
-        if (e instanceof EntityDamageByEntityEvent dmg
-                && dmg.getDamager() instanceof Player p) {
-            attacker = p;
+        if (e instanceof EntityDamageByEntityEvent dmg) {
+            if (dmg.getDamager() instanceof Player p) {
+                attacker = p;
+            } else if (dmg.getDamager() instanceof org.bukkit.entity.Projectile proj
+                    && proj.getShooter() instanceof Player p) {
+                attacker = p;
+            }
         }
         TrainingDummy.recordHit(piglin, finalDamage, attacker);
         TrainingDummy.showDamageNumber(piglin, finalDamage);
