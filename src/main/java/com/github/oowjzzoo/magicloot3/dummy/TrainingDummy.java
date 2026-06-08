@@ -69,6 +69,8 @@ public final class TrainingDummy {
     public static void recordHit(Piglin piglin, double damage, Player attacker) {
         long now = System.currentTimeMillis();
         UUID id = piglin.getUniqueId();
+        // Recover from reload
+        if (!dummies.containsKey(id)) dummies.put(id, piglin);
         DummyStats s = stats.get(id);
         if (s == null || now - s.lastHitMs() > IDLE_TIMEOUT_MS) {
             stats.put(id, new DummyStats(now, now, damage));
@@ -78,7 +80,6 @@ public final class TrainingDummy {
         if (attacker != null) {
             dummyAttackers.computeIfAbsent(id, k -> new HashSet<>()).add(attacker.getUniqueId());
         }
-        Bukkit.getLogger().info("[TrainingDummy] recordHit id=" + id + " dmg=" + damage + " totalDmg=" + stats.get(id).totalDamage() + " inStats=" + stats.containsKey(id));
     }
 
     // --- Damage display armor stand ---
@@ -107,12 +108,19 @@ public final class TrainingDummy {
 
     public static void tickAllDummies() {
         long now = System.currentTimeMillis();
-        Bukkit.getLogger().info("[TrainingDummy] tick running, stats size=" + stats.size() + " dummies size=" + dummies.size());
         for (var it = stats.entrySet().iterator(); it.hasNext();) {
             var entry = it.next();
             UUID id = entry.getKey();
             DummyStats s = entry.getValue();
             Piglin piglin = dummies.get(id);
+            // Recover from reload: piglin exists in world but not in cache
+            if (piglin == null) {
+                org.bukkit.entity.Entity e = Bukkit.getEntity(id);
+                if (e instanceof Piglin p && p.isValid()) {
+                    piglin = p;
+                    dummies.put(id, p);
+                }
+            }
             if (piglin == null || !piglin.isValid()) {
                 it.remove();
                 dummies.remove(id);
