@@ -304,11 +304,6 @@ public final class TrainingDummy {
         };
         for (var item : items) {
             if (item != null && !item.getType().isAir()) {
-                // Repair durability lost during death
-                if (item.getItemMeta() instanceof org.bukkit.inventory.meta.Damageable d) {
-                    d.setDamage(0);
-                    item.setItemMeta((org.bukkit.inventory.meta.ItemMeta) d);
-                }
                 loc.getWorld().dropItemNaturally(loc, item);
             }
         }
