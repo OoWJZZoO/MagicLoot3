@@ -144,17 +144,22 @@ final class SlimefunHook implements SlimefunAddon {
                 "LOST_LIBRARIAN_BRAIN", Material.ROTTEN_FLESH, brainName, brainLore);
         ItemStack eggIcon = new ItemStack(Material.VILLAGER_SPAWN_EGG);
         ItemMeta eggMeta = eggIcon.getItemMeta();
-        eggMeta.setDisplayName("§5§l无魂鉴定师");
-        eggMeta.setLore(List.of("",
+        eggMeta.setDisplayName(zh ? "§5§l无魂鉴定师" : "§5§lLost Librarian");
+        eggMeta.setLore(zh ? List.of("",
                 "§f自然生成在失落图书馆中",
                 "§f免疫物理伤害",
                 "§f使用带有伤害型药水词缀的武器杀死",
-                "§f或者使用喷溅型药水杀死"));
+                "§f或者使用喷溅型药水杀死")
+                : List.of("",
+                "§fNaturally spawns in Lost Libraries",
+                "§fImmune to physical damage",
+                "§fKill with a weapon imbued with",
+                "§fdamaging potion affixes or splash potions"));
         eggIcon.setItemMeta(eggMeta);
 
         ItemStack dropIcon = new ItemStack(Material.IRON_SWORD);
         ItemMeta dropMeta = dropIcon.getItemMeta();
-        dropMeta.setDisplayName("§5§l无魂鉴定师掉落");
+        dropMeta.setDisplayName(zh ? "§5§l无魂鉴定师掉落" : "§5§lLost Librarian Drop");
         dropIcon.setItemMeta(dropMeta);
         RecipeType librarianDrop = new RecipeType(
                 new NamespacedKey(plugin, "librarian_drop"), dropIcon);
@@ -170,7 +175,7 @@ final class SlimefunHook implements SlimefunAddon {
         // RecipeType icon (left side): diamond sword
         ItemStack recipeTypeIcon = new ItemStack(Material.DIAMOND_SWORD);
         ItemMeta rtm = recipeTypeIcon.getItemMeta();
-        rtm.setDisplayName("§4§l自刎归天");
+        rtm.setDisplayName(zh ? "§4§l自刎归天" : "§4§lSudoku");
         recipeTypeIcon.setItemMeta(rtm);
         RecipeType suicideDrop = new RecipeType(
                 new NamespacedKey(plugin, "suicide_drop"), recipeTypeIcon);

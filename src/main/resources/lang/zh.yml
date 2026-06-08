@@ -14,6 +14,13 @@ desk:
   exchange_no_unidentified: "§5§l遗物鉴定桌 §8> §7你手里没有未鉴定的物品。"
   exchange_success: "§5§l遗物鉴定桌 §8> §7已兑换为乱码凭证。"
 
+death:
+  suicide_broadcast: "&e{0} &4&l自刎归天!"
+
+dummy:
+  default_name: "§e训练假人"
+  kill_broadcast: "&e{0} &b&l居然真的把训练假人打死了!"
+
 tiers:
   RANDOM_NAME: "§b随机"
   COMMON: "§a普通"
@@ -26,7 +33,7 @@ tiers:
 santa_hat: "§4圣诞帽"
 santa_lore: "§r你刚刚杀了圣诞老人？"
 
-unanalyzed_name: "&7&k未鉴定的神秘物品"
+unanalyzed_name: "&7&kMEH WANNA BE EXAMINED"
 tier_lore_prefix: "§8品级：§b§d§e"
 
 prefixes:
@@ -182,6 +189,8 @@ gui:
   cost: "§7消耗：§b{0} 级经验"
   border: " "
   exchange_voucher: "&f兑换乱码凭证"
+  exchange_button_title: "§4§l兑换为乱码凭证"
+  exchange_button_warning: "§e警告: 你会失去该装备"
   loot_config:
     title: "战利品配置"
     categories: "分类"
@@ -219,6 +228,13 @@ cmd:
   weight_must_be_int: "&c权重必须是整数。"
   weight_must_be_nonnegative: "&c权重必须 >= 0。"
   set_sf_w_done: "&a已将 {0} 的权重设为 {1}。"
+  add_effect_usage: "§c用法：/magicloot add_effect <id> [+|-] [0~N]"
+  add_effect_polarity: "§c极性必须是 + 或 -"
+  add_effect_level_format: "§c等级必须是数字。"
+  add_effect_unknown_effect: "§c未知效果：{0}"
+  add_effect_no_item: "§c你必须手持一件物品。"
+  add_effect_level_range: "§c等级必须在 0~255 之间。"
+  add_effect_success: "§a已将 {0}{1} {2} 添加到物品上。"
 
 machine:
   fuel_slot_hint:

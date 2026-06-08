@@ -3,6 +3,8 @@ package com.github.oowjzzoo.magicloot3.dummy;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.github.oowjzzoo.magicloot3.Messages;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -125,8 +127,7 @@ public class TrainingDummyListener implements Listener {
 
         Player killer = dummy.getKiller();
         if (killer != null) {
-            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&e" + killer.getName() + " &b&l居然真的把训练假人打死了!"));
+            Bukkit.broadcastMessage(Messages.get("dummy.kill_broadcast", killer.getName()));
         }
     }
 

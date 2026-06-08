@@ -14,6 +14,13 @@ desk:
   exchange_no_unidentified: "§5§lLost Librarian's Desk §8> §7You don't have an unidentified item in your hand."
   exchange_success: "§5§lLost Librarian's Desk §8> §7Exchanged for a Garbled Voucher."
 
+death:
+  suicide_broadcast: "&e{0} &4&lcommitted sudoku!"
+
+dummy:
+  default_name: "§eTraining Dummy"
+  kill_broadcast: "&e{0} &b&lactually killed the Training Dummy!"
+
 tiers:
   RANDOM_NAME: "§bRandom"
   COMMON: "§aCommon"
@@ -194,6 +201,8 @@ gui:
   cost: "§7Cost: §b{0} XP Level"
   border: " "
   exchange_voucher: "&fExchange Voucher"
+  exchange_button_title: "§4§lExchange for Garbled Voucher"
+  exchange_button_warning: "§eWarning: You will lose this equipment"
   loot_config:
     title: "Loot Config"
     categories: "Categories"
@@ -231,6 +240,13 @@ cmd:
   weight_must_be_int: "&cWeight must be an integer."
   weight_must_be_nonnegative: "&cWeight must be >= 0."
   set_sf_w_done: "&aSet {0} weight to {1}."
+  add_effect_usage: "§cUsage: /magicloot add_effect <id> [+|-] [0~N]"
+  add_effect_polarity: "§cPolarity must be + or -"
+  add_effect_level_format: "§cLevel must be a number."
+  add_effect_unknown_effect: "§cUnknown effect: {0}"
+  add_effect_no_item: "§cYou must hold an item."
+  add_effect_level_range: "§cLevel must be 0~255."
+  add_effect_success: "§aAdded {0}{1} {2} to your item."
 
 machine:
   fuel_slot_hint:

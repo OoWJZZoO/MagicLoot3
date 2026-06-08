@@ -145,8 +145,7 @@ public class PastRune extends SimpleSlimefunItem<ItemDropHandler> {
 
         meta.getPersistentDataContainer().set(ItemKeys.TIER,
                 PersistentDataType.STRING, "UNKNOWN");
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
-                "&7&kMEH WANNA BE EXAMINED"));
+        meta.setDisplayName(Messages.get("unanalyzed_name"));
 
         java.util.List<String> lore = meta.hasLore() ? new java.util.ArrayList<>(meta.getLore()) : new java.util.ArrayList<>();
         // Remove any existing tier lore line before appending

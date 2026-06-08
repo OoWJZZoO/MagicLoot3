@@ -111,7 +111,7 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 if (args.length < 2) {
-                    sender.sendMessage("§cUsage: /magicloot add_effect <id> [+|-] [0~N]");
+                    sender.sendMessage(Messages.get("cmd.add_effect_usage"));
                     return true;
                 }
                 String key = args[1].toLowerCase();
@@ -123,7 +123,7 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                     else {
                         try { lvl = Integer.parseInt(p); }
                         catch (NumberFormatException e) {
-                            sender.sendMessage("§cPolarity must be + or -");
+                            sender.sendMessage(Messages.get("cmd.add_effect_polarity"));
                             return true;
                         }
                     }
@@ -131,7 +131,7 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                 if (args.length >= 4) {
                     try { lvl = Integer.parseInt(args[3]); }
                     catch (NumberFormatException e) {
-                        sender.sendMessage("§cLevel must be a number.");
+                        sender.sendMessage(Messages.get("cmd.add_effect_level_format"));
                         return true;
                     }
                 }

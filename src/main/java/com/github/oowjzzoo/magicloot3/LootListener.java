@@ -319,8 +319,7 @@ public class LootListener implements Listener {
                 head.setItemMeta(skull);
             }
             deadPlayer.getWorld().dropItemNaturally(deadPlayer.getLocation(), head);
-            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&e" + deadPlayer.getName() + " &4&l自刎归天!"));
+            Bukkit.broadcastMessage(Messages.get("death.suicide_broadcast", deadPlayer.getName()));
         }
     }
 

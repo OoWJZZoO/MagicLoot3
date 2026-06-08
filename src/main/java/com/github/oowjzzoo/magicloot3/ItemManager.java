@@ -132,7 +132,7 @@ public class ItemManager {
                     if (weightedToolsTotal <= 0) break;
                     item.setType(pickWeighted(weightedTools, weightedToolsCum, weightedToolsTotal));
                     ItemMeta im = item.getItemMeta();
-                    im.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&7&kMEH WANNA BE EXAMINED"));
+                    im.setDisplayName(Messages.get("unanalyzed_name"));
                     List<String> lore = new ArrayList<>();
                     lore.add("");
                     lore.add(Messages.get("tier_lore_prefix") + Messages.get("tiers.UNKNOWN"));
@@ -271,12 +271,12 @@ public class ItemManager {
     public static void addEffectToItem(Player player, String enKey, String polarity, Integer levelArg) {
         PotionEffectType type = potionEffectMap.get(enKey);
         if (type == null) {
-            player.sendMessage("§cUnknown effect: " + enKey);
+            player.sendMessage(Messages.get("cmd.add_effect_unknown_effect", enKey));
             return;
         }
         ItemStack item = player.getInventory().getItemInMainHand();
         if (item.getType().isAir()) {
-            player.sendMessage("§cYou must hold an item.");
+            player.sendMessage(Messages.get("cmd.add_effect_no_item"));
             return;
         }
         ThreadLocalRandom r = ThreadLocalRandom.current();
@@ -284,7 +284,7 @@ public class ItemManager {
                 : (r.nextInt(10) > 5 ? "+" : "-");
         int level = (levelArg != null) ? levelArg : r.nextInt(256);
         if (level < 0 || level > 255) {
-            player.sendMessage("§cLevel must be 0~255.");
+            player.sendMessage(Messages.get("cmd.add_effect_level_range"));
             return;
         }
         String displayName = effectNames.getOrDefault(enKey, enKey);
@@ -316,8 +316,7 @@ public class ItemManager {
         meta.setLore(lore);
         item.setItemMeta(meta);
 
-        player.sendMessage("§aAdded " + apply + displayName + " " + (level + 1)
-                + " to your item.");
+        player.sendMessage(Messages.get("cmd.add_effect_success", apply, displayName, String.valueOf(level + 1)));
     }
 
     /** Generate a random equipment name from the configured pool. */

@@ -14,6 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
+import com.github.oowjzzoo.magicloot3.Messages;
 import com.github.oowjzzoo.magicloot3.util.SkullCreator;
 
 public final class LostLibrarianGUI {
@@ -83,9 +84,9 @@ public final class LostLibrarianGUI {
         // Exchange button (slot 17) — convert unidentified item to voucher
         ItemStack exchangeBtn = new ItemStack(Material.CAULDRON);
         ItemMeta exMeta = exchangeBtn.getItemMeta();
-        exMeta.setDisplayName("§4§l兑换为乱码凭证");
+        exMeta.setDisplayName(Messages.get("gui.exchange_button_title"));
         List<String> exLore = new ArrayList<>();
-        exLore.add("§e警告: 你会失去该装备");
+        exLore.add(Messages.get("gui.exchange_button_warning"));
         exMeta.setLore(exLore);
         exchangeBtn.setItemMeta(exMeta);
         inv.setItem(17, exchangeBtn);
