@@ -119,9 +119,11 @@ public class TrainingDummyListener implements Listener {
             piglin.remove();
             piglin.getWorld().playSound(piglin.getLocation(), Sound.ENTITY_ITEM_BREAK, SoundCategory.BLOCKS, 1, 1);
         } else if (!emptyHand) {
-            // Equip item to piglin
-            ItemStack returned = TrainingDummy.equipToPiglin(piglin, hand.clone());
-            if (returned != null && returned.equals(hand)) {
+            // Equip one item to piglin (not the whole stack)
+            ItemStack oneItem = hand.clone();
+            oneItem.setAmount(1);
+            ItemStack returned = TrainingDummy.equipToPiglin(piglin, oneItem);
+            if (returned == oneItem) {
                 // Nothing equipped (all slots full or not appropriate)
                 return;
             }
