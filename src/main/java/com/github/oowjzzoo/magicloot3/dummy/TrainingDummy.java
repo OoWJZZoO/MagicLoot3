@@ -74,6 +74,7 @@ public final class TrainingDummy {
 
     private static void configureCommon(LivingEntity e, Location loc, String name, String typeId) {
         e.getPersistentDataContainer().set(DUMMY_KEY, PersistentDataType.BOOLEAN, true);
+        e.setRemoveWhenFarAway(false);
         e.setCustomName(name);
         e.setCustomNameVisible(true);
         EntityEquipment equip = e.getEquipment();
