@@ -84,6 +84,7 @@ public final class TrainingDummy {
             s.lastHitMs = now;
             s.totalDamage += damage;
             if (attacker != null) s.attackers.add(attacker.getUniqueId());
+            stats.put(id, s);
         }
     }
 
