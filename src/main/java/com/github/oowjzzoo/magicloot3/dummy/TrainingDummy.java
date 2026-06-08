@@ -93,7 +93,10 @@ public final class TrainingDummy {
     public static void recordHit(LivingEntity dummy, double damage, Player attacker) {
         long now = System.currentTimeMillis();
         UUID id = dummy.getUniqueId();
-        if (!dummies.containsKey(id)) { dummies.put(id, dummy); }
+        if (!dummies.containsKey(id)) {
+            dummies.put(id, dummy);
+            dummyType.put(id, getDummyType(dummy));
+        }
         DummyStats s = stats.get(id);
         if (s == null || now - s.lastHitMs > IDLE_TIMEOUT_MS) {
             s = new DummyStats(); s.firstHitMs = now;
@@ -131,7 +134,10 @@ public final class TrainingDummy {
             LivingEntity dummy = dummies.get(id);
             if (dummy == null) {
                 org.bukkit.entity.Entity e = Bukkit.getEntity(id);
-                if (e instanceof LivingEntity le && le.isValid()) { dummy = le; dummies.put(id, le); }
+                if (e instanceof LivingEntity le && le.isValid()) {
+                    dummy = le; dummies.put(id, le);
+                    dummyType.put(id, le instanceof Piglin ? "TRAINING_DUMMY" : "TRAINING_DUMMY_UNDEAD");
+                }
             }
             if (dummy == null || !dummy.isValid()) {
                 it.remove(); dummies.remove(id); dummyAttackers.remove(id); continue;
@@ -176,7 +182,9 @@ public final class TrainingDummy {
     }
 
     public static String getDummyType(LivingEntity entity) {
-        return dummyType.getOrDefault(entity.getUniqueId(), "TRAINING_DUMMY");
+        String type = dummyType.get(entity.getUniqueId());
+        if (type != null) return type;
+        return entity instanceof Piglin ? "TRAINING_DUMMY" : "TRAINING_DUMMY_UNDEAD";
     }
 
     public static void cleanup() { stats.clear(); dummies.clear(); dummyAttackers.clear(); dummyType.clear(); }
