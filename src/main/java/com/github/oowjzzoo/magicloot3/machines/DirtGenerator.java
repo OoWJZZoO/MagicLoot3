@@ -27,20 +27,19 @@ import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 
 public class DirtGenerator extends AContainer {
 
-    // Border slots (decorative background)
     private static final int[] BORDER = {
         0,1,2,3,  5,6,7,8,
         9, 17, 18, 26, 27, 35, 36, 44,
         45,46,47,48,49,50,51,52,53
     };
-    // Output slots (all non-border slots)
     private static final int[] OUTPUT = {
         10,11,12,13,14,15,16,
-        19,20,21,22,23,24,25,
+        19,20,21,     23,24,25,
         28,29,30,31,32,33,34,
         37,38,39,40,41,42,43
     };
     private static final int HINT_SLOT = 4;
+    private static final int PROGRESS_SLOT = 22;
     private static final int DIRT_PER_CYCLE = 8;
     private static final int PROCESS_TICKS = 4;
     private static final ItemStack DUMMY_INPUT = new ItemStack(Material.DIRT, 1);
@@ -72,9 +71,8 @@ public class DirtGenerator extends AContainer {
     protected void constructMenu(BlockMenuPreset preset) {
         var empty = ChestMenuUtils.getEmptyClickHandler();
         for (int i : BORDER) preset.addItem(i, ChestMenuUtils.getBackground(), empty);
-        for (int i : OUTPUT) preset.addItem(i, ChestMenuUtils.getOutputSlotTexture(), empty);
 
-        // Hint at slot 4
+        // Hint bell
         List<String> lines = Messages.getList("machine.dirt_generator.hint");
         String hintName = lines.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', lines.get(0));
         ItemStack hint = new ItemStack(Material.BELL);
@@ -90,10 +88,13 @@ public class DirtGenerator extends AContainer {
         hint.setItemMeta(hm);
         preset.addItem(HINT_SLOT, hint, empty);
 
-        // Progress bar placeholder at the center output slot (22)
+        // Progress bar placeholder
         ItemStack pg = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
         ItemMeta pgm = pg.getItemMeta(); pgm.setDisplayName(" "); pg.setItemMeta(pgm);
-        preset.addItem(22, pg, empty);
+        preset.addItem(PROGRESS_SLOT, pg, empty);
+
+        // Output slots: leave empty (no texture items)
+        for (int i : OUTPUT) preset.addItem(i, null, empty);
     }
 
     @Override
@@ -104,10 +105,12 @@ public class DirtGenerator extends AContainer {
         if (op != null) {
             if (takeCharge(b.getLocation())) {
                 if (!op.isFinished()) {
-                    getMachineProcessor().updateProgressBar(inv, 22, op);
+                    getMachineProcessor().updateProgressBar(inv, PROGRESS_SLOT, op);
                     op.addProgress(1);
                 } else {
-                    inv.replaceExistingItem(22, new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
+                    ItemStack pane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+                    ItemMeta pm = pane.getItemMeta(); pm.setDisplayName(" "); pane.setItemMeta(pm);
+                    inv.replaceExistingItem(PROGRESS_SLOT, pane);
                     ItemStack[] results = op.getResults();
                     if (fitsAll(inv, results)) {
                         for (ItemStack output : results) {
@@ -130,7 +133,7 @@ public class DirtGenerator extends AContainer {
             if (next != null) {
                 op = new CraftingOperation(next);
                 getMachineProcessor().startOperation(b, op);
-                getMachineProcessor().updateProgressBar(inv, 22, op);
+                getMachineProcessor().updateProgressBar(inv, PROGRESS_SLOT, op);
             }
         }
     }
