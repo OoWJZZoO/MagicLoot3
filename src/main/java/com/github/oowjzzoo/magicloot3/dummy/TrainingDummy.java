@@ -112,7 +112,7 @@ public final class TrainingDummy {
                 piglin.setCustomName(DEFAULT_NAME);
                 it.remove();
             } else {
-                double dps = s.totalDamage / ((s.lastHitMs - s.firstHitMs + 10) / 1000.0);
+                double dps = s.totalDamage / ((now - s.firstHitMs + 10) / 1000.0);
                 piglin.setCustomName(String.format("§fDPS: %.1f", dps));
             }
         }
