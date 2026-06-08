@@ -98,23 +98,21 @@ public final class TrainingDummy {
     // --- Damage display armor stand ---
 
     public static void showDamageNumber(Piglin piglin, double damage) {
-        try {
-            Location loc = piglin.getLocation().clone();
-            ThreadLocalRandom r = ThreadLocalRandom.current();
-            double ox = r.nextDouble(-0.5, 0.5);
-            double oy = r.nextDouble(1.0, 2.0);
-            double oz = r.nextDouble(-0.5, 0.5);
-            loc.add(ox, oy, oz);
-            ArmorStand display = piglin.getWorld().spawn(loc, ArmorStand.class, as -> {
-                as.setVisible(false);
-                as.setMarker(true);
-                as.setCustomNameVisible(true);
-                as.setCustomName("§c§l" + String.format("%.1f", damage));
-            });
-            Bukkit.getScheduler().runTaskLater(
-                    Bukkit.getPluginManager().getPlugin("MagicLoot3"),
-                    display::remove, 30L);
-        } catch (Exception ignored) {}
+        Location loc = piglin.getLocation().clone();
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        double ox = r.nextDouble(-0.5, 0.5);
+        double oy = r.nextDouble(1.0, 2.0);
+        double oz = r.nextDouble(-0.5, 0.5);
+        loc.add(ox, oy, oz);
+        ArmorStand display = piglin.getWorld().spawn(loc, ArmorStand.class, as -> {
+            as.setVisible(false);
+            as.setMarker(true);
+            as.setCustomNameVisible(true);
+            as.setCustomName("§c§l" + String.format("%.1f", damage));
+        });
+        Bukkit.getScheduler().runTaskLater(
+                Bukkit.getPluginManager().getPlugin("MagicLoot3"),
+                display::remove, 30L);
     }
 
     // --- DPS name ticker ---

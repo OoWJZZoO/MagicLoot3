@@ -164,7 +164,6 @@ public class LootListener implements Listener {
         }
 
         if (!CAUSES.contains(e.getCause())) return;
-        if (!e.getEntity().getWorld().getPVP()) return;
 
         try {
             if (e instanceof EntityDamageByEntityEvent damageEvent) {

@@ -9,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.event.world.WorldInitEvent;
+import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -32,6 +33,10 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
         String lang = getConfig().getString("language", "zh");
         Messages.load(this, lang);
         LivingDropper.init(getDataFolder());
+        // Validate already-loaded worlds (late-load worlds handled by onWorldLoad)
+        for (org.bukkit.World world : Bukkit.getWorlds()) {
+            LivingDropper.validateWorld(world);
+        }
 
         MagicLootConfig.setupConfigs(this);
         StructurePlacer.extractDefaults(this);
@@ -69,7 +74,6 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        instance = null;
         ItemManager.enchantments = null;
         ItemManager.potionEffectTypes = null;
         ItemManager.prefixes = null;
@@ -88,11 +92,17 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
         LivingDropper.cleanup();
         LootListener.clearSelfDamageTimers();
         TrainingDummy.cleanup();
+        instance = null;
     }
 
     @EventHandler
     public void onWorldInit(WorldInitEvent event) {
         StructurePlacer.deployToWorld(this, event.getWorld());
+    }
+
+    @EventHandler
+    public void onWorldLoad(WorldLoadEvent event) {
+        LivingDropper.validateWorld(event.getWorld());
     }
 
     @EventHandler

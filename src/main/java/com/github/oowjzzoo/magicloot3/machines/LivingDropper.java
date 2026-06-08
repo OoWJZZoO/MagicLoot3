@@ -135,7 +135,7 @@ public class LivingDropper extends SlimefunItem {
     public static void init(File dataFolder) {
         dataFile = new File(dataFolder, "data" + File.separator + "living_droppers.yml");
         loadDeferred();
-        scheduleValidate();
+        // Migration now handled by WorldLoadEvent in MagicLoot3
     }
 
     public static void cleanup() {
@@ -163,22 +163,27 @@ public class LivingDropper extends SlimefunItem {
         }
     }
 
-    private static void migrateDeferred() {
-        for (var it = deferredEntries.entrySet().iterator(); it.hasNext(); ) {
+    /**
+     * Called when a world finishes loading. Migrates deferred entries for that
+     * world and purges ghosts (blocks replaced or PDC lost).
+     */
+    public static void validateWorld(World world) {
+        String worldName = world.getName();
+        int migrated = 0;
+
+        // Step 1: migrate deferred entries for this world
+        var it = deferredEntries.entrySet().iterator();
+        while (it.hasNext()) {
             var entry = it.next();
             String key = entry.getKey();
             String[] parts = key.split("!");
-            if (parts.length != 4) { it.remove(); continue; }
-            World world = Bukkit.getWorld(parts[0]);
-            if (world == null) continue; // still not loaded, try again next validate cycle
+            if (parts.length != 4 || !parts[0].equals(worldName)) continue;
+            it.remove();
             try {
                 int x = Integer.parseInt(parts[1]);
                 int y = Integer.parseInt(parts[2]);
                 int z = Integer.parseInt(parts[3]);
-                if (world.getBlockAt(x, y, z).getType() != Material.DROPPER) {
-                    it.remove(); // block was replaced, drop entry
-                    continue;
-                }
+                if (world.getBlockAt(x, y, z).getType() != Material.DROPPER) continue;
                 locationKeys.add(key);
                 String uuidStr = entry.getValue();
                 if (uuidStr != null && !uuidStr.isEmpty()) {
@@ -186,10 +191,29 @@ public class LivingDropper extends SlimefunItem {
                         bindings.put(key, UUID.fromString(uuidStr));
                     } catch (IllegalArgumentException ignored) {}
                 }
-                it.remove(); // migrated
-            } catch (NumberFormatException ignored) {
-                it.remove();
+                migrated++;
+            } catch (NumberFormatException ignored) {}
+        }
+
+        // Step 2: purge ghosts for this world
+        int purged = 0;
+        for (String key : locationKeys.toArray(new String[0])) {
+            if (!key.startsWith(worldName + "!")) continue;
+            Location loc = keyToLoc(key);
+            if (loc == null) { locationKeys.remove(key); bindings.remove(key); purged++; continue; }
+            Block block = loc.getBlock();
+            if (block.getType() != Material.DROPPER
+                    || !BlockStorage.check(block, "LIVING_DROPPER")) {
+                locationKeys.remove(key);
+                bindings.remove(key);
+                purged++;
             }
+        }
+
+        if (migrated > 0 || purged > 0) {
+            saveData();
+            MagicLoot3.getInstance().getLogger().info(
+                    "LivingDropper: world " + worldName + " — migrated " + migrated + ", purged " + purged);
         }
     }
 
@@ -213,37 +237,5 @@ public class LivingDropper extends SlimefunItem {
             MagicLoot3.getInstance().getLogger().log(Level.WARNING,
                     "Failed to save living dropper data", e);
         }
-    }
-
-    private static void scheduleValidate() {
-        // Delay 3s: let all worlds/chunks load, then migrate deferred + purge ghosts
-        Bukkit.getScheduler().runTaskLater(MagicLoot3.getInstance(), () -> {
-            // Step 1: migrate deferred entries (worlds now loaded)
-            migrateDeferred();
-            // Step 2: purge ghosts (blocks replaced or PDC lost)
-            int removed = 0;
-            for (String key : locationKeys.toArray(new String[0])) {
-                Location loc = keyToLoc(key);
-                if (loc == null || loc.getWorld() == null) {
-                    locationKeys.remove(key);
-                    bindings.remove(key);
-                    removed++;
-                    continue;
-                }
-                Block block = loc.getBlock();
-                if (block.getType() != Material.DROPPER
-                        || !BlockStorage.check(block, "LIVING_DROPPER")) {
-                    locationKeys.remove(key);
-                    bindings.remove(key);
-                    removed++;
-                }
-            }
-            if (removed > 0 || !deferredEntries.isEmpty()) {
-                saveData();
-                MagicLoot3.getInstance().getLogger().info(
-                        "LivingDropper: purged " + removed + " stale, "
-                                + deferredEntries.size() + " deferred remaining");
-            }
-        }, 60L); // 3 seconds
     }
 }

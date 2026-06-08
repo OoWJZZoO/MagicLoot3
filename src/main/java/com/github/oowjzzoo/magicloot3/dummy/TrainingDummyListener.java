@@ -37,6 +37,15 @@ public class TrainingDummyListener implements Listener {
     private static final java.util.Map<UUID, Long> lastInteract = new java.util.concurrent.ConcurrentHashMap<>();
     private static final long INTERACT_COOLDOWN = 300;
 
+    public static int cleanupStaleInteract() {
+        int removed = 0;
+        var it = lastInteract.entrySet().iterator();
+        while (it.hasNext()) {
+            if (Bukkit.getPlayer(it.next().getKey()) == null) { it.remove(); removed++; }
+        }
+        return removed;
+    }
+
     public TrainingDummyListener(Plugin plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
