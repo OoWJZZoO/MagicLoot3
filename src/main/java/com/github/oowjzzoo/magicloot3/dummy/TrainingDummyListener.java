@@ -85,8 +85,8 @@ public class TrainingDummyListener implements Listener {
                 && dmg.getDamager() instanceof Player p) {
             attacker = p;
         }
-        TrainingDummy.showDamageNumber(piglin, finalDamage);
         TrainingDummy.recordHit(piglin, finalDamage, attacker);
+        TrainingDummy.showDamageNumber(piglin, finalDamage);
 
         // Heal to full next tick
         Bukkit.getScheduler().runTask(plugin, () -> {
