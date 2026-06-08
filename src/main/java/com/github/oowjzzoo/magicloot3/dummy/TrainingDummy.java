@@ -46,7 +46,6 @@ public final class TrainingDummy {
     public static Piglin spawn(Location loc) {
         Piglin piglin = (Piglin) loc.getWorld().spawnEntity(loc, EntityType.PIGLIN);
         piglin.setAI(false);
-        piglin.setCollidable(false);
         piglin.setImmuneToZombification(true);
         piglin.getPersistentDataContainer().set(DUMMY_KEY, PersistentDataType.BOOLEAN, true);
         piglin.setCustomName(DEFAULT_NAME);
