@@ -251,6 +251,15 @@ final class SlimefunHook implements SlimefunAddon {
         new LivingDropper(itemGroup, dropperStack, RecipeType.ENHANCED_CRAFTING_TABLE, dropperRecipe)
                 .register(this);
 
+        // Training Dummy
+        String dummyName2 = zh
+                ? "&e训练假人 &8&l[&f&l普通&8&l]"
+                : "&eTraining Dummy &8&l[&f&lNormal&8&l]";
+        SlimefunItemStack trainingDummyStack = new SlimefunItemStack(
+                "TRAINING_DUMMY", Material.ARMOR_STAND, dummyName2, new String[0]);
+        new SlimefunItem(itemGroup, trainingDummyStack, RecipeType.NULL, new ItemStack[9])
+                .register(this);
+
         // Dummy item for unidentified equipment recipe matching
         String unidName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
         String[] unidLore = zh

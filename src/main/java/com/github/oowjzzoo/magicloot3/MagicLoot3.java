@@ -1,5 +1,7 @@
 package com.github.oowjzzoo.magicloot3;
 
+import com.github.oowjzzoo.magicloot3.dummy.TrainingDummy;
+import com.github.oowjzzoo.magicloot3.dummy.TrainingDummyListener;
 import com.github.oowjzzoo.magicloot3.machines.EquipmentSplitter;
 import com.github.oowjzzoo.magicloot3.machines.LivingDropper;
 import org.bukkit.Bukkit;
@@ -20,6 +22,7 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
         instance = this;
 
         ItemKeys.init(this);
+        TrainingDummy.init(this);
 
         MagicLootCommand cmd = new MagicLootCommand(this);
         getCommand("magicloot").setExecutor(cmd);
@@ -52,6 +55,11 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
 
             new LootListener(this);
             new LivingDropperListener(this);
+            new TrainingDummyListener(this);
+
+            // DPS name updater for training dummies (every 0.5s)
+            getServer().getScheduler().runTaskTimer(this,
+                    () -> TrainingDummy.tickAllDummies(), 10L, 10L);
             getLogger().info(Messages.get("log.loaded"));
         }, 10L);
     }
@@ -76,6 +84,7 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
         RuinBuilder.buildingNames.clear();
         LivingDropper.cleanup();
         LootListener.cleanupSelfDamageTimers();
+        TrainingDummy.cleanup();
     }
 
     @EventHandler
