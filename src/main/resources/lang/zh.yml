@@ -271,6 +271,10 @@ machine:
     affix_pos_desc: "&a+ 给予自己的药水效果"
     affix_neg_desc: "&c- 给予目标的药水效果"
     no_affixes: "&7（无）"
+  dirt_generator:
+    hint:
+      - "&f只需消耗能量"
+      - "&f就能凭空生成泥土"
   auto_appraiser:
     bell_title: "&f请在输入槽放入附魔之瓶/学识之瓶"
     bell_lore: "&f每一个瓶子相当于一级经验"

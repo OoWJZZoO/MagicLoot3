@@ -283,6 +283,10 @@ machine:
     affix_pos_desc: "&a+ Positive effect on self"
     affix_neg_desc: "&c- Negative effect on target"
     no_affixes: "&7(none)"
+  dirt_generator:
+    hint:
+      - "&fGenerate dirt out of thin air"
+      - "&fusing nothing but energy"
   auto_appraiser:
     bell_title: "&fPlace Bottle o' Enchanting / Flask of Knowledge in input slot"
     bell_lore: "&fEach bottle equals one XP level"

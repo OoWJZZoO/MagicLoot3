@@ -34,6 +34,7 @@ import com.github.oowjzzoo.magicloot3.machines.EquipmentSplitter;
 import com.github.oowjzzoo.magicloot3.machines.LivingDropper;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixDisenchanter;
 import com.github.oowjzzoo.magicloot3.machines.AutoAppraiser;
+import com.github.oowjzzoo.magicloot3.machines.DirtGenerator;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixEnchanter;
 
 /**
@@ -494,6 +495,24 @@ final class SlimefunHook implements SlimefunAddon {
                 timeStack, SlimefunItems.NETHER_STAR_REACTOR, timeStack};
         new PotionAffixEnchanter(itemGroup, enchStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, enchRecipe)
+                .register(this);
+
+        // Dirt Generator
+        String[] dirtGenLore = {"",
+                zh ? "&7只需消耗能量" : "&7Generate dirt out of thin air",
+                zh ? "&7就能凭空生成泥土" : "&7using nothing but energy",
+                "",
+                LoreBuilder.machine(MachineTier.GOOD, MachineType.MACHINE),
+                LoreBuilder.speed(4), LoreBuilder.powerPerSecond(32)};
+        String dirtGenName = zh ? "§6§l造泥机" : "§6§lDirt Generator";
+        SlimefunItemStack dirtGenStack = new SlimefunItemStack(
+                "DIRT_GENERATOR", Material.MUD_BRICKS, dirtGenName, dirtGenLore);
+        ItemStack[] dirtGenRecipe = {
+                new ItemStack(Material.DIRT), new ItemStack(Material.WATER_BUCKET), new ItemStack(Material.DIRT),
+                new ItemStack(Material.GRAVEL), new ItemStack(Material.IRON_BLOCK), new ItemStack(Material.GRAVEL),
+                new ItemStack(Material.DIRT), new ItemStack(Material.LAVA_BUCKET), new ItemStack(Material.DIRT)};
+        new DirtGenerator(itemGroup, dirtGenStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, dirtGenRecipe)
                 .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));

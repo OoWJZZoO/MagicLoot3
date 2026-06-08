@@ -1,0 +1,178 @@
+package com.github.oowjzzoo.magicloot3.machines;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import com.github.oowjzzoo.magicloot3.MagicLoot3;
+import com.github.oowjzzoo.magicloot3.Messages;
+
+import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
+import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
+import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
+import io.github.thebusybiscuit.slimefun4.implementation.handlers.SimpleBlockBreakHandler;
+import io.github.thebusybiscuit.slimefun4.implementation.operations.CraftingOperation;
+import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
+import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.AContainer;
+import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
+import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
+
+public class DirtGenerator extends AContainer {
+
+    private static final int[] BORDER =     {0,1,2,3,4,5,6,7,8, 31, 36,37,38,39,40,41,42,43,44};
+    private static final int[] BORDER_IN =  {9,10,11,12, 18,21, 27,28,29,30};
+    private static final int[] BORDER_OUT = {14,15,16,17, 23,26, 32,33,34,35};
+    private static final int PROGRESS_SLOT = 22;
+    private static final int DIRT_PER_CYCLE = 8;
+
+    public DirtGenerator(ItemGroup itemGroup, SlimefunItemStack item,
+                          RecipeType recipeType, ItemStack[] recipe) {
+        super(itemGroup, item, recipeType, recipe);
+        setCapacity(256);
+        setEnergyConsumption(16);
+        setProcessingSpeed(4);
+    }
+
+    @Override
+    public String getMachineIdentifier() {
+        return "DIRT_GENERATOR";
+    }
+
+    @Override
+    public ItemStack getProgressBar() {
+        return new ItemStack(Material.DIRT);
+    }
+
+    @Override
+    protected void registerDefaultRecipes() {}
+
+    @Override
+    protected void constructMenu(BlockMenuPreset preset) {
+        var empty = ChestMenuUtils.getEmptyClickHandler();
+        for (int i : BORDER) preset.addItem(i, ChestMenuUtils.getBackground(), empty);
+        for (int i : BORDER_IN) preset.addItem(i, ChestMenuUtils.getInputSlotTexture(), empty);
+        for (int i : BORDER_OUT) preset.addItem(i, ChestMenuUtils.getOutputSlotTexture(), empty);
+
+        ItemStack bg = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemMeta bgm = bg.getItemMeta(); bgm.setDisplayName(" "); bg.setItemMeta(bgm);
+        preset.addItem(PROGRESS_SLOT, bg, empty);
+
+        List<String> lines = Messages.getList("machine.dirt_generator.hint");
+        String hintName = lines.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', lines.get(0));
+        ItemStack hint = new ItemStack(Material.BELL);
+        ItemMeta hm = hint.getItemMeta();
+        hm.setDisplayName(hintName);
+        if (lines.size() > 1) {
+            List<String> lore = new ArrayList<>();
+            for (int i = 1; i < lines.size(); i++) {
+                lore.add(ChatColor.translateAlternateColorCodes('&', lines.get(i)));
+            }
+            hm.setLore(lore);
+        }
+        hint.setItemMeta(hm);
+        preset.addItem(4, hint, empty);
+    }
+
+    @Override
+    protected void tick(Block b) {
+        BlockMenu inv = BlockStorage.getInventory(b);
+        CraftingOperation op = getMachineProcessor().getOperation(b);
+
+        if (op != null) {
+            if (takeCharge(b.getLocation())) {
+                if (!op.isFinished()) {
+                    getMachineProcessor().updateProgressBar(inv, PROGRESS_SLOT, op);
+                    op.addProgress(1);
+                } else {
+                    ItemStack pane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+                    ItemMeta pm = pane.getItemMeta(); pm.setDisplayName(" "); pane.setItemMeta(pm);
+                    inv.replaceExistingItem(PROGRESS_SLOT, pane);
+
+                    ItemStack[] results = op.getResults();
+                    if (fitsAll(inv, results)) {
+                        for (ItemStack output : results) {
+                            inv.pushItem(output.clone(), getOutputSlots());
+                        }
+                    } else {
+                        org.bukkit.Bukkit.getScheduler().runTask(MagicLoot3.getInstance(),
+                                () -> {
+                                    for (ItemStack result : results) {
+                                        b.getWorld().dropItemNaturally(
+                                                b.getLocation().add(0.5, 1, 0.5), result.clone());
+                                    }
+                                });
+                    }
+                    getMachineProcessor().endOperation(b);
+                }
+            }
+        } else {
+            MachineRecipe next = findNextRecipe(inv);
+            if (next != null) {
+                op = new CraftingOperation(next);
+                getMachineProcessor().startOperation(b, op);
+                getMachineProcessor().updateProgressBar(inv, PROGRESS_SLOT, op);
+            }
+        }
+    }
+
+    @Override
+    protected MachineRecipe findNextRecipe(BlockMenu menu) {
+        ItemStack dirt = new ItemStack(Material.DIRT, DIRT_PER_CYCLE);
+        MachineRecipe recipe = new MachineRecipe(4, new ItemStack[0], new ItemStack[]{dirt});
+        if (!fitsAll(menu, recipe.getOutput())) return null;
+        return recipe;
+    }
+
+    @Override
+    protected BlockBreakHandler onBlockBreak() {
+        return new SimpleBlockBreakHandler() {
+            @Override
+            public void onBlockBreak(Block b) {
+                BlockMenu inv = BlockStorage.getInventory(b);
+                if (inv != null) {
+                    inv.dropItems(b.getLocation(), getOutputSlots());
+                }
+                getMachineProcessor().endOperation(b);
+            }
+        };
+    }
+
+    private boolean fitsAll(BlockMenu menu, ItemStack[] items) {
+        org.bukkit.inventory.Inventory copy = org.bukkit.Bukkit.createInventory(
+                null, menu.toInventory().getSize());
+        copy.setContents(menu.toInventory().getContents());
+        for (ItemStack item : items) {
+            if (item == null) continue;
+            int remaining = item.getAmount();
+            for (int s : getOutputSlots()) {
+                ItemStack existing = copy.getItem(s);
+                if (existing == null || existing.getType().isAir()) {
+                    copy.setItem(s, item.clone());
+                    remaining = 0;
+                    break;
+                } else if (existing.isSimilar(item)
+                        && existing.getAmount() < existing.getMaxStackSize()) {
+                    int space = existing.getMaxStackSize() - existing.getAmount();
+                    if (space >= remaining) {
+                        existing.setAmount(existing.getAmount() + remaining);
+                        remaining = 0;
+                        break;
+                    } else {
+                        existing.setAmount(existing.getMaxStackSize());
+                        remaining -= space;
+                    }
+                }
+            }
+            if (remaining > 0) return false;
+        }
+        return true;
+    }
+}
