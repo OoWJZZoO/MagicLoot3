@@ -11,6 +11,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -91,6 +92,11 @@ public class LootListener implements Listener {
 
         int x = e.getChunk().getX() * 16 + random.nextInt(16);
         int z = e.getChunk().getZ() * 16 + random.nextInt(16);
+
+        // Protect the main End island from structure generation
+        if (e.getWorld().getEnvironment() == World.Environment.THE_END
+                && Math.abs(x) <= 400 && Math.abs(z) <= 400) return;
+
         int minY = plugin.getConfig().getInt("ruin.min-y", 30);
 
         for (int y = e.getWorld().getMaxHeight(); y > minY; y--) {

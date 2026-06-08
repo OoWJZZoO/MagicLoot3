@@ -118,7 +118,8 @@ public final class TrainingDummy {
     public static void showDamageNumber(LivingEntity dummy, double damage) {
         Location loc = dummy.getLocation().clone();
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        loc.add(r.nextDouble(-0.5, 0.5), r.nextDouble(1.0, 2.0), r.nextDouble(-0.5, 0.5));
+        double xz = r.nextDouble(0.3, 0.6) * (r.nextBoolean() ? -1 : 1);
+        loc.add(xz, r.nextDouble(1.5, 2.25), r.nextDouble(0.3, 0.6) * (r.nextBoolean() ? -1 : 1));
         ArmorStand display = dummy.getWorld().spawn(loc, ArmorStand.class, as -> {
             as.setVisible(false); as.setMarker(true); as.setCustomNameVisible(true);
             as.setCustomName("§c§l" + String.format("%.1f", damage));
