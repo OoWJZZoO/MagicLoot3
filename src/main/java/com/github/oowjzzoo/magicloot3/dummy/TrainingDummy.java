@@ -1,6 +1,8 @@
 package com.github.oowjzzoo.magicloot3.dummy;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -12,6 +14,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Piglin;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
@@ -26,7 +29,11 @@ public final class TrainingDummy {
     private static final String DEFAULT_NAME = "§e训练假人";
     private static final long IDLE_TIMEOUT_MS = 3000;
 
-    private record DummyStats(long firstHitMs, long lastHitMs, double totalDamage) {}
+    private static final class DummyStats {
+        long firstHitMs, lastHitMs;
+        double totalDamage;
+        final Set<UUID> attackers = new HashSet<>();
+    }
 
     private TrainingDummy() {}
 
@@ -63,14 +70,21 @@ public final class TrainingDummy {
 
     // --- DPS tracking ---
 
-    public static void recordHit(Piglin piglin, double damage) {
+    public static void recordHit(Piglin piglin, double damage, Player attacker) {
         long now = System.currentTimeMillis();
         UUID id = piglin.getUniqueId();
         DummyStats s = stats.get(id);
         if (s == null || now - s.lastHitMs > IDLE_TIMEOUT_MS) {
-            stats.put(id, new DummyStats(now, now, damage));
+            s = new DummyStats();
+            s.firstHitMs = now;
+            s.lastHitMs = now;
+            s.totalDamage = damage;
+            if (attacker != null) s.attackers.add(attacker.getUniqueId());
+            stats.put(id, s);
         } else {
-            stats.put(id, new DummyStats(s.firstHitMs, now, s.totalDamage + damage));
+            s.lastHitMs = now;
+            s.totalDamage += damage;
+            if (attacker != null) s.attackers.add(attacker.getUniqueId());
         }
     }
 
@@ -110,10 +124,17 @@ public final class TrainingDummy {
             }
             if (now - s.lastHitMs > IDLE_TIMEOUT_MS) {
                 piglin.setCustomName(DEFAULT_NAME);
+                s.attackers.clear();
                 it.remove();
             } else {
                 double dps = s.totalDamage / ((now - s.firstHitMs + 10) / 1000.0);
                 piglin.setCustomName(String.format("§7DPS: §f§l%.1f", dps));
+                // Send action bar to all attackers
+                String actionMsg = String.format("§7DPS: §f§l%.1f", dps);
+                for (UUID aid : s.attackers) {
+                    Player ap = Bukkit.getPlayer(aid);
+                    if (ap != null && ap.isOnline()) ap.sendActionBar(actionMsg);
+                }
             }
         }
     }

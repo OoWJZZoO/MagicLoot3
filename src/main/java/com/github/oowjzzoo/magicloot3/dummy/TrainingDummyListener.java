@@ -18,7 +18,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -78,13 +80,34 @@ public class TrainingDummyListener implements Listener {
         if (!TrainingDummy.isDummy(piglin)) return;
 
         double finalDamage = e.getFinalDamage();
+        Player attacker = null;
+        if (e instanceof EntityDamageByEntityEvent dmg
+                && dmg.getDamager() instanceof Player p) {
+            attacker = p;
+        }
         TrainingDummy.showDamageNumber(piglin, finalDamage);
-        TrainingDummy.recordHit(piglin, finalDamage);
+        TrainingDummy.recordHit(piglin, finalDamage, attacker);
 
         // Heal to full next tick
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (piglin.isValid()) piglin.setHealth(1024);
         });
+    }
+
+    // --- Death: prevent XP drop, drop equipment + SF item ---
+
+    @EventHandler
+    public void onPiglinDeath(EntityDeathEvent e) {
+        if (!(e.getEntity() instanceof Piglin piglin)) return;
+        if (!TrainingDummy.isDummy(piglin)) return;
+
+        e.setDroppedExp(0);
+        e.getDrops().clear();
+        TrainingDummy.dropEquipment(piglin);
+        SlimefunItem sfItem = SlimefunItem.getById("TRAINING_DUMMY");
+        if (sfItem != null)
+            piglin.getWorld().dropItemNaturally(piglin.getLocation(), sfItem.getItem().clone());
+        TrainingDummy.removeDummy(piglin);
     }
 
     // --- Player interaction ---
