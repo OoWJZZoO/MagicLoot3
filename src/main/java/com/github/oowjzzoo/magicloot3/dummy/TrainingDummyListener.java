@@ -49,7 +49,9 @@ public class TrainingDummyListener implements Listener {
         SlimefunItem sfItem = SlimefunItem.getByItem(item);
         if (sfItem == null || !"TRAINING_DUMMY".equals(sfItem.getId())) return;
 
-        // Cancel to prevent vanilla armor stand placement
+        // Only allow placement against a block
+        if (e.getClickedBlock() == null) return;
+
         e.setCancelled(true);
         Player player = e.getPlayer();
 
@@ -60,13 +62,7 @@ public class TrainingDummyListener implements Listener {
             player.getInventory().setItem(e.getHand(), null);
         }
 
-        // Determine placement location
-        Location loc;
-        if (e.getClickedBlock() != null) {
-            loc = e.getClickedBlock().getRelative(e.getBlockFace()).getLocation().add(0.5, 0, 0.5);
-        } else {
-            loc = player.getLocation();
-        }
+        Location loc = e.getClickedBlock().getRelative(e.getBlockFace()).getLocation().add(0.5, 0, 0.5);
 
         // Spawn piglin directly instead of armor stand
         Piglin piglin = TrainingDummy.spawn(loc);
