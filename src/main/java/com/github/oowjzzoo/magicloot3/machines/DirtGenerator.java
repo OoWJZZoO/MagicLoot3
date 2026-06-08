@@ -27,44 +27,54 @@ import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 
 public class DirtGenerator extends AContainer {
 
-    private static final int[] BORDER =     {0,1,2,3,4,5,6,7,8, 31, 36,37,38,39,40,41,42,43,44};
-    private static final int[] BORDER_IN =  {9,10,11,12, 18,21, 27,28,29,30};
-    private static final int[] BORDER_OUT = {14,15,16,17, 23,26, 32,33,34,35};
-    private static final int PROGRESS_SLOT = 22;
+    // Border slots (decorative background)
+    private static final int[] BORDER = {
+        0,1,2,3,  5,6,7,8,
+        9, 17, 18, 26, 27, 35, 36, 44,
+        45,46,47,48,49,50,51,52,53
+    };
+    // Output slots (all non-border slots)
+    private static final int[] OUTPUT = {
+        10,11,12,13,14,15,16,
+        19,20,21,22,23,24,25,
+        28,29,30,31,32,33,34,
+        37,38,39,40,41,42,43
+    };
+    private static final int HINT_SLOT = 4;
     private static final int DIRT_PER_CYCLE = 8;
+    private static final int PROCESS_TICKS = 4;
+    private static final ItemStack DUMMY_INPUT = new ItemStack(Material.DIRT, 1);
 
     public DirtGenerator(ItemGroup itemGroup, SlimefunItemStack item,
                           RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
         setCapacity(256);
         setEnergyConsumption(16);
-        setProcessingSpeed(4);
+        setProcessingSpeed(PROCESS_TICKS);
     }
 
     @Override
-    public String getMachineIdentifier() {
-        return "DIRT_GENERATOR";
-    }
+    public String getMachineIdentifier() { return "DIRT_GENERATOR"; }
 
     @Override
-    public ItemStack getProgressBar() {
-        return new ItemStack(Material.DIRT);
-    }
+    public ItemStack getProgressBar() { return new ItemStack(Material.DIRT); }
 
     @Override
     protected void registerDefaultRecipes() {}
 
     @Override
+    public int[] getOutputSlots() { return OUTPUT; }
+
+    @Override
+    public int[] getInputSlots() { return new int[0]; }
+
+    @Override
     protected void constructMenu(BlockMenuPreset preset) {
         var empty = ChestMenuUtils.getEmptyClickHandler();
         for (int i : BORDER) preset.addItem(i, ChestMenuUtils.getBackground(), empty);
-        for (int i : BORDER_IN) preset.addItem(i, ChestMenuUtils.getInputSlotTexture(), empty);
-        for (int i : BORDER_OUT) preset.addItem(i, ChestMenuUtils.getOutputSlotTexture(), empty);
+        for (int i : OUTPUT) preset.addItem(i, ChestMenuUtils.getOutputSlotTexture(), empty);
 
-        ItemStack bg = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
-        ItemMeta bgm = bg.getItemMeta(); bgm.setDisplayName(" "); bg.setItemMeta(bgm);
-        preset.addItem(PROGRESS_SLOT, bg, empty);
-
+        // Hint at slot 4
         List<String> lines = Messages.getList("machine.dirt_generator.hint");
         String hintName = lines.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', lines.get(0));
         ItemStack hint = new ItemStack(Material.BELL);
@@ -78,7 +88,12 @@ public class DirtGenerator extends AContainer {
             hm.setLore(lore);
         }
         hint.setItemMeta(hm);
-        preset.addItem(4, hint, empty);
+        preset.addItem(HINT_SLOT, hint, empty);
+
+        // Progress bar placeholder at the center output slot (22)
+        ItemStack pg = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemMeta pgm = pg.getItemMeta(); pgm.setDisplayName(" "); pg.setItemMeta(pgm);
+        preset.addItem(22, pg, empty);
     }
 
     @Override
@@ -89,17 +104,14 @@ public class DirtGenerator extends AContainer {
         if (op != null) {
             if (takeCharge(b.getLocation())) {
                 if (!op.isFinished()) {
-                    getMachineProcessor().updateProgressBar(inv, PROGRESS_SLOT, op);
+                    getMachineProcessor().updateProgressBar(inv, 22, op);
                     op.addProgress(1);
                 } else {
-                    ItemStack pane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
-                    ItemMeta pm = pane.getItemMeta(); pm.setDisplayName(" "); pane.setItemMeta(pm);
-                    inv.replaceExistingItem(PROGRESS_SLOT, pane);
-
+                    inv.replaceExistingItem(22, new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
                     ItemStack[] results = op.getResults();
                     if (fitsAll(inv, results)) {
                         for (ItemStack output : results) {
-                            inv.pushItem(output.clone(), getOutputSlots());
+                            inv.pushItem(output.clone(), OUTPUT);
                         }
                     } else {
                         org.bukkit.Bukkit.getScheduler().runTask(MagicLoot3.getInstance(),
@@ -118,7 +130,7 @@ public class DirtGenerator extends AContainer {
             if (next != null) {
                 op = new CraftingOperation(next);
                 getMachineProcessor().startOperation(b, op);
-                getMachineProcessor().updateProgressBar(inv, PROGRESS_SLOT, op);
+                getMachineProcessor().updateProgressBar(inv, 22, op);
             }
         }
     }
@@ -126,7 +138,8 @@ public class DirtGenerator extends AContainer {
     @Override
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
         ItemStack dirt = new ItemStack(Material.DIRT, DIRT_PER_CYCLE);
-        MachineRecipe recipe = new MachineRecipe(4, new ItemStack[0], new ItemStack[]{dirt});
+        MachineRecipe recipe = new MachineRecipe(PROCESS_TICKS,
+                new ItemStack[]{DUMMY_INPUT}, new ItemStack[]{dirt});
         if (!fitsAll(menu, recipe.getOutput())) return null;
         return recipe;
     }
@@ -137,9 +150,7 @@ public class DirtGenerator extends AContainer {
             @Override
             public void onBlockBreak(Block b) {
                 BlockMenu inv = BlockStorage.getInventory(b);
-                if (inv != null) {
-                    inv.dropItems(b.getLocation(), getOutputSlots());
-                }
+                if (inv != null) inv.dropItems(b.getLocation(), OUTPUT);
                 getMachineProcessor().endOperation(b);
             }
         };
@@ -152,7 +163,7 @@ public class DirtGenerator extends AContainer {
         for (ItemStack item : items) {
             if (item == null) continue;
             int remaining = item.getAmount();
-            for (int s : getOutputSlots()) {
+            for (int s : OUTPUT) {
                 ItemStack existing = copy.getItem(s);
                 if (existing == null || existing.getType().isAir()) {
                     copy.setItem(s, item.clone());

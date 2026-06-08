@@ -502,7 +502,7 @@ final class SlimefunHook implements SlimefunAddon {
                 zh ? "&7只需消耗能量" : "&7Generate dirt out of thin air",
                 zh ? "&7就能凭空生成泥土" : "&7using nothing but energy",
                 "",
-                LoreBuilder.machine(MachineTier.GOOD, MachineType.MACHINE),
+                LoreBuilder.machine(MachineTier.ADVANCED, MachineType.MACHINE),
                 LoreBuilder.speed(4), LoreBuilder.powerPerSecond(32)};
         String dirtGenName = zh ? "§6§l造泥机" : "§6§lDirt Generator";
         SlimefunItemStack dirtGenStack = new SlimefunItemStack(
