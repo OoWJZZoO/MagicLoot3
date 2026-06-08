@@ -105,7 +105,7 @@ public class TrainingDummyListener implements Listener {
         boolean emptyHand = hand == null || hand.getType().isAir();
         boolean sneaking = player.isSneaking();
 
-        if (sneaking && emptyHand) {
+        if (sneaking) {
             // Remove dummy: drop equipment + SF item
             TrainingDummy.dropEquipment(piglin);
             SlimefunItem sfItem = SlimefunItem.getById("TRAINING_DUMMY");

@@ -23,7 +23,7 @@ public final class TrainingDummy {
     // Piglin reference cache for ticker lookup
     private static final Map<UUID, Piglin> dummies = new ConcurrentHashMap<>();
 
-    private static final String DEFAULT_NAME = "§e训练假人 §8§l[§f§l普通§8§l]";
+    private static final String DEFAULT_NAME = "§e训练假人";
     private static final long IDLE_TIMEOUT_MS = 3000;
 
     private record DummyStats(long firstHitMs, long lastHitMs, double totalDamage) {}
@@ -113,7 +113,7 @@ public final class TrainingDummy {
                 it.remove();
             } else {
                 double dps = s.totalDamage / ((now - s.firstHitMs + 10) / 1000.0);
-                piglin.setCustomName(String.format("§fDPS: %.1f", dps));
+                piglin.setCustomName(String.format("§7DPS: §f§l%.1f", dps));
             }
         }
     }
