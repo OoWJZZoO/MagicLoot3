@@ -20,6 +20,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -95,6 +96,15 @@ public class TrainingDummyListener implements Listener {
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (piglin.isValid()) piglin.setHealth(1024);
         });
+    }
+
+    // --- Prevent mob targeting ---
+
+    @EventHandler
+    public void onTarget(EntityTargetLivingEntityEvent e) {
+        if (e.getTarget() instanceof Piglin piglin && TrainingDummy.isDummy(piglin)) {
+            e.setCancelled(true);
+        }
     }
 
     // --- Death: prevent XP drop, drop equipment + SF item ---
