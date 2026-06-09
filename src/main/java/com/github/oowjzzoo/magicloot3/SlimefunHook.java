@@ -474,7 +474,7 @@ final class SlimefunHook implements SlimefunAddon {
                 "ACTIVATED_SCULK_SHRIEKER", Material.SCULK_SHRIEKER, shriekerName, shriekerLore);
         ItemStack[] shriekerRecipe = {
                 new ItemStack(Material.ECHO_SHARD), new ItemStack(Material.MUSIC_DISC_5), new ItemStack(Material.ECHO_SHARD),
-                new ItemStack(Material.SOUL_TORCH), new ItemStack(Material.SCULK_CATALYST), new ItemStack(Material.SOUL_TORCH),
+                new ItemStack(Material.SOUL_TORCH), new ItemStack(Material.SCULK_SHRIEKER), new ItemStack(Material.SOUL_TORCH),
                 new ItemStack(Material.ECHO_SHARD), new ItemStack(Material.MUSIC_DISC_5), new ItemStack(Material.ECHO_SHARD)};
         new ActivatedSculkShrieker(itemGroup, shriekerStack,
                 RecipeType.ANCIENT_ALTAR, shriekerRecipe)
