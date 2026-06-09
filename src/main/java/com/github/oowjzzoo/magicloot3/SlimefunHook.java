@@ -96,6 +96,17 @@ final class SlimefunHook implements SlimefunAddon {
                 bookshelfRecipe, new SlimefunItemStack(bookshelfStack, 2));
         bookshelf.register(this);
 
+        // Dummy item for unidentified equipment recipe matching
+        String unidName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
+        String[] unidLore = zh
+                ? new String[]{"", "§8品级：§b§d§e§c未鉴定", "", "§7即任意 §c未鉴定 §7的装备"}
+                : new String[]{"", "§8Tier: §b§d§e§cUnknown", "", "§7Represents any §cunidentified §7equipment"};
+        SlimefunItemStack unidStack = new SlimefunItemStack(
+                "MAGICLOOT_UNIDENTIFIED", Material.STONE_HOE, unidName, unidLore);
+        SlimefunItem unidDummy = new SlimefunItem(itemGroup, unidStack, RecipeType.NULL, new ItemStack[9]);
+        unidDummy.setHidden(true);
+        unidDummy.register(this);
+
         // Lost Librarian's Desk
         String deskName = zh ? "§d遗物鉴定桌" : "§dLost Librarian's Desk";
         String[] deskLore = zh
@@ -323,17 +334,6 @@ final class SlimefunHook implements SlimefunAddon {
         new SlimefunItem(itemGroup, undeadStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, undeadRecipe)
                 .register(this);
-
-        // Dummy item for unidentified equipment recipe matching
-        String unidName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
-        String[] unidLore = zh
-                ? new String[]{"", "§8品级：§b§d§e§c未鉴定", "", "§7即任意 §c未鉴定 §7的装备"}
-                : new String[]{"", "§8Tier: §b§d§e§cUnknown", "", "§7Represents any §cunidentified §7equipment"};
-        SlimefunItemStack unidStack = new SlimefunItemStack(
-                "MAGICLOOT_UNIDENTIFIED", Material.STONE_HOE, unidName, unidLore);
-        SlimefunItem unidDummy = new SlimefunItem(itemGroup, unidStack, RecipeType.NULL, new ItemStack[9]);
-        unidDummy.setHidden(true);
-        unidDummy.register(this);
 
         // Garbled Voucher — traded for unidentified items at the desk/librarian
         String voucherName = zh ? "&7&kMEH WANNA BE EXAMINED" : "&7&kMEH WANNA BE EXAMINED";
