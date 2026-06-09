@@ -127,6 +127,9 @@ public class AutoAppraiser extends AContainer implements RecipeDisplayItem {
 
     @Override
     public void postRegister() {
+        // Override AContainer's default preset so we can install per-instance
+        // click handlers in newInstance() for the rank-selection button.
+        // BlockMenuPreset auto-registers and replaces any existing preset for this ID.
         new BlockMenuPreset(getId(), getItemName()) {
             @Override
             public void init() {

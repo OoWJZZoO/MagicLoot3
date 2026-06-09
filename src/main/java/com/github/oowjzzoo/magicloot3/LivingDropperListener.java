@@ -1,11 +1,12 @@
 package com.github.oowjzzoo.magicloot3;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -18,13 +19,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDispenseEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -32,21 +30,18 @@ import org.bukkit.util.Vector;
 
 import com.github.oowjzzoo.magicloot3.machines.LivingDropper;
 
+import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
+import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu;
+
 public class LivingDropperListener implements Listener {
 
-    /** Unique holder to identify our binding GUI inventory. */
-    private static final InventoryHolder BINDING_HOLDER = new InventoryHolder() {
-        @Override public Inventory getInventory() { return null; }
-    };
-
-    private static final String GUI_TITLE = ChatColor.translateAlternateColorCodes('&',
-            Messages.get("living_dropper.gui_title"));
+    private static final Map<UUID, Location> playerToOpenLoc = new HashMap<>();
 
     public LivingDropperListener(Plugin plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    // --- InventoryOpen → shift detection for binding GUI ---
+    // --- InventoryOpen -> shift detection for binding GUI ---
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInventoryOpen(InventoryOpenEvent e) {
@@ -60,7 +55,7 @@ public class LivingDropperListener implements Listener {
         openBindingGUI((Player) e.getPlayer(), loc);
     }
 
-    // --- BlockDispenseEvent → Simulate player drop ---
+    // --- BlockDispenseEvent -> Simulate player drop ---
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockDispense(BlockDispenseEvent e) {
@@ -72,25 +67,18 @@ public class LivingDropperListener implements Listener {
         Player bound;
         if (boundUUID == null || (bound = Bukkit.getPlayer(boundUUID)) == null
                 || !bound.isOnline()) {
-            // Unbound or offline: cancel so vanilla dropper doesn't dispense either
             e.setCancelled(true);
             return;
         }
 
-        // Vanilla removed the item from inventory BEFORE firing this event.
-        // On cancel, Paper puts it back AFTER the event. So we must cancel
-        // (to suppress vanilla's own Item entity), then schedule inventory
-        // removal + our own Item entity for after the put-back.
         e.setCancelled(true);
 
         ItemStack toDrop = e.getItem().clone();
         BlockFace face = getFacing(block);
 
-        // Exact vanilla position: blockCenter + facing * 0.7 (DispenserBlock.getDispensePosition)
         double x = block.getX() + 0.5 + face.getModX() * 0.7;
         double y = block.getY() + 0.5 + face.getModY() * 0.7;
         double z = block.getZ() + 0.5 + face.getModZ() * 0.7;
-        // Y adjustment from DefaultDispenseItemBehavior.spawnItem
         if (face == BlockFace.UP || face == BlockFace.DOWN) {
             y -= 0.125;
         } else {
@@ -102,10 +90,9 @@ public class LivingDropperListener implements Listener {
             if (!removeFromDropper(block, toDrop)) return;
 
             Item itemEntity = block.getWorld().dropItem(dropLoc, toDrop);
-            // Exact vanilla velocity from DefaultDispenseItemBehavior.spawnItem
             ThreadLocalRandom r = ThreadLocalRandom.current();
             double pow = r.nextDouble() * 0.1 + 0.2;
-            double spread = 0.0172275 * 6; // accuracy = 6
+            double spread = 0.0172275 * 6;
             itemEntity.setVelocity(new Vector(
                     face.getModX() * pow + (r.nextDouble() - r.nextDouble()) * spread,
                     0.2 + (r.nextDouble() - r.nextDouble()) * spread,
@@ -121,54 +108,33 @@ public class LivingDropperListener implements Listener {
         });
     }
 
-    // --- Clean up on close ---
-
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent e) {
-        if (e.getInventory().getHolder() == BINDING_HOLDER) {
-            playerToOpenLoc.remove(e.getPlayer().getUniqueId());
-        }
-    }
-
-    // --- Binding GUI clicks ---
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onInventoryClick(InventoryClickEvent e) {
-        if (e.getInventory().getHolder() != BINDING_HOLDER) return;
-        e.setCancelled(true);
-        if (e.getClickedInventory() != e.getView().getTopInventory()) return;
-        if (e.getCurrentItem() == null || e.getCurrentItem().getType() == Material.AIR) return;
-        if (e.getSlot() != 4) return;
-
-        Player player = (Player) e.getWhoClicked();
-        Location loc = playerToOpenLoc.get(player.getUniqueId());
-        if (loc == null) return;
-
-        UUID current = LivingDropper.getBoundUUID(loc);
-        if (current != null && current.equals(player.getUniqueId())) {
-            LivingDropper.unbind(loc);
-        } else {
-            LivingDropper.bind(loc, player.getUniqueId());
-        }
-        e.getInventory().setItem(4, buildBindButton(loc));
-    }
-
-    // --- GUI builder ---
-
-    private static final java.util.Map<UUID, Location> playerToOpenLoc = new java.util.HashMap<>();
+    // --- Binding GUI (ChestMenu) ---
 
     static void openBindingGUI(Player player, Location loc) {
-        Inventory inv = Bukkit.createInventory(BINDING_HOLDER, 9, GUI_TITLE);
         playerToOpenLoc.put(player.getUniqueId(), loc);
 
-        ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-        ItemMeta bm = border.getItemMeta(); bm.setDisplayName(" "); border.setItemMeta(bm);
-        for (int i = 0; i < 9; i++) {
-            if (i != 4) inv.setItem(i, border);
-        }
+        ChestMenu menu = new ChestMenu(Messages.get("living_dropper.gui_title"));
+        menu.setEmptySlotsClickable(false);
 
-        inv.setItem(4, buildBindButton(loc));
-        player.openInventory(inv);
+        // Fill all slots with background
+        for (int i = 0; i < 54; i++)
+            menu.addItem(i, ChestMenuUtils.getBackground(), ChestMenuUtils.getEmptyClickHandler());
+
+        // Slot 4: bind/unbind button
+        menu.addItem(4, buildBindButton(loc));
+        menu.addMenuClickHandler(4, (pl, s, it, a) -> {
+            UUID current = LivingDropper.getBoundUUID(loc);
+            if (current != null && current.equals(pl.getUniqueId())) {
+                LivingDropper.unbind(loc);
+            } else {
+                LivingDropper.bind(loc, pl.getUniqueId());
+            }
+            menu.replaceExistingItem(4, buildBindButton(loc));
+            return false;
+        });
+
+        menu.addMenuCloseHandler(pl -> playerToOpenLoc.remove(pl.getUniqueId()));
+        menu.open(player);
     }
 
     static ItemStack buildBindButton(Location loc) {

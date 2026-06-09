@@ -30,7 +30,6 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.world.ChunkPopulateEvent;
@@ -62,20 +61,6 @@ public class LootListener implements Listener {
     public LootListener(Plugin plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-    }
-
-    // --- Lost Librarian GUI click handler ---
-
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent e) {
-        if (!(e.getWhoClicked() instanceof Player player)) return;
-        String title = e.getView().getTitle();
-        if (!title.equals(LostLibrarianGUI.getTitle())
-                && !title.equals(Messages.get("desk.title"))) return;
-        e.setCancelled(true);
-        if (e.getCurrentItem() == null) return;
-        if (e.getClickedInventory() != e.getView().getTopInventory()) return;
-        LostLibrarianGUI.handleClick(player, e.getRawSlot());
     }
 
     // --- Ruin generation ---

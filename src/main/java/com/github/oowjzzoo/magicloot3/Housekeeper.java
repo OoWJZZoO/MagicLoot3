@@ -7,6 +7,7 @@ import org.bukkit.plugin.Plugin;
 
 import com.github.oowjzzoo.magicloot3.dummy.TrainingDummy;
 import com.github.oowjzzoo.magicloot3.dummy.TrainingDummyListener;
+import com.github.oowjzzoo.magicloot3.machines.EquipmentSplitter;
 import com.github.oowjzzoo.magicloot3.machines.LivingDropper;
 
 /**
@@ -24,6 +25,7 @@ public final class Housekeeper {
             removed += TrainingDummy.cleanupStaleDummies();
             removed += LostLibrarianGUI.cleanupStaleDeskState();
             removed += LivingDropperListener.cleanupStalePlayerLocs();
+            removed += EquipmentSplitter.cleanupStaleStates();
             removed += TrainingDummyListener.cleanupStaleInteract();
             LivingDropper.saveData();
             if (removed > 0) {

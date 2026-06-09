@@ -60,6 +60,19 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
     enum Route { A, B, C }
     enum Priority { DESTROY_FIRST, OUTPUT_FIRST }
 
+    /** Per-machine persisted + transient state, replacing 8 separate maps. */
+    static class SplitterState {
+        final Map<String, Route> routes = new HashMap<>();
+        Priority priority = Priority.DESTROY_FIRST;
+        boolean enchProtectOn;
+        int enchProtectThresh = 5;
+        Map<String, Route> dirtyRoutes;   // non-null = sub-menu is open
+        Priority dirtyPriority;
+        long lastShiftTime;
+    }
+
+    private static final Map<Location, SplitterState> states = new ConcurrentHashMap<>();
+
     // 1-based slots from user spec, converted to 0-based
     // Input: 38 → 37, Output: 44 → 43
     private static final int INPUT_SLOT = 37;
@@ -81,15 +94,27 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
     // Orange frame: 34,35,36,43,45,52,53,54 → 0-based
     private static final int[] ORANGE_SLOTS = {33, 34, 35, 42, 44, 51, 52, 53};
 
-    // Persisted config
-    static final Map<Location, Map<String, Route>> savedConfigs = new ConcurrentHashMap<>();
-    static final Map<Location, Priority> savedPriorities = new ConcurrentHashMap<>();
-    static final Map<Location, Boolean> enchProtectEnabled = new ConcurrentHashMap<>();
-    static final Map<Location, Integer> enchProtectThreshold = new ConcurrentHashMap<>();
-    // Dirty working copies (keyed by Location, used while sub-menu is open)
-    static final Map<Location, Map<String, Route>> dirtyConfigs = new ConcurrentHashMap<>();
-    static final Map<Location, Priority> dirtyPriorities = new ConcurrentHashMap<>();
-    static final Map<Location, Long> lastShiftTime = new ConcurrentHashMap<>();
+    private static SplitterState state(Location loc) {
+        return states.computeIfAbsent(loc, k -> new SplitterState());
+    }
+
+    /** Drop dirty editing state for offline players. Called by Housekeeper. */
+    public static int cleanupStaleStates() {
+        int removed = 0;
+        var it = states.entrySet().iterator();
+        while (it.hasNext()) {
+            var e = it.next();
+            if (e.getValue().dirtyRoutes != null) {
+                // Only keep dirty state if the world chunk is still loaded
+                if (!e.getKey().isWorldLoaded() || !e.getKey().isChunkLoaded()) {
+                    e.getValue().dirtyRoutes = null;
+                    e.getValue().dirtyPriority = null;
+                    removed++;
+                }
+            }
+        }
+        return removed;
+    }
 
     private static Plugin plugin;
 
@@ -163,13 +188,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
                     dropIfPresent(b, inv, OUTPUT_SLOT);
                 }
                 Location loc = b.getLocation();
-                savedConfigs.remove(loc);
-                savedPriorities.remove(loc);
-                enchProtectEnabled.remove(loc);
-                enchProtectThreshold.remove(loc);
-                lastShiftTime.remove(loc);
-                dirtyConfigs.remove(loc);
-                dirtyPriorities.remove(loc);
+                states.remove(loc);
                 // Clean up stale entry in YAML file
                 deleteLocation(loc);
             }
@@ -196,8 +215,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         if (item == null || item.getType().isAir()) return;
 
         Location loc = b.getLocation();
-        Map<String, Route> routes = savedConfigs.getOrDefault(loc, Map.of());
-        Priority prio = savedPriorities.getOrDefault(loc, Priority.DESTROY_FIRST);
+        Map<String, Route> routes = state(loc).routes;
+        Priority prio = state(loc).priority;
 
         // Determine route
         Route finalRoute = Route.A;
@@ -220,8 +239,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         }
 
         // Enchant protection overrides affix routing
-        if (enchProtectEnabled.getOrDefault(loc, false)) {
-            int threshold = enchProtectThreshold.getOrDefault(loc, 5);
+        if (state(loc).enchProtectOn) {
+            int threshold = state(loc).enchProtectThresh;
             for (Enchantment ench : item.getEnchantments().keySet()) {
                 if (item.getEnchantmentLevel(ench) >= threshold) {
                     finalRoute = Route.B;
@@ -249,8 +268,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
 
     private void refreshMainPage(BlockMenu menu, Block b) {
         Location loc = b.getLocation();
-        Map<String, Route> routes = savedConfigs.getOrDefault(loc, Map.of());
-        Priority prio = savedPriorities.getOrDefault(loc, Priority.DESTROY_FIRST);
+        Map<String, Route> routes = state(loc).routes;
+        Priority prio = state(loc).priority;
 
         // Menu button
         menu.replaceExistingItem(MENU_SLOT, buildMenuItem());
@@ -264,7 +283,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         menu.addMenuClickHandler(PRIO_SLOT, (pl, s, it, a) -> {
             Priority newPrio = prio == Priority.DESTROY_FIRST
                     ? Priority.OUTPUT_FIRST : Priority.DESTROY_FIRST;
-            savedPriorities.put(loc, newPrio);
+            state(loc).priority = newPrio;
             saveLocation(loc);
             refreshMainPage(menu, b);
             pl.playSound(pl.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
@@ -280,22 +299,22 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         menu.addMenuClickHandler(TRASH_SLOT, ChestMenuUtils.getEmptyClickHandler());
 
         // Enchant protect
-        boolean epOn = enchProtectEnabled.getOrDefault(loc, false);
-        int epThreshold = enchProtectThreshold.getOrDefault(loc, 5);
+        boolean epOn = state(loc).enchProtectOn;
+        int epThreshold = state(loc).enchProtectThresh;
         menu.replaceExistingItem(ENCH_PROTECT_SLOT, buildEnchantProtectItem(epOn, epThreshold));
         menu.addMenuClickHandler(ENCH_PROTECT_SLOT, (pl, s, it, a) -> {
             if (a.isShiftClicked()) {
                 long now = System.currentTimeMillis();
-                if (now - lastShiftTime.getOrDefault(loc, 0L) < 300) return false;
-                lastShiftTime.put(loc, now);
-                enchProtectEnabled.put(loc, !epOn);
+                if (now - state(loc).lastShiftTime < 300) return false;
+                state(loc).lastShiftTime = now;
+                state(loc).enchProtectOn = !epOn;
             } else if (epOn) {
                 int newThreshold = a.isRightClicked()
                         ? Math.max(1, epThreshold - 1)
                         : Math.min(255, epThreshold + 1);
-                enchProtectThreshold.put(loc, newThreshold);
+                state(loc).enchProtectThresh = newThreshold;
             } else {
-                enchProtectEnabled.put(loc, true);
+                state(loc).enchProtectOn = true;
             }
             saveLocation(loc);
             refreshMainPage(menu, b);
@@ -312,9 +331,10 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
 
     private void openSubMenu(Player player, Block b) {
         Location loc = b.getLocation();
-        Map<String, Route> saved = savedConfigs.getOrDefault(loc, new HashMap<>());
-        dirtyConfigs.put(loc, new HashMap<>(saved));
-        dirtyPriorities.put(loc, savedPriorities.getOrDefault(loc, Priority.DESTROY_FIRST));
+        SplitterState st = state(loc);
+        Map<String, Route> saved = new HashMap<>(st.routes);
+        st.dirtyRoutes = new HashMap<>(saved);
+        st.dirtyPriority = st.priority;
 
         player.closeInventory();
         Bukkit.getScheduler().runTask(plugin, () -> showSubPage(player, b, 1));
@@ -322,7 +342,7 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
 
     private void showSubPage(Player player, Block b, int page) {
         Location loc = b.getLocation();
-        Map<String, Route> working = dirtyConfigs.get(loc);
+        Map<String, Route> working = state(loc).dirtyRoutes;
         if (working == null) {
             BlockMenu inv = BlockStorage.getInventory(b);
             if (inv != null) inv.open(player);
@@ -409,8 +429,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
 
         menu.addMenuCloseHandler(pl -> {
             if (!sw.remove(pl.getUniqueId())) {
-                dirtyConfigs.remove(loc);
-                dirtyPriorities.remove(loc);
+                state(loc).dirtyRoutes = null;
+                state(loc).dirtyPriority = null;
             }
         });
 
@@ -614,9 +634,10 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
         String key = locKey(loc);
         String prioStr = cfg.getString(key + ".priority", "DESTROY_FIRST");
-        savedPriorities.put(loc, Priority.valueOf(prioStr));
-        enchProtectEnabled.put(loc, cfg.getBoolean(key + ".ench_protect_enabled", false));
-        enchProtectThreshold.put(loc, cfg.getInt(key + ".ench_protect_threshold", 5));
+        SplitterState st = state(loc);
+        st.priority = Priority.valueOf(prioStr);
+        st.enchProtectOn = cfg.getBoolean(key + ".ench_protect_enabled", false);
+        st.enchProtectThresh = cfg.getInt(key + ".ench_protect_threshold", 5);
 
         Map<String, Route> routes = new HashMap<>();
         var sec = cfg.getConfigurationSection(key + ".routes");
@@ -624,20 +645,25 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
             for (String rk : sec.getKeys(false))
                 routes.put(rk, Route.valueOf(sec.getString(rk, "A")));
         }
-        savedConfigs.put(loc, routes);
+        st.routes.clear();
+        st.routes.putAll(routes);
     }
 
     static void saveLocation(Location loc) {
-        Map<String, Route> working = dirtyConfigs.remove(loc);
-        Priority prio = dirtyPriorities.remove(loc);
+        SplitterState st = state(loc);
+        Map<String, Route> working = st.dirtyRoutes;
+        Priority prio = st.dirtyPriority;
+        st.dirtyRoutes = null;
+        st.dirtyPriority = null;
 
         if (working != null) {
-            savedConfigs.put(loc, new HashMap<>(working));
+            st.routes.clear();
+            st.routes.putAll(working);
         } else {
-            working = savedConfigs.getOrDefault(loc, new HashMap<>());
+            working = new HashMap<>(st.routes);
         }
-        if (prio != null) savedPriorities.put(loc, prio);
-        else prio = savedPriorities.getOrDefault(loc, Priority.DESTROY_FIRST);
+        if (prio != null) st.priority = prio;
+        else prio = st.priority;
 
         File file = getDataFile();
         YamlConfiguration cfg;
@@ -649,8 +675,8 @@ public class EquipmentSplitter extends SlimefunItem implements InventoryBlock {
 
         String key = locKey(loc);
         cfg.set(key + ".priority", prio.name());
-        cfg.set(key + ".ench_protect_enabled", enchProtectEnabled.getOrDefault(loc, false));
-        cfg.set(key + ".ench_protect_threshold", enchProtectThreshold.getOrDefault(loc, 5));
+        cfg.set(key + ".ench_protect_enabled", st.enchProtectOn);
+        cfg.set(key + ".ench_protect_threshold", st.enchProtectThresh);
         for (var e : working.entrySet())
             cfg.set(key + ".routes." + e.getKey(), e.getValue().name());
 

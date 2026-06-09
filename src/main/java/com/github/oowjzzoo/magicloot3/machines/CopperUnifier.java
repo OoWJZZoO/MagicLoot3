@@ -139,12 +139,18 @@ public class CopperUnifier extends SlimefunItem implements RecipeDisplayItem {
             int space = output.getMaxStackSize() - output.getAmount();
             int move = Math.min(amount, space);
             if (move > 0) {
-                output.setAmount(output.getAmount() + move);
+                ItemStack newOutput = output.clone();
+                newOutput.setAmount(output.getAmount() + move);
+                menu.replaceExistingItem(OUTPUT_SLOT, newOutput);
                 if (amount == move) {
                     menu.replaceExistingItem(INPUT_SLOT, null);
                 } else {
                     ItemStack input = menu.getItemInSlot(INPUT_SLOT);
-                    if (input != null) input.setAmount(amount - move);
+                    if (input != null) {
+                        ItemStack newInput = input.clone();
+                        newInput.setAmount(amount - move);
+                        menu.replaceExistingItem(INPUT_SLOT, newInput);
+                    }
                 }
             }
         }
