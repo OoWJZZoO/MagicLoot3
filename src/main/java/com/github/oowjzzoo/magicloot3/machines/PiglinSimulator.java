@@ -79,7 +79,7 @@ public class PiglinSimulator extends AContainer {
         for (int i : YELLOW) preset.addItem(i, ChestMenuUtils.getBackground(), empty);
         for (int i : GRAY) preset.addItem(i, ChestMenuUtils.getInputSlotTexture(), empty);
 
-        ItemStack pg = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemStack pg = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
         ItemMeta pgm = pg.getItemMeta(); pgm.setDisplayName(" "); pg.setItemMeta(pgm);
         preset.addItem(PROGRESS_SLOT, pg, empty);
     }
@@ -95,7 +95,7 @@ public class PiglinSimulator extends AContainer {
                     getMachineProcessor().updateProgressBar(inv, PROGRESS_SLOT, op);
                     op.addProgress(1);
                 } else {
-                    ItemStack pane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+                    ItemStack pane = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
                     ItemMeta pm = pane.getItemMeta(); pm.setDisplayName(" "); pane.setItemMeta(pm);
                     inv.replaceExistingItem(PROGRESS_SLOT, pane);
 
@@ -146,7 +146,8 @@ public class PiglinSimulator extends AContainer {
         sim.setContents(menu.toInventory().getContents());
 
         LootTable table = LootTables.PIGLIN_BARTERING.getLootTable();
-        LootContext ctx = new LootContext.Builder(menu.toInventory().getLocation()).build();
+        LootContext ctx = new LootContext.Builder(
+                Bukkit.getWorlds().get(0).getSpawnLocation()).build();
 
         List<ItemStack> outputs = new ArrayList<>();
 
