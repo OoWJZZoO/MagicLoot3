@@ -54,6 +54,16 @@ public class AutoAppraiser extends AContainer {
         setCapacity(512);
         setEnergyConsumption(48);
         setProcessingSpeed(3);
+
+        // Display recipes: unidentified equipment → identified equipment at each tier
+        ItemStack unid = io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem
+                .getById("MAGICLOOT_UNIDENTIFIED").getItem().clone();
+        unid.setType(Material.STONE_HOE);
+        for (LootTier tier : new LootTier[]{LootTier.COMMON, LootTier.UNCOMMON,
+                LootTier.RARE, LootTier.EPIC, LootTier.LEGENDARY}) {
+            registerRecipe(3, new ItemStack[]{unid.clone()},
+                    new ItemStack[]{ItemManager.applyTier(new ItemStack(Material.STONE_HOE), tier)});
+        }
     }
 
     @Override
@@ -63,22 +73,7 @@ public class AutoAppraiser extends AContainer {
     public ItemStack getProgressBar() { return new ItemStack(Material.GRINDSTONE); }
 
     @Override
-    protected void registerDefaultRecipes() {
-        ItemStack unidHoe = new ItemStack(Material.STONE_HOE);
-        ItemMeta im = unidHoe.getItemMeta();
-        im.setDisplayName(ChatColor.translateAlternateColorCodes('&', Messages.get("unanalyzed_name")));
-        im.getPersistentDataContainer().set(com.github.oowjzzoo.magicloot3.ItemKeys.TIER,
-                org.bukkit.persistence.PersistentDataType.STRING, "UNKNOWN");
-        java.util.List<String> lore = new java.util.ArrayList<>();
-        lore.add("");
-        lore.add(Messages.get("tier_lore_prefix") + Messages.get("tiers.UNKNOWN"));
-        im.setLore(lore);
-        unidHoe.setItemMeta(im);
-
-        ItemStack epicHoe = ItemManager.applyTier(new ItemStack(Material.STONE_HOE), LootTier.EPIC);
-
-        registerRecipe(3, new ItemStack[]{unidHoe}, new ItemStack[]{epicHoe});
-    }
+    protected void registerDefaultRecipes() {}
 
     @Override
     protected BlockBreakHandler onBlockBreak() {

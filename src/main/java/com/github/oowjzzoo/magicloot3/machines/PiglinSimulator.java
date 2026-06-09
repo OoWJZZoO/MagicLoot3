@@ -90,11 +90,7 @@ public class PiglinSimulator extends AContainer {
         setCapacity(1024);
         setEnergyConsumption(72);
         setProcessingSpeed(1);
-    }
 
-    @Override public String getMachineIdentifier() { return "PIGLIN_SIMULATOR"; }
-    @Override public ItemStack getProgressBar() { return new ItemStack(Material.GOLDEN_HELMET); }
-    @Override protected void registerDefaultRecipes() {
         ItemStack head = new ItemStack(Material.PIGLIN_HEAD);
         ItemMeta hm = head.getItemMeta();
         hm.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&e猪灵交易的所有产物"));
@@ -102,6 +98,10 @@ public class PiglinSimulator extends AContainer {
         registerRecipe(3, new ItemStack[]{new ItemStack(Material.GOLD_INGOT)},
                 new ItemStack[]{head});
     }
+
+    @Override public String getMachineIdentifier() { return "PIGLIN_SIMULATOR"; }
+    @Override public ItemStack getProgressBar() { return new ItemStack(Material.GOLDEN_HELMET); }
+    @Override protected void registerDefaultRecipes() {}
     @Override public int[] getOutputSlots() { return OUTPUT; }
     @Override public int[] getInputSlots() { return new int[]{INPUT_SLOT}; }
 

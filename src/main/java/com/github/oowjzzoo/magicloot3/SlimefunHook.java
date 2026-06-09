@@ -115,24 +115,22 @@ final class SlimefunHook implements SlimefunAddon {
                 null, SlimefunItems.COMMON_TALISMAN, null,
                 bookshelfStack, null, bookshelfStack};
 
-        // Display recipe: unidentified hoe → epic identified hoe
-        ItemStack unidHoe = new ItemStack(Material.STONE_HOE);
-        ItemMeta unidMeta = unidHoe.getItemMeta();
-        unidMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Messages.get("unanalyzed_name")));
-        unidMeta.getPersistentDataContainer().set(ItemKeys.TIER,
-                org.bukkit.persistence.PersistentDataType.STRING, "UNKNOWN");
-        List<String> displayUnidLore = new java.util.ArrayList<>();
-        displayUnidLore.add("");
-        displayUnidLore.add(Messages.get("tier_lore_prefix") + Messages.get("tiers.UNKNOWN"));
-        unidMeta.setLore(displayUnidLore);
-        unidHoe.setItemMeta(unidMeta);
-
-        ItemStack epicHoe = ItemManager.applyTier(new ItemStack(Material.STONE_HOE), LootTier.EPIC);
+        // Display recipes: unidentified → identified at each tier
+        ItemStack displayUnid = SlimefunItem.getById("MAGICLOOT_UNIDENTIFIED")
+                .getItem().clone();
+        displayUnid.setType(Material.STONE_HOE);
+        LootTier[] displayTiers = {LootTier.COMMON, LootTier.UNCOMMON,
+                LootTier.RARE, LootTier.EPIC, LootTier.LEGENDARY};
 
         class DeskItem extends SlimefunItem implements io.github.thebusybiscuit.slimefun4.core.attributes.RecipeDisplayItem {
             DeskItem(ItemGroup g, SlimefunItemStack s, RecipeType r, ItemStack[] p) { super(g, s, r, p); }
             public @Nonnull List<ItemStack> getDisplayRecipes() {
-                return List.of(unidHoe, epicHoe);
+                List<ItemStack> list = new java.util.ArrayList<>();
+                for (LootTier t : displayTiers) {
+                    list.add(displayUnid.clone());
+                    list.add(ItemManager.applyTier(new ItemStack(Material.STONE_HOE), t));
+                }
+                return list;
             }
         }
         DeskItem desk = new DeskItem(itemGroup, deskStack, RecipeType.ENHANCED_CRAFTING_TABLE, deskRecipe);

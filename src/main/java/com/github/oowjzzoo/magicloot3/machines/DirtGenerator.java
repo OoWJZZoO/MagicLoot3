@@ -44,6 +44,9 @@ public class DirtGenerator extends AContainer {
         setCapacity(256);
         setEnergyConsumption(16);
         setProcessingSpeed(PROCESS_TICKS);
+
+        registerRecipe(2, new ItemStack[]{new ItemStack(Material.DIRT, 8)},
+                new ItemStack[]{new ItemStack(Material.AIR)});
     }
 
     @Override
@@ -53,10 +56,7 @@ public class DirtGenerator extends AContainer {
     public ItemStack getProgressBar() { return new ItemStack(Material.DIRT); }
 
     @Override
-    protected void registerDefaultRecipes() {
-        registerRecipe(2, new ItemStack[]{new ItemStack(Material.DIRT, 8)},
-                new ItemStack[]{new ItemStack(Material.AIR)});
-    }
+    protected void registerDefaultRecipes() {}
 
     @Override
     public int[] getOutputSlots() { return OUTPUT; }
