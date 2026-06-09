@@ -28,6 +28,8 @@ import io.github.thebusybiscuit.slimefun4.core.attributes.MachineType;
 import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
 import io.github.thebusybiscuit.slimefun4.utils.LoreBuilder;
 
+import io.github.thebusybiscuit.slimefun4.implementation.items.VanillaItem;
+
 import com.github.oowjzzoo.magicloot3.items.PastRune;
 import com.github.oowjzzoo.magicloot3.items.RenameRune;
 import com.github.oowjzzoo.magicloot3.machines.EquipmentSplitter;
@@ -440,6 +442,15 @@ final class SlimefunHook implements SlimefunAddon {
                 runeStack, new ItemStack(Material.DRAGON_HEAD), runeStack};
         new SlimefunItem(itemGroup, timeStack, RecipeType.ANCIENT_ALTAR, timeRecipe,
                 new SlimefunItemStack(timeStack, 4))
+                .register(this);
+
+        // Dragon Head (VanillaItem with Ancient Altar recipe)
+        ItemStack[] dragonHeadRecipe = {
+                new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH),
+                new ItemStack(Material.CRYING_OBSIDIAN), new ItemStack(Material.NETHERITE_BLOCK), new ItemStack(Material.CRYING_OBSIDIAN),
+                new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH)};
+        new VanillaItem(itemGroup, new ItemStack(Material.DRAGON_HEAD), "DRAGON_HEAD",
+                RecipeType.ANCIENT_ALTAR, dragonHeadRecipe)
                 .register(this);
 
         // --- Machines ---
