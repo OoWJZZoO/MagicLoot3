@@ -32,15 +32,21 @@ public class ActivatedSculkShrieker extends SimpleSlimefunItem<BlockPlaceHandler
     private static void enableWardenSpawning(org.bukkit.block.Block block) {
         var state = block.getState();
         try {
-            // CraftBlockState.getHandle() returns the NMS BlockEntity
             var tile = state.getClass().getMethod("getHandle").invoke(state);
-            // Set the canSummon field directly on SculkShriekerBlockEntity
-            var field = tile.getClass().getDeclaredField("canSummon");
+            var field = getField(tile.getClass(), "can_summon", "canSummon");
             field.setAccessible(true);
             field.setBoolean(tile, true);
             state.update();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private static java.lang.reflect.Field getField(Class<?> clazz, String... names)
+            throws NoSuchFieldException {
+        for (String name : names) {
+            try { return clazz.getDeclaredField(name); } catch (NoSuchFieldException ignored) {}
+        }
+        throw new NoSuchFieldException(String.join(", ", names));
     }
 }
