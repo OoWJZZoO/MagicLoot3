@@ -567,8 +567,8 @@ final class SlimefunHook implements SlimefunAddon {
         SlimefunItemStack piglinStack = new SlimefunItemStack(
                 "PIGLIN_SIMULATOR", Material.GILDED_BLACKSTONE, piglinName, piglinLore);
         ItemStack[] piglinRecipe = {
-                SlimefunItems.GOLD_24K_BLOCK, SlimefunItems.CARGO_MANAGER, SlimefunItems.GOLD_24K_BLOCK,
-                SlimefunItems.PRODUCE_COLLECTOR, new ItemStack(Material.PIGLIN_HEAD), SlimefunItems.AUTO_BREEDER,
+                SlimefunItems.GOLD_24K_BLOCK, new ItemStack(Material.PIGLIN_HEAD), SlimefunItems.GOLD_24K_BLOCK,
+                SlimefunItems.PRODUCE_COLLECTOR, SlimefunItems.CARGO_MANAGER, SlimefunItems.AUTO_BREEDER,
                 SlimefunItems.REINFORCED_PLATE, SlimefunItems.REINFORCED_PLATE, SlimefunItems.REINFORCED_PLATE};
         new PiglinSimulator(itemGroup, piglinStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, piglinRecipe)

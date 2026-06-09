@@ -151,8 +151,8 @@ public class PiglinSimulator extends AContainer {
         if (n <= 0) return null;
 
         ItemStack gold = menu.getItemInSlot(INPUT_SLOT);
-        if (gold == null || gold.getType() != Material.GOLD_INGOT || gold.getAmount() < n)
-            return null;
+        if (gold == null || gold.getType() != Material.GOLD_INGOT) return null;
+        n = Math.min(n, gold.getAmount());
 
         if (gold.getAmount() == n) menu.replaceExistingItem(INPUT_SLOT, null);
         else gold.setAmount(gold.getAmount() - n);
