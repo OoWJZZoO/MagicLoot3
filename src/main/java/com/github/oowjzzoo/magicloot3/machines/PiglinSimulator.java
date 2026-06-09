@@ -40,16 +40,16 @@ import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 
 public class PiglinSimulator extends AContainer {
 
-    private static final int[] GOLD_HINT = {0,1,2, 9,11, 18,19,20};
-    private static final int[] HEAD_HINT_SLOTS = {27,28,29,36, 45,46,47};
+    private static final int[] GOLD_SLOTS = {0,1,2, 9,11, 18,19,20};
+    private static final int[] HEAD_SLOTS = {27,28,29,36, 45,46,47};
     private static final int INPUT_SLOT    = 10;
     private static final int HEAD_SLOT     = 37;
     private static final int PROGRESS_SLOT = 38;
     private static final int[] OUTPUT;
     static {
         Set<Integer> reserved = new HashSet<>();
-        for (int i : GOLD_HINT) reserved.add(i);
-        for (int i : HEAD_HINT_SLOTS) reserved.add(i);
+        for (int i : GOLD_SLOTS) reserved.add(i);
+        for (int i : HEAD_SLOTS) reserved.add(i);
         reserved.add(INPUT_SLOT);
         reserved.add(HEAD_SLOT);
         reserved.add(PROGRESS_SLOT);
@@ -101,8 +101,8 @@ public class PiglinSimulator extends AContainer {
     @Override
     protected void constructMenu(BlockMenuPreset preset) {
         var empty = ChestMenuUtils.getEmptyClickHandler();
-        for (int i : GOLD_HINT) preset.addItem(i, GOLD_HINT, empty);
-        for (int i : HEAD_HINT_SLOTS) preset.addItem(i, HEAD_HINT.clone(), empty);
+        for (int i : GOLD_SLOTS) preset.addItem(i, GOLD_HINT, empty);
+        for (int i : HEAD_SLOTS) preset.addItem(i, HEAD_HINT.clone(), empty);
         preset.addItem(PROGRESS_SLOT, HEAD_HINT.clone(), empty);
     }
 
