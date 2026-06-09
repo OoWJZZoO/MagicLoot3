@@ -366,13 +366,13 @@ final class SlimefunHook implements SlimefunAddon {
 
         ItemStack[] runeRecipe = {
                 new ItemStack(Material.ANCIENT_DEBRIS),
-                new ItemStack(Material.WAXED_WEATHERED_COPPER_BULB),
+                new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
                 new ItemStack(Material.SCULK_CATALYST),
-                SlimefunItems.ESSENCE_OF_AFTERLIFE,
+                new ItemStack(Material.CHORUS_FLOWER),
                 SlimefunItems.VILLAGER_RUNE,
-                SlimefunItems.ESSENCE_OF_AFTERLIFE,
+                new ItemStack(Material.CHORUS_FLOWER),
                 new ItemStack(Material.SCULK_CATALYST),
-                new ItemStack(Material.WAXED_WEATHERED_COPPER_BULB),
+                new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
                 new ItemStack(Material.ANCIENT_DEBRIS)};
 
         new PastRune(itemGroup, runeStack, RecipeType.ANCIENT_ALTAR, runeRecipe,
@@ -434,9 +434,9 @@ final class SlimefunHook implements SlimefunAddon {
                 "TIME_OF_EXPLORATION", Material.NETHER_STAR, timeName, timeLore);
         ItemStack[] timeRecipe = {
                 runeStack, new ItemStack(Material.DRAGON_HEAD), runeStack,
-                new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
+                new ItemStack(Material.WAXED_WEATHERED_COPPER_BULB),
                 new ItemStack(Material.BEACON),
-                new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
+                new ItemStack(Material.WAXED_WEATHERED_COPPER_BULB),
                 runeStack, new ItemStack(Material.DRAGON_HEAD), runeStack};
         new SlimefunItem(itemGroup, timeStack, RecipeType.ANCIENT_ALTAR, timeRecipe,
                 new SlimefunItemStack(timeStack, 4))
