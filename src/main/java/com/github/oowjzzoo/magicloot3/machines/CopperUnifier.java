@@ -25,6 +25,7 @@ public class CopperUnifier extends SlimefunItem {
 
     private static final int[] CYAN  = {0,1,2, 9,11, 18,19,20};
     private static final int[] GREEN = {6,7,8, 15,17, 24,25,26};
+    private static final int[] BORDER = {3,4,5, 12,13,14, 21,22,23};
     private static final int INPUT_SLOT  = 10;
     private static final int OUTPUT_SLOT = 16;
     private static final String SF_COPPER_ID = "COPPER_INGOT";
@@ -69,6 +70,7 @@ public class CopperUnifier extends SlimefunItem {
                 var empty = ChestMenuUtils.getEmptyClickHandler();
                 for (int i : CYAN)  addItem(i, CYAN_HINT, empty);
                 for (int i : GREEN) addItem(i, GREEN_HINT, empty);
+                for (int i : BORDER) addItem(i, ChestMenuUtils.getBackground(), empty);
             }
             @Override public void newInstance(BlockMenu menu, Block b) {}
             @Override public boolean canOpen(Block b, org.bukkit.entity.Player p) { return true; }
