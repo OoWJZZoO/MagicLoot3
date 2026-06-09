@@ -2,6 +2,9 @@ package com.github.oowjzzoo.magicloot3.items;
 
 import javax.annotation.Nonnull;
 
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.type.SculkShrieker;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -23,30 +26,12 @@ public class ActivatedSculkShrieker extends SimpleSlimefunItem<BlockPlaceHandler
         return new BlockPlaceHandler(false) {
             @Override
             public void onPlayerPlace(@Nonnull BlockPlaceEvent e) {
-                enableWardenSpawning(e.getBlock());
+                Block block = e.getBlock();
+                if (block.getBlockData() instanceof SculkShrieker data) {
+                    data.setCanSummon(true);
+                    block.setBlockData(data);
+                }
             }
         };
-    }
-
-    /** Sets can_summon=true on the placed SculkShrieker's block entity. */
-    private static void enableWardenSpawning(org.bukkit.block.Block block) {
-        var state = block.getState();
-        try {
-            var tile = state.getClass().getMethod("getHandle").invoke(state);
-            var field = getField(tile.getClass(), "can_summon", "canSummon");
-            field.setAccessible(true);
-            field.setBoolean(tile, true);
-            state.update();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private static java.lang.reflect.Field getField(Class<?> clazz, String... names)
-            throws NoSuchFieldException {
-        for (String name : names) {
-            try { return clazz.getDeclaredField(name); } catch (NoSuchFieldException ignored) {}
-        }
-        throw new NoSuchFieldException(String.join(", ", names));
     }
 }
