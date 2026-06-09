@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -39,16 +40,17 @@ import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 
 public class PiglinSimulator extends AContainer {
 
-    private static final int[] YELLOW = {0,1,2, 9,11, 18,19,20};
-    private static final int[] GRAY   = {27,28,29,36, 45,46,47};
+    private static final int[] DECOR = {
+        0,1,2, 9,11, 18,19,20,
+        27,28,29,36, 45,46,47
+    };
     private static final int INPUT_SLOT    = 10;
     private static final int HEAD_SLOT     = 37;
     private static final int PROGRESS_SLOT = 38;
     private static final int[] OUTPUT;
     static {
         Set<Integer> reserved = new HashSet<>();
-        for (int i : YELLOW) reserved.add(i);
-        for (int i : GRAY) reserved.add(i);
+        for (int i : DECOR) reserved.add(i);
         reserved.add(INPUT_SLOT);
         reserved.add(HEAD_SLOT);
         reserved.add(PROGRESS_SLOT);
@@ -61,11 +63,33 @@ public class PiglinSimulator extends AContainer {
     private static final int CYCLE_SECONDS = 6;
     private static final ItemStack DUMMY_INPUT = new ItemStack(Material.GOLD_INGOT, 1);
 
+    // Decorative items
+    private static final ItemStack GOLD_HINT = goldHint();
+    private static final ItemStack HEAD_HINT = headHint();
+
+    private static ItemStack goldHint() {
+        ItemStack g = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
+        ItemMeta m = g.getItemMeta();
+        m.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&e&l此处放入金锭"));
+        g.setItemMeta(m);
+        return g;
+    }
+
+    private static ItemStack headHint() {
+        ItemStack g = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
+        ItemMeta m = g.getItemMeta();
+        m.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&b&l此处放入 &e猪灵的头"));
+        m.setLore(List.of(ChatColor.translateAlternateColorCodes('&',
+                "&7机器的倍速取决于头颅的数目")));
+        g.setItemMeta(m);
+        return g;
+    }
+
     public PiglinSimulator(ItemGroup itemGroup, SlimefunItemStack item,
                             RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
-        setCapacity(512);
-        setEnergyConsumption(30);
+        setCapacity(1024);
+        setEnergyConsumption(72);
         setProcessingSpeed(1);
     }
 
@@ -78,12 +102,8 @@ public class PiglinSimulator extends AContainer {
     @Override
     protected void constructMenu(BlockMenuPreset preset) {
         var empty = ChestMenuUtils.getEmptyClickHandler();
-        for (int i : YELLOW) preset.addItem(i, ChestMenuUtils.getBackground(), empty);
-        for (int i : GRAY) preset.addItem(i, ChestMenuUtils.getInputSlotTexture(), empty);
-
-        ItemStack pg = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
-        ItemMeta pgm = pg.getItemMeta(); pgm.setDisplayName(" "); pg.setItemMeta(pgm);
-        preset.addItem(PROGRESS_SLOT, pg, empty);
+        for (int i : DECOR) preset.addItem(i, GOLD_HINT, empty);
+        preset.addItem(PROGRESS_SLOT, HEAD_HINT.clone(), empty);
     }
 
     @Override
@@ -97,10 +117,7 @@ public class PiglinSimulator extends AContainer {
                     getMachineProcessor().updateProgressBar(inv, PROGRESS_SLOT, op);
                     op.addProgress(1);
                 } else {
-                    ItemStack pane = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
-                    ItemMeta pm = pane.getItemMeta(); pm.setDisplayName(" "); pane.setItemMeta(pm);
-                    inv.replaceExistingItem(PROGRESS_SLOT, pane);
-
+                    inv.replaceExistingItem(PROGRESS_SLOT, HEAD_HINT.clone());
                     ItemStack[] results = op.getResults();
                     if (fitsAll(inv, results)) {
                         for (ItemStack r : results) inv.pushItem(r.clone(), OUTPUT);
@@ -128,26 +145,21 @@ public class PiglinSimulator extends AContainer {
     protected MachineRecipe findNextRecipe(BlockMenu menu) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
 
-        // Read piglin head count (efficiency multiplier)
         ItemStack headItem = menu.getItemInSlot(HEAD_SLOT);
         int n = (headItem != null && headItem.getType() == Material.PIGLIN_HEAD)
                 ? headItem.getAmount() : 0;
         if (n <= 0) return null;
 
-        // Check gold ingot count
         ItemStack gold = menu.getItemInSlot(INPUT_SLOT);
         if (gold == null || gold.getType() != Material.GOLD_INGOT || gold.getAmount() < n)
             return null;
 
-        // Consume n gold ingots
         if (gold.getAmount() == n) menu.replaceExistingItem(INPUT_SLOT, null);
         else gold.setAmount(gold.getAmount() - n);
 
-        // Simulated inventory for incremental fitting
         Inventory sim = Bukkit.createInventory(null, menu.toInventory().getSize());
         sim.setContents(menu.toInventory().getContents());
 
-        // Create a virtual (unspawned) piglin to satisfy this_entity parameter
         World world = Bukkit.getWorlds().get(0);
         Piglin piglin = world.createEntity(world.getSpawnLocation(), Piglin.class);
         LootTable table = LootTables.PIGLIN_BARTERING.getLootTable();
@@ -166,7 +178,6 @@ public class PiglinSimulator extends AContainer {
             if (tryFitItem(sim, result)) {
                 outputs.add(result);
             }
-            // else: discard — swallowed, no drop to world
         }
 
         if (outputs.isEmpty()) return null;
@@ -193,7 +204,6 @@ public class PiglinSimulator extends AContainer {
 
     // --- Private helpers ---
 
-    /** Apply SF piglin barter replacement, replicating PiglinListener logic. */
     private static ItemStack applySfBarterReplace(ThreadLocalRandom r, ItemStack vanilla) {
         for (ItemStack candidate : Slimefun.getRegistry().getBarteringDrops()) {
             SlimefunItem sfi = SlimefunItem.getByItem(candidate);
@@ -207,7 +217,6 @@ public class PiglinSimulator extends AContainer {
         return vanilla;
     }
 
-    /** Try to fit a single item into the simulated inventory. Updates sim on success. */
     private static boolean tryFitItem(Inventory sim, ItemStack item) {
         for (int s : OUTPUT) {
             ItemStack existing = sim.getItem(s);
@@ -226,7 +235,6 @@ public class PiglinSimulator extends AContainer {
         return false;
     }
 
-    /** Merge similar stacks into combined stacks. */
     private static List<ItemStack> mergeStacks(List<ItemStack> items) {
         List<ItemStack> merged = new ArrayList<>();
         for (ItemStack item : items) {

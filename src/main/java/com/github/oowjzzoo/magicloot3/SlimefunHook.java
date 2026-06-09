@@ -449,7 +449,7 @@ final class SlimefunHook implements SlimefunAddon {
         // Dragon Head (VanillaItem with Ancient Altar recipe)
         ItemStack[] dragonHeadRecipe = {
                 new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH),
-                new ItemStack(Material.CRYING_OBSIDIAN), new ItemStack(Material.NETHERITE_BLOCK), new ItemStack(Material.CRYING_OBSIDIAN),
+                SlimefunItems.MAGIC_LUMP_3, new ItemStack(Material.NETHERITE_BLOCK), SlimefunItems.MAGIC_LUMP_3,
                 new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH)};
         new VanillaItem(itemGroup, new ItemStack(Material.DRAGON_HEAD), "DRAGON_HEAD",
                 RecipeType.ANCIENT_ALTAR, dragonHeadRecipe)
@@ -556,19 +556,22 @@ final class SlimefunHook implements SlimefunAddon {
                 .register(this);
 
         // Piglin Simulator
-        String piglinName = zh ? "§e猪灵模拟机" : "§ePiglin Simulator";
+        String piglinName = zh ? "§e§l猪灵模拟机" : "§e§lPiglin Simulator";
         String[] piglinLore = {"",
-                zh ? "&7模拟猪灵以物易物的过程" : "&7Simulates piglin bartering",
-                zh ? "&7猪灵头颅的数量决定效率倍率" : "&7Piglin head count determines efficiency",
-                zh ? "&76秒固定周期" : "&7Fixed 6-second cycle",
+                zh ? "&7金光闪闪!" : "&7Shiny gold!",
+                zh ? "&7产物真多!" : "&7So many drops!",
+                zh ? "&7物流抓不过来啦!" : "&7Cargo can't keep up!",
                 "",
-                LoreBuilder.machine(MachineTier.ADVANCED, MachineType.MACHINE),
-                LoreBuilder.speed(1), LoreBuilder.powerPerSecond(60)};
+                LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
+                LoreBuilder.speed(1), LoreBuilder.powerPerSecond(144)};
         SlimefunItemStack piglinStack = new SlimefunItemStack(
                 "PIGLIN_SIMULATOR", Material.GILDED_BLACKSTONE, piglinName, piglinLore);
-        ItemStack[] piglinRecipe = {null,null,null, null,null,null, null,null,null};
+        ItemStack[] piglinRecipe = {
+                SlimefunItems.GOLD_24K_BLOCK, SlimefunItems.CARGO_MANAGER, SlimefunItems.GOLD_24K_BLOCK,
+                SlimefunItems.PRODUCE_COLLECTOR, new ItemStack(Material.PIGLIN_HEAD), SlimefunItems.AUTO_BREEDER,
+                SlimefunItems.REINFORCED_PLATE, SlimefunItems.REINFORCED_PLATE, SlimefunItems.REINFORCED_PLATE};
         new PiglinSimulator(itemGroup, piglinStack,
-                RecipeType.NULL, piglinRecipe)
+                RecipeType.ENHANCED_CRAFTING_TABLE, piglinRecipe)
                 .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));
