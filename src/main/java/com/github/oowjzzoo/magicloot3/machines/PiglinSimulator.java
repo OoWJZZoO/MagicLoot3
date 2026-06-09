@@ -94,7 +94,14 @@ public class PiglinSimulator extends AContainer {
 
     @Override public String getMachineIdentifier() { return "PIGLIN_SIMULATOR"; }
     @Override public ItemStack getProgressBar() { return new ItemStack(Material.GOLDEN_HELMET); }
-    @Override protected void registerDefaultRecipes() {}
+    @Override protected void registerDefaultRecipes() {
+        ItemStack head = new ItemStack(Material.PIGLIN_HEAD);
+        ItemMeta hm = head.getItemMeta();
+        hm.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&e猪灵交易的所有产物"));
+        head.setItemMeta(hm);
+        registerRecipe(3, new ItemStack[]{new ItemStack(Material.GOLD_INGOT)},
+                new ItemStack[]{head});
+    }
     @Override public int[] getOutputSlots() { return OUTPUT; }
     @Override public int[] getInputSlots() { return new int[]{INPUT_SLOT}; }
 

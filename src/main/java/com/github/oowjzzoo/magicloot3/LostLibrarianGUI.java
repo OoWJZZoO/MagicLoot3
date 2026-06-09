@@ -138,8 +138,8 @@ public final class LostLibrarianGUI {
     private static Material getPaneMaterial(int colorId) {
         return switch (colorId) {
             case 13 -> Material.LIME_STAINED_GLASS_PANE;
-            case 10 -> Material.PURPLE_STAINED_GLASS_PANE;
-            case 9  -> Material.CYAN_STAINED_GLASS_PANE;
+            case 10 -> Material.CYAN_STAINED_GLASS_PANE;
+            case 9  -> Material.PURPLE_STAINED_GLASS_PANE;
             case 4  -> Material.YELLOW_STAINED_GLASS_PANE;
             case 1  -> Material.ORANGE_STAINED_GLASS_PANE;
             default -> Material.WHITE_STAINED_GLASS_PANE;

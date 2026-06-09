@@ -53,7 +53,10 @@ public class DirtGenerator extends AContainer {
     public ItemStack getProgressBar() { return new ItemStack(Material.DIRT); }
 
     @Override
-    protected void registerDefaultRecipes() {}
+    protected void registerDefaultRecipes() {
+        registerRecipe(2, new ItemStack[]{new ItemStack(Material.DIRT, 8)},
+                new ItemStack[]{new ItemStack(Material.AIR)});
+    }
 
     @Override
     public int[] getOutputSlots() { return OUTPUT; }

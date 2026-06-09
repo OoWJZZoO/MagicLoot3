@@ -63,7 +63,22 @@ public class AutoAppraiser extends AContainer {
     public ItemStack getProgressBar() { return new ItemStack(Material.GRINDSTONE); }
 
     @Override
-    protected void registerDefaultRecipes() {}
+    protected void registerDefaultRecipes() {
+        ItemStack unidHoe = new ItemStack(Material.STONE_HOE);
+        ItemMeta im = unidHoe.getItemMeta();
+        im.setDisplayName(ChatColor.translateAlternateColorCodes('&', Messages.get("unanalyzed_name")));
+        im.getPersistentDataContainer().set(com.github.oowjzzoo.magicloot3.ItemKeys.TIER,
+                org.bukkit.persistence.PersistentDataType.STRING, "UNKNOWN");
+        java.util.List<String> lore = new java.util.ArrayList<>();
+        lore.add("");
+        lore.add(Messages.get("tier_lore_prefix") + Messages.get("tiers.UNKNOWN"));
+        im.setLore(lore);
+        unidHoe.setItemMeta(im);
+
+        ItemStack epicHoe = ItemManager.applyTier(new ItemStack(Material.STONE_HOE), LootTier.EPIC);
+
+        registerRecipe(3, new ItemStack[]{unidHoe}, new ItemStack[]{epicHoe});
+    }
 
     @Override
     protected BlockBreakHandler onBlockBreak() {

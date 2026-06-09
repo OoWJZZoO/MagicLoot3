@@ -4,7 +4,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nonnull;
+
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
@@ -112,8 +115,27 @@ final class SlimefunHook implements SlimefunAddon {
                 null, SlimefunItems.COMMON_TALISMAN, null,
                 bookshelfStack, null, bookshelfStack};
 
-        SlimefunItem desk = new SlimefunItem(
-                itemGroup, deskStack, RecipeType.ENHANCED_CRAFTING_TABLE, deskRecipe);
+        // Display recipe: unidentified hoe → epic identified hoe
+        ItemStack unidHoe = new ItemStack(Material.STONE_HOE);
+        ItemMeta unidMeta = unidHoe.getItemMeta();
+        unidMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Messages.get("unanalyzed_name")));
+        unidMeta.getPersistentDataContainer().set(ItemKeys.TIER,
+                org.bukkit.persistence.PersistentDataType.STRING, "UNKNOWN");
+        List<String> displayUnidLore = new java.util.ArrayList<>();
+        displayUnidLore.add("");
+        displayUnidLore.add(Messages.get("tier_lore_prefix") + Messages.get("tiers.UNKNOWN"));
+        unidMeta.setLore(displayUnidLore);
+        unidHoe.setItemMeta(unidMeta);
+
+        ItemStack epicHoe = ItemManager.applyTier(new ItemStack(Material.STONE_HOE), LootTier.EPIC);
+
+        class DeskItem extends SlimefunItem implements io.github.thebusybiscuit.slimefun4.core.attributes.RecipeDisplayItem {
+            DeskItem(ItemGroup g, SlimefunItemStack s, RecipeType r, ItemStack[] p) { super(g, s, r, p); }
+            public @Nonnull List<ItemStack> getDisplayRecipes() {
+                return List.of(unidHoe, epicHoe);
+            }
+        }
+        DeskItem desk = new DeskItem(itemGroup, deskStack, RecipeType.ENHANCED_CRAFTING_TABLE, deskRecipe);
         desk.addItemHandler((BlockUseHandler) event -> {
             event.cancel();
             LostLibrarian.openMenu(event.getPlayer(), true);

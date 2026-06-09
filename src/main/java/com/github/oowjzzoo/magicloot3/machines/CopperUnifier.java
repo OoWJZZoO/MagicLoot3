@@ -1,5 +1,7 @@
 package com.github.oowjzzoo.magicloot3.machines;
 
+import javax.annotation.Nonnull;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -9,6 +11,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
+import io.github.thebusybiscuit.slimefun4.core.attributes.RecipeDisplayItem;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
@@ -21,7 +24,7 @@ import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 import me.mrCookieSlime.Slimefun.api.item_transport.ItemTransportFlow;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 
-public class CopperUnifier extends SlimefunItem {
+public class CopperUnifier extends SlimefunItem implements RecipeDisplayItem {
 
     private static final int[] CYAN  = {0,1,2, 9,11, 18,19,20};
     private static final int[] GREEN = {6,7,8, 15,17, 24,25,26};
@@ -90,6 +93,13 @@ public class CopperUnifier extends SlimefunItem {
                 }
             }
         });
+    }
+
+    @Override
+    public @Nonnull java.util.List<ItemStack> getDisplayRecipes() {
+        return java.util.List.of(
+                SlimefunItems.COPPER_INGOT, new ItemStack(Material.COPPER_INGOT),
+                new ItemStack(Material.COPPER_INGOT), SlimefunItems.COPPER_INGOT);
     }
 
     private void onTick(Block b) {
