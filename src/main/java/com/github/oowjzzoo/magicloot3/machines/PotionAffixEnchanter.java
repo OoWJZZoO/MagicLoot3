@@ -65,7 +65,7 @@ public class PotionAffixEnchanter extends AContainer implements RecipeDisplayIte
     protected void registerDefaultRecipes() {}
 
     @Override
-    public java.util.@javax.annotation.Nonnull List<ItemStack> getDisplayRecipes() {
+    public java.util.List<ItemStack> getDisplayRecipes() {
         java.util.List<ItemStack> display = new java.util.ArrayList<>(recipes.size() * 2);
         for (MachineRecipe r : recipes) {
             if (r.getInput().length != 1) continue;
