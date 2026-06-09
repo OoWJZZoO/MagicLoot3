@@ -449,7 +449,7 @@ final class SlimefunHook implements SlimefunAddon {
         // Dragon Head (VanillaItem with Ancient Altar recipe)
         ItemStack[] dragonHeadRecipe = {
                 new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH),
-                SlimefunItems.MAGIC_LUMP_3, new ItemStack(Material.NETHERITE_BLOCK), SlimefunItems.MAGIC_LUMP_3,
+                SlimefunItems.ENDER_LUMP_3, new ItemStack(Material.NETHERITE_BLOCK), SlimefunItems.ENDER_LUMP_3,
                 new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH)};
         new VanillaItem(itemGroup, new ItemStack(Material.DRAGON_HEAD), "DRAGON_HEAD",
                 RecipeType.ANCIENT_ALTAR, dragonHeadRecipe)
