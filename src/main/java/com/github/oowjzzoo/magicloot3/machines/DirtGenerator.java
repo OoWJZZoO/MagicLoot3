@@ -60,6 +60,17 @@ public class DirtGenerator extends AContainer implements RecipeDisplayItem {
     }
 
     @Override
+    public java.util.@javax.annotation.Nonnull List<ItemStack> getDisplayRecipes() {
+        java.util.List<ItemStack> display = new java.util.ArrayList<>(recipes.size() * 2);
+        for (MachineRecipe r : recipes) {
+            if (r.getInput().length != 1) continue;
+            display.add(r.getInput()[0]);
+            display.add(r.getOutput()[0]);
+        }
+        return display;
+    }
+
+    @Override
     public int[] getOutputSlots() { return OUTPUT; }
 
     @Override

@@ -103,6 +103,18 @@ public class PiglinSimulator extends AContainer implements RecipeDisplayItem {
         registerRecipe(3, new ItemStack[]{new ItemStack(Material.GOLD_INGOT)},
                 new ItemStack[]{head});
     }
+
+    @Override
+    public java.util.@javax.annotation.Nonnull List<ItemStack> getDisplayRecipes() {
+        java.util.List<ItemStack> display = new java.util.ArrayList<>(recipes.size() * 2);
+        for (MachineRecipe r : recipes) {
+            if (r.getInput().length != 1) continue;
+            display.add(r.getInput()[0]);
+            display.add(r.getOutput()[0]);
+        }
+        return display;
+    }
+
     @Override public int[] getOutputSlots() { return OUTPUT; }
     @Override public int[] getInputSlots() { return new int[]{INPUT_SLOT}; }
 
