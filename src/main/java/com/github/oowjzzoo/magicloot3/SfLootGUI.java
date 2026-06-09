@@ -68,7 +68,7 @@ final class SfLootGUI extends LootConfigGUI {
         if (cache == null) return;
 
         List<ItemGroup> groups = getVisibleGroups(player);
-        int total = groups.size() + 1; // +1 for the catch-all
+        int total = groups.size() + 3; // +3 for catch-all + enabled + disabled
         int pages = Math.max(1, (total - 1) / MAX_ITEMS + 1);
         int cur = Math.min(page, pages);
 
@@ -102,6 +102,38 @@ final class SfLootGUI extends LootConfigGUI {
             menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
                 sw.add(pl.getUniqueId());
                 openAllConfigItems(pl, 1, () -> openMainPage(pl, 1));
+                return false;
+            });
+            slot++;
+        }
+
+        // Enabled items (weight > 0)
+        int enabledIdx = groups.size() + 1;
+        if (enabledIdx >= start && enabledIdx < end && slot < 45) {
+            ItemStack icon = new ItemStack(org.bukkit.Material.LIME_DYE);
+            ItemMeta meta = icon.getItemMeta();
+            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&b&l" + m("enabled_items")));
+            icon.setItemMeta(meta);
+            menu.addItem(slot, icon);
+            menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
+                sw.add(pl.getUniqueId());
+                openFilteredItems(pl, 1, () -> openMainPage(pl, 1), true);
+                return false;
+            });
+            slot++;
+        }
+
+        // Disabled items (weight == 0)
+        int disabledIdx = groups.size() + 2;
+        if (disabledIdx >= start && disabledIdx < end && slot < 45) {
+            ItemStack icon = new ItemStack(org.bukkit.Material.RED_DYE);
+            ItemMeta meta = icon.getItemMeta();
+            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&c&l" + m("disabled_items")));
+            icon.setItemMeta(meta);
+            menu.addItem(slot, icon);
+            menu.addMenuClickHandler(slot, (pl, s, it, a) -> {
+                sw.add(pl.getUniqueId());
+                openFilteredItems(pl, 1, () -> openMainPage(pl, 1), false);
                 return false;
             });
         }
@@ -257,6 +289,43 @@ final class SfLootGUI extends LootConfigGUI {
         addPrevNext(menu, player, cur, pages, sw,
                 () -> openAllConfigItems(player, cur - 1, back),
                 () -> openAllConfigItems(player, cur + 1, back));
+        finishMenu(menu, player, sw);
+    }
+
+    // ── Filtered items page (enabled weight>0 / disabled weight==0) ──
+
+    private void openFilteredItems(Player player, int page, Runnable back, boolean enabled) {
+        Map<String, Integer> cache = CACHES.get(player.getUniqueId());
+        if (cache == null) return;
+
+        List<String> ids = new ArrayList<>();
+        for (var e : cache.entrySet()) {
+            if (enabled ? e.getValue() > 0 : e.getValue() == 0) ids.add(e.getKey());
+        }
+        ids.sort(String.CASE_INSENSITIVE_ORDER);
+        int pages = Math.max(1, (ids.size() - 1) / MAX_ITEMS + 1);
+        final int cur = Math.min(page, pages);
+
+        var menu = newMenu(player, (enabled ? "&b&l" : "&c&l") + m(enabled ? "enabled_items" : "disabled_items"));
+        var sw = new HashSet<UUID>();
+        addBack(menu, 1, sw, back);
+
+        int tw = computeTotal(cache);
+        int start = MAX_ITEMS * (cur - 1);
+        int slot = 9;
+        for (int i = start; i < ids.size() && slot < 45; i++, slot++) {
+            String id = ids.get(i);
+            int weight = cache.getOrDefault(id, 0);
+            menu.addItem(slot, buildItem(id, weight, tw));
+            final int pageSnap = cur;
+            menu.addMenuClickHandler(slot, makeClickHandler(player, id, sw,
+                    () -> openFilteredItems(player, pageSnap, back, enabled)));
+        }
+
+        addFooterBg(menu);
+        addPrevNext(menu, player, cur, pages, sw,
+                () -> openFilteredItems(player, cur - 1, back, enabled),
+                () -> openFilteredItems(player, cur + 1, back, enabled));
         finishMenu(menu, player, sw);
     }
 

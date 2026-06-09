@@ -213,6 +213,8 @@ gui:
     multiblock: "&8🚫 Multi-block, cannot be looted"
     help: "&7Left: enable(100) | Right: disable(0) | Shift+click: custom"
     all_items: "All Items"
+    enabled_items: "All Enabled Items"
+    disabled_items: "All Disabled Items"
     input_prompt: "&eEnter weight for {0} &ein chat (1-999999):"
     invalid_number: "&cInvalid number. Config saved."
     invalid_range: "&cWeight must be 1-999999. Config saved."
