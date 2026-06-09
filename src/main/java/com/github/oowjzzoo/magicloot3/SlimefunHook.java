@@ -38,6 +38,7 @@ import com.github.oowjzzoo.magicloot3.machines.LivingDropper;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixDisenchanter;
 import com.github.oowjzzoo.magicloot3.machines.AutoAppraiser;
 import com.github.oowjzzoo.magicloot3.machines.DirtGenerator;
+import com.github.oowjzzoo.magicloot3.machines.CopperUnifier;
 import com.github.oowjzzoo.magicloot3.machines.PiglinSimulator;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixEnchanter;
 
@@ -572,6 +573,23 @@ final class SlimefunHook implements SlimefunAddon {
                 SlimefunItems.REINFORCED_PLATE, SlimefunItems.REINFORCED_PLATE, SlimefunItems.REINFORCED_PLATE};
         new PiglinSimulator(itemGroup, piglinStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, piglinRecipe)
+                .register(this);
+
+        // Copper Unifier
+        String copperName = zh ? "§6铜锭大一统机" : "§6Copper Unifier";
+        String[] copperLore = {"",
+                zh ? "&7我受够了!!!" : "&7I've had enough!!!",
+                zh ? "&7...本该如此" : "&7...as it should be",
+                "",
+                zh ? "&7可以转化粘液科技与原版的铜锭" : "&7Converts between Slimefun and vanilla copper ingots"};
+        SlimefunItemStack copperStack = new SlimefunItemStack(
+                "COPPER_UNIFIER", Material.COPPER_BLOCK, copperName, copperLore);
+        ItemStack[] copperRecipe = {
+                SlimefunItems.COPPER_INGOT, new ItemStack(Material.COPPER_INGOT), SlimefunItems.COPPER_INGOT,
+                new ItemStack(Material.COPPER_INGOT), new ItemStack(Material.CRAFTING_TABLE), new ItemStack(Material.COPPER_INGOT),
+                SlimefunItems.COPPER_INGOT, new ItemStack(Material.COPPER_INGOT), SlimefunItems.COPPER_INGOT};
+        new CopperUnifier(itemGroup, copperStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, copperRecipe)
                 .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));
