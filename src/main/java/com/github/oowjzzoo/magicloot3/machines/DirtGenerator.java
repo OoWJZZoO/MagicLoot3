@@ -10,6 +10,7 @@ import com.github.oowjzzoo.magicloot3.MagicLoot3;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
+import io.github.thebusybiscuit.slimefun4.core.attributes.RecipeDisplayItem;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.handlers.SimpleBlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.operations.CraftingOperation;
@@ -20,7 +21,7 @@ import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 
-public class DirtGenerator extends AContainer {
+public class DirtGenerator extends AContainer implements RecipeDisplayItem {
 
     private static final int[] BORDER = {
         0,1,2,3,  5,6,7,8,
@@ -44,9 +45,6 @@ public class DirtGenerator extends AContainer {
         setCapacity(256);
         setEnergyConsumption(16);
         setProcessingSpeed(PROCESS_TICKS);
-
-        registerRecipe(2, new ItemStack[]{new ItemStack(Material.DIRT, 8)},
-                new ItemStack[]{new ItemStack(Material.AIR)});
     }
 
     @Override
@@ -56,7 +54,10 @@ public class DirtGenerator extends AContainer {
     public ItemStack getProgressBar() { return new ItemStack(Material.DIRT); }
 
     @Override
-    protected void registerDefaultRecipes() {}
+    protected void registerDefaultRecipes() {
+        registerRecipe(2, new ItemStack[]{new ItemStack(Material.DIRT, 8)},
+                new ItemStack[]{new ItemStack(Material.AIR)});
+    }
 
     @Override
     public int[] getOutputSlots() { return OUTPUT; }

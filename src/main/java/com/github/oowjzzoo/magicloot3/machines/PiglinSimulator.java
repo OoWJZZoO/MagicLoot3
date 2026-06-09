@@ -26,6 +26,7 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
+import io.github.thebusybiscuit.slimefun4.core.attributes.RecipeDisplayItem;
 import io.github.thebusybiscuit.slimefun4.core.attributes.PiglinBarterDrop;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
@@ -38,7 +39,7 @@ import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 
-public class PiglinSimulator extends AContainer {
+public class PiglinSimulator extends AContainer implements RecipeDisplayItem {
 
     private static final int[] GOLD_SLOTS = {0,1,2, 9,11, 18,19,20};
     private static final int[] HEAD_SLOTS = {27,28,29,36, 45,46,47};
@@ -90,7 +91,11 @@ public class PiglinSimulator extends AContainer {
         setCapacity(1024);
         setEnergyConsumption(72);
         setProcessingSpeed(1);
+    }
 
+    @Override public String getMachineIdentifier() { return "PIGLIN_SIMULATOR"; }
+    @Override public ItemStack getProgressBar() { return new ItemStack(Material.GOLDEN_HELMET); }
+    @Override protected void registerDefaultRecipes() {
         ItemStack head = new ItemStack(Material.PIGLIN_HEAD);
         ItemMeta hm = head.getItemMeta();
         hm.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&e猪灵交易的所有产物"));
@@ -98,10 +103,6 @@ public class PiglinSimulator extends AContainer {
         registerRecipe(3, new ItemStack[]{new ItemStack(Material.GOLD_INGOT)},
                 new ItemStack[]{head});
     }
-
-    @Override public String getMachineIdentifier() { return "PIGLIN_SIMULATOR"; }
-    @Override public ItemStack getProgressBar() { return new ItemStack(Material.GOLDEN_HELMET); }
-    @Override protected void registerDefaultRecipes() {}
     @Override public int[] getOutputSlots() { return OUTPUT; }
     @Override public int[] getInputSlots() { return new int[]{INPUT_SLOT}; }
 

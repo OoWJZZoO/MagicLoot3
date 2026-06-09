@@ -23,6 +23,7 @@ import com.github.oowjzzoo.magicloot3.Messages;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
+import io.github.thebusybiscuit.slimefun4.core.attributes.RecipeDisplayItem;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.handlers.SimpleBlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.operations.CraftingOperation;
@@ -34,7 +35,7 @@ import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 import me.mrCookieSlime.Slimefun.api.item_transport.ItemTransportFlow;
 
-public class AutoAppraiser extends AContainer {
+public class AutoAppraiser extends AContainer implements RecipeDisplayItem {
 
     private static final int[] BORDER = { 0,1,2,3,4,5,6,7,8, 31, 36,37,38,39,40,41,42,43,44 };
     private static final int[] BORDER_IN = { 9,10,11,12, 18,21, 27,28,29,30 };
@@ -54,16 +55,6 @@ public class AutoAppraiser extends AContainer {
         setCapacity(512);
         setEnergyConsumption(48);
         setProcessingSpeed(3);
-
-        // Display recipes: unidentified equipment → identified equipment at each tier
-        ItemStack unid = io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem
-                .getById("MAGICLOOT_UNIDENTIFIED").getItem().clone();
-        unid.setType(Material.STONE_HOE);
-        for (LootTier tier : new LootTier[]{LootTier.COMMON, LootTier.UNCOMMON,
-                LootTier.RARE, LootTier.EPIC, LootTier.LEGENDARY}) {
-            registerRecipe(3, new ItemStack[]{unid.clone()},
-                    new ItemStack[]{ItemManager.applyTier(new ItemStack(Material.STONE_HOE), tier)});
-        }
     }
 
     @Override
@@ -73,7 +64,16 @@ public class AutoAppraiser extends AContainer {
     public ItemStack getProgressBar() { return new ItemStack(Material.GRINDSTONE); }
 
     @Override
-    protected void registerDefaultRecipes() {}
+    protected void registerDefaultRecipes() {
+        ItemStack unid = io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem
+                .getById("MAGICLOOT_UNIDENTIFIED").getItem().clone();
+        unid.setType(Material.STONE_HOE);
+        for (LootTier tier : new LootTier[]{LootTier.COMMON, LootTier.UNCOMMON,
+                LootTier.RARE, LootTier.EPIC, LootTier.LEGENDARY}) {
+            registerRecipe(3, new ItemStack[]{unid.clone()},
+                    new ItemStack[]{ItemManager.applyTier(new ItemStack(Material.STONE_HOE), tier)});
+        }
+    }
 
     @Override
     protected BlockBreakHandler onBlockBreak() {
