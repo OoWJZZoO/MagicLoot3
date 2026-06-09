@@ -64,24 +64,18 @@ public class AutoAppraiser extends AContainer implements RecipeDisplayItem {
     public ItemStack getProgressBar() { return new ItemStack(Material.GRINDSTONE); }
 
     @Override
-    protected void registerDefaultRecipes() {
-        ItemStack unid = io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem
-                .getById("MAGICLOOT_UNIDENTIFIED").getItem().clone();
-        unid.setType(Material.STONE_HOE);
-        for (LootTier tier : new LootTier[]{LootTier.COMMON, LootTier.UNCOMMON,
-                LootTier.RARE, LootTier.EPIC, LootTier.LEGENDARY}) {
-            registerRecipe(3, new ItemStack[]{unid.clone()},
-                    new ItemStack[]{ItemManager.applyTier(new ItemStack(Material.STONE_HOE), tier)});
-        }
-    }
+    protected void registerDefaultRecipes() {}
 
     @Override
     public java.util.List<ItemStack> getDisplayRecipes() {
-        java.util.List<ItemStack> display = new java.util.ArrayList<>(recipes.size() * 2);
-        for (MachineRecipe r : recipes) {
-            if (r.getInput().length != 1) continue;
-            display.add(r.getInput()[0]);
-            display.add(r.getOutput()[0]);
+        ItemStack unid = io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem
+                .getById("MAGICLOOT_UNIDENTIFIED").getItem().clone();
+        unid.setType(Material.STONE_HOE);
+        java.util.List<ItemStack> display = new java.util.ArrayList<>();
+        for (LootTier tier : new LootTier[]{LootTier.COMMON, LootTier.UNCOMMON,
+                LootTier.RARE, LootTier.EPIC, LootTier.LEGENDARY}) {
+            display.add(unid.clone());
+            display.add(ItemManager.applyTier(new ItemStack(Material.STONE_HOE), tier));
         }
         return display;
     }
