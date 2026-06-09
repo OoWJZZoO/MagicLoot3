@@ -23,6 +23,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
+import io.github.thebusybiscuit.slimefun4.api.items.groups.NestedItemGroup;
+import io.github.thebusybiscuit.slimefun4.api.items.groups.SubItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockUseHandler;
@@ -66,11 +68,38 @@ final class SlimefunHook implements SlimefunAddon {
     private void doRegister() {
         boolean zh = "zh".equals(LANG);
 
+        // ── Parent NestedItemGroup ──
         SlimefunItemStack iconStack = new SlimefunItemStack(
                 "MAGICLOOT_ICON", Material.BOOKSHELF,
                 zh ? "§5魔法战利品" : "§5MagicLoot");
-        ItemGroup itemGroup = new ItemGroup(
+        NestedItemGroup parentGroup = new NestedItemGroup(
                 new NamespacedKey(plugin, "magicloot"), iconStack);
+
+        // ── SubItemGroups ──
+
+        // Machines (energy-consuming AContainers)
+        ItemStack machinesIcon = new ItemStack(Material.SMITHING_TABLE);
+        ItemMeta machinesMeta = machinesIcon.getItemMeta();
+        machinesMeta.setDisplayName(zh ? "§6机器" : "§6Machines");
+        machinesIcon.setItemMeta(machinesMeta);
+        SubItemGroup machinesGroup = new SubItemGroup(
+                new NamespacedKey(plugin, "magicloot_machines"), parentGroup, machinesIcon);
+
+        // Basic Machines (non-energy machines + desk)
+        ItemStack basicMachinesIcon = new ItemStack(Material.CRAFTING_TABLE);
+        ItemMeta basicMachinesMeta = basicMachinesIcon.getItemMeta();
+        basicMachinesMeta.setDisplayName(zh ? "§b基础机器" : "§bBasic Machines");
+        basicMachinesIcon.setItemMeta(basicMachinesMeta);
+        SubItemGroup basicMachinesGroup = new SubItemGroup(
+                new NamespacedKey(plugin, "magicloot_basic_machines"), parentGroup, basicMachinesIcon);
+
+        // Items (materials, runes, tools, dummies, etc.)
+        ItemStack itemsIcon = new ItemStack(Material.FIREWORK_STAR);
+        ItemMeta itemsMeta = itemsIcon.getItemMeta();
+        itemsMeta.setDisplayName(zh ? "§d物品" : "§dItems");
+        itemsIcon.setItemMeta(itemsMeta);
+        SubItemGroup itemsGroup = new SubItemGroup(
+                new NamespacedKey(plugin, "magicloot_items"), parentGroup, itemsIcon);
 
         // Lost Bookshelf
         String shelfName = zh ? "§d旧日书架" : "§dLost Bookshelf";
@@ -92,7 +121,7 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack(Material.BOOKSHELF), null, new ItemStack(Material.BOOKSHELF)};
 
         SlimefunItem bookshelf = new SlimefunItem(
-                itemGroup, bookshelfStack, RecipeType.ENHANCED_CRAFTING_TABLE,
+                itemsGroup, bookshelfStack, RecipeType.ENHANCED_CRAFTING_TABLE,
                 bookshelfRecipe, new SlimefunItemStack(bookshelfStack, 2));
         bookshelf.register(this);
 
@@ -103,7 +132,7 @@ final class SlimefunHook implements SlimefunAddon {
                 : new String[]{"", "§8Tier: §b§d§e§cUnknown", "", "§7Represents any §cunidentified §7equipment"};
         SlimefunItemStack unidStack = new SlimefunItemStack(
                 "MAGICLOOT_UNIDENTIFIED", Material.STONE_HOE, unidName, unidLore);
-        SlimefunItem unidDummy = new SlimefunItem(itemGroup, unidStack, RecipeType.NULL, new ItemStack[9]);
+        SlimefunItem unidDummy = new SlimefunItem(itemsGroup, unidStack, RecipeType.NULL, new ItemStack[9]);
         unidDummy.setHidden(true);
         unidDummy.register(this);
 
@@ -144,7 +173,7 @@ final class SlimefunHook implements SlimefunAddon {
                 return list;
             }
         }
-        DeskItem desk = new DeskItem(itemGroup, deskStack, RecipeType.ENHANCED_CRAFTING_TABLE, deskRecipe);
+        DeskItem desk = new DeskItem(basicMachinesGroup, deskStack, RecipeType.ENHANCED_CRAFTING_TABLE, deskRecipe);
         desk.addItemHandler((BlockUseHandler) event -> {
             event.cancel();
             LostLibrarian.openMenu(event.getPlayer(), true);
@@ -162,7 +191,7 @@ final class SlimefunHook implements SlimefunAddon {
                 null, SlimefunItems.REINFORCED_ALLOY_INGOT, null,
                 bookshelfStack, new ItemStack(Material.DISPENSER), bookshelfStack,
                 bookshelfStack, SlimefunItems.PORTABLE_DUSTBIN, bookshelfStack};
-        new EquipmentSplitter(itemGroup, splitterStack,
+        new EquipmentSplitter(basicMachinesGroup, splitterStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, splitterRecipe)
                 .register(this);
 
@@ -200,7 +229,7 @@ final class SlimefunHook implements SlimefunAddon {
         dropIcon.setItemMeta(dropMeta);
         RecipeType librarianDrop = new RecipeType(
                 new NamespacedKey(plugin, "librarian_drop"), dropIcon);
-        new SlimefunItem(itemGroup, brainStack, librarianDrop,
+        new SlimefunItem(itemsGroup, brainStack, librarianDrop,
                 new ItemStack[]{null, null, null, null, eggIcon, null, null, null, null})
                 .register(this);
 
@@ -232,7 +261,7 @@ final class SlimefunHook implements SlimefunAddon {
                 : "§7equipment's potion affix effects"));
         skullIcon.setItemMeta(skullMeta);
 
-        SlimefunItem headIngredient = new SlimefunItem(itemGroup, headIngredientStack,
+        SlimefunItem headIngredient = new SlimefunItem(itemsGroup, headIngredientStack,
                 suicideDrop, new ItemStack[]{null, null, null, null, skullIcon, null, null, null, null});
         headIngredient.setHidden(true);
         headIngredient.register(this);
@@ -249,7 +278,7 @@ final class SlimefunHook implements SlimefunAddon {
                 SlimefunItems.MAGIC_LUMP_3, headIngredientStack, SlimefunItems.MAGIC_LUMP_3,
                 SlimefunItems.BACKPACK_MEDIUM, new ItemStack(Material.ARMOR_STAND), SlimefunItems.BACKPACK_MEDIUM,
                 SlimefunItems.MAGIC_LUMP_3, headIngredientStack, SlimefunItems.MAGIC_LUMP_3};
-        new SlimefunItem(itemGroup, dummyStack, RecipeType.ANCIENT_ALTAR, dummyRecipe)
+        new SlimefunItem(itemsGroup, dummyStack, RecipeType.ANCIENT_ALTAR, dummyRecipe)
                 .register(this);
         // Implicit recipe: real PLAYER_HEAD with Notch skin for actual matching
         ItemStack notchHead = new ItemStack(Material.PLAYER_HEAD);
@@ -292,7 +321,7 @@ final class SlimefunHook implements SlimefunAddon {
                 null, new ItemStack(Material.DROPPER), null,
                 null, dummyStack, null,
                 null, SlimefunItems.ANDROID_MEMORY_CORE, null};
-        new LivingDropper(itemGroup, dropperStack, RecipeType.ENHANCED_CRAFTING_TABLE, dropperRecipe)
+        new LivingDropper(basicMachinesGroup, dropperStack, RecipeType.ENHANCED_CRAFTING_TABLE, dropperRecipe)
                 .register(this);
 
         // Training Dummy
@@ -310,7 +339,7 @@ final class SlimefunHook implements SlimefunAddon {
                 null, new ItemStack(Material.OBSERVER), null,
                 null, dummyStack, null,
                 null, SlimefunItems.GOLD_24K, null};
-        new SlimefunItem(itemGroup, trainingDummyStack,
+        new SlimefunItem(itemsGroup, trainingDummyStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, trainingDummyRecipe)
                 .register(this);
 
@@ -331,7 +360,7 @@ final class SlimefunHook implements SlimefunAddon {
                 null, new ItemStack(Material.BONE), null};
         SlimefunItemStack undeadStack = new SlimefunItemStack(
                 "TRAINING_DUMMY_UNDEAD", Material.ARMOR_STAND, undeadName, undeadLore);
-        new SlimefunItem(itemGroup, undeadStack,
+        new SlimefunItem(itemsGroup, undeadStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, undeadRecipe)
                 .register(this);
 
@@ -360,7 +389,7 @@ final class SlimefunHook implements SlimefunAddon {
         voucherDeskIcon.setItemMeta(voucherDeskMeta);
         RecipeType voucherRecipeType = new RecipeType(
                 new NamespacedKey(plugin, "voucher_exchange"), voucherDeskIcon);
-        new SlimefunItem(itemGroup, voucherStack, voucherRecipeType,
+        new SlimefunItem(itemsGroup, voucherStack, voucherRecipeType,
                 new ItemStack[]{null, null, null, null, unidDummy.getItem(), null, null, null, null})
                 .register(this);
 
@@ -400,7 +429,7 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
                 new ItemStack(Material.ANCIENT_DEBRIS)};
 
-        new PastRune(itemGroup, runeStack, RecipeType.ANCIENT_ALTAR, runeRecipe,
+        new PastRune(itemsGroup, runeStack, RecipeType.ANCIENT_ALTAR, runeRecipe,
                 new SlimefunItemStack(runeStack, 3))
                 .register(this);
 
@@ -446,7 +475,7 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack(Material.NAME_TAG), SlimefunItems.RAINBOW_LEATHER, runeStack,
                 SlimefunItems.RAINBOW_LEATHER, brainStack, SlimefunItems.RAINBOW_LEATHER,
                 runeStack, SlimefunItems.RAINBOW_LEATHER, new ItemStack(Material.NAME_TAG)};
-        new RenameRune(itemGroup, renameRuneStack, RecipeType.ANCIENT_ALTAR,
+        new RenameRune(itemsGroup, renameRuneStack, RecipeType.ANCIENT_ALTAR,
                 renameRuneRecipe, new SlimefunItemStack(renameRuneStack, 12))
                 .register(this);
 
@@ -463,7 +492,7 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack(Material.BEACON),
                 new ItemStack(Material.WAXED_WEATHERED_COPPER_BULB),
                 runeStack, new ItemStack(Material.DRAGON_HEAD), runeStack};
-        new SlimefunItem(itemGroup, timeStack, RecipeType.ANCIENT_ALTAR, timeRecipe,
+        new SlimefunItem(itemsGroup, timeStack, RecipeType.ANCIENT_ALTAR, timeRecipe,
                 new SlimefunItemStack(timeStack, 4))
                 .register(this);
 
@@ -472,7 +501,7 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH),
                 SlimefunItems.ENDER_LUMP_3, new ItemStack(Material.NETHERITE_BLOCK), SlimefunItems.ENDER_LUMP_3,
                 new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH)};
-        new VanillaItem(itemGroup, new ItemStack(Material.DRAGON_HEAD), "DRAGON_HEAD",
+        new VanillaItem(itemsGroup, new ItemStack(Material.DRAGON_HEAD), "DRAGON_HEAD",
                 RecipeType.ANCIENT_ALTAR, dragonHeadRecipe)
                 .register(this);
 
@@ -498,7 +527,7 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack(Material.ECHO_SHARD), new ItemStack(Material.MUSIC_DISC_5), new ItemStack(Material.ECHO_SHARD),
                 new ItemStack(Material.SOUL_TORCH), new ItemStack(Material.SCULK_SHRIEKER), new ItemStack(Material.SOUL_TORCH),
                 new ItemStack(Material.ECHO_SHARD), new ItemStack(Material.MUSIC_DISC_5), new ItemStack(Material.ECHO_SHARD)};
-        new ActivatedSculkShrieker(itemGroup, shriekerStack,
+        new ActivatedSculkShrieker(itemsGroup, shriekerStack,
                 RecipeType.ANCIENT_ALTAR, shriekerRecipe)
                 .register(this);
 
@@ -525,7 +554,7 @@ final class SlimefunHook implements SlimefunAddon {
                 null, SlimefunItems.NECROTIC_SKULL, null,
                 renameRuneStack, brainStack, renameRuneStack,
                 SlimefunItems.BLISTERING_INGOT_3, SlimefunItems.PROGRAMMABLE_ANDROID_2, SlimefunItems.BLISTERING_INGOT_3};
-        new AutoAppraiser(itemGroup, appraiserStack,
+        new AutoAppraiser(machinesGroup, appraiserStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, appraiserRecipe)
                 .register(this);
 
@@ -539,7 +568,7 @@ final class SlimefunHook implements SlimefunAddon {
                 SlimefunItems.AUTO_DISENCHANTER_2,
                 SlimefunItems.PROGRAMMABLE_ANDROID_3_BUTCHER,
                 timeStack, SlimefunItems.NETHER_STAR_REACTOR, timeStack};
-        new PotionAffixDisenchanter(itemGroup, disStack,
+        new PotionAffixDisenchanter(machinesGroup, disStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, disRecipe)
                 .register(this);
 
@@ -553,7 +582,7 @@ final class SlimefunHook implements SlimefunAddon {
                 SlimefunItems.AUTO_ENCHANTER_2,
                 SlimefunItems.PROGRAMMABLE_ANDROID_3_BUTCHER,
                 timeStack, SlimefunItems.NETHER_STAR_REACTOR, timeStack};
-        new PotionAffixEnchanter(itemGroup, enchStack,
+        new PotionAffixEnchanter(machinesGroup, enchStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, enchRecipe)
                 .register(this);
 
@@ -572,7 +601,7 @@ final class SlimefunHook implements SlimefunAddon {
                 null, new ItemStack(Material.DIAMOND_SHOVEL), null,
                 SlimefunItems.EXPLOSIVE_SHOVEL, new ItemStack(Material.MUD_BRICKS), SlimefunItems.EXPLOSIVE_SHOVEL,
                 new ItemStack(Material.PISTON), new ItemStack(Material.CAULDRON), new ItemStack(Material.PISTON)};
-        new DirtGenerator(itemGroup, dirtGenStack,
+        new DirtGenerator(machinesGroup, dirtGenStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, dirtGenRecipe)
                 .register(this);
 
@@ -584,14 +613,15 @@ final class SlimefunHook implements SlimefunAddon {
                 zh ? "&7物流抓不过来啦!" : "&7Cargo can't keep up!",
                 "",
                 LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
-                LoreBuilder.speed(1), LoreBuilder.powerPerSecond(144)};
+                LoreBuilder.powerPerSecond(144),
+                zh ? "&8⇨ &b⚡ &7速度: &b1x~64x" : "&8⇨ &b⚡ &7Speed: &b1x~64x"};
         SlimefunItemStack piglinStack = new SlimefunItemStack(
                 "PIGLIN_SIMULATOR", Material.GILDED_BLACKSTONE, piglinName, piglinLore);
         ItemStack[] piglinRecipe = {
                 SlimefunItems.GOLD_24K_BLOCK, new ItemStack(Material.PIGLIN_HEAD), SlimefunItems.GOLD_24K_BLOCK,
                 SlimefunItems.PRODUCE_COLLECTOR, SlimefunItems.CARGO_MANAGER, SlimefunItems.AUTO_BREEDER,
                 SlimefunItems.REINFORCED_PLATE, SlimefunItems.REINFORCED_PLATE, SlimefunItems.REINFORCED_PLATE};
-        new PiglinSimulator(itemGroup, piglinStack,
+        new PiglinSimulator(machinesGroup, piglinStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, piglinRecipe)
                 .register(this);
 
@@ -608,7 +638,7 @@ final class SlimefunHook implements SlimefunAddon {
                 SlimefunItems.COPPER_INGOT, new ItemStack(Material.COPPER_INGOT), SlimefunItems.COPPER_INGOT,
                 new ItemStack(Material.COPPER_INGOT), new ItemStack(Material.CRAFTING_TABLE), new ItemStack(Material.COPPER_INGOT),
                 SlimefunItems.COPPER_INGOT, new ItemStack(Material.COPPER_INGOT), SlimefunItems.COPPER_INGOT};
-        new CopperUnifier(itemGroup, copperStack,
+        new CopperUnifier(basicMachinesGroup, copperStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, copperRecipe)
                 .register(this);
 
