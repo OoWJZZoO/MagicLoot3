@@ -455,14 +455,29 @@ final class SlimefunHook implements SlimefunAddon {
                 .register(this);
 
         // Activated Sculk Shrieker (can summon Warden)
+        // Activated Sculk Shrieker
         String shriekerName = zh
-                ? "§f幽匿尖啸体 §8§l[§3活化§8§l]"
-                : "§fSculk Shrieker §8§l[§3Activated§8§l]";
+                ? "§f幽匿尖啸体 §8§l[§3§l活化§8§l]"
+                : "§fSculk Shrieker §8§l[§3§lActivated§8§l]";
+        String[] shriekerLore = zh
+                ? new String[]{"",
+                        "&7在朋友家放一个",
+                        "&7然后...桀桀桀",
+                        "",
+                        "&7可以召唤监守者"}
+                : new String[]{"",
+                        "&7Place one at your friend's base",
+                        "&7and then... hehehe",
+                        "",
+                        "&7Can summon the Warden"};
         SlimefunItemStack shriekerStack = new SlimefunItemStack(
-                "ACTIVATED_SCULK_SHRIEKER", Material.SCULK_SHRIEKER, shriekerName, new String[0]);
-        ItemStack[] shriekerRecipe = {null,null,null, null,null,null, null,null,null};
+                "ACTIVATED_SCULK_SHRIEKER", Material.SCULK_SHRIEKER, shriekerName, shriekerLore);
+        ItemStack[] shriekerRecipe = {
+                new ItemStack(Material.ECHO_SHARD), new ItemStack(Material.MUSIC_DISC_5), new ItemStack(Material.ECHO_SHARD),
+                new ItemStack(Material.SOUL_TORCH), new ItemStack(Material.SCULK_CATALYST), new ItemStack(Material.SOUL_TORCH),
+                new ItemStack(Material.ECHO_SHARD), new ItemStack(Material.MUSIC_DISC_5), new ItemStack(Material.ECHO_SHARD)};
         new ActivatedSculkShrieker(itemGroup, shriekerStack,
-                RecipeType.NULL, shriekerRecipe)
+                RecipeType.ANCIENT_ALTAR, shriekerRecipe)
                 .register(this);
 
         // --- Machines ---
