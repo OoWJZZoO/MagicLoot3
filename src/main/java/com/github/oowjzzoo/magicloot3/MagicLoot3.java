@@ -92,6 +92,7 @@ public class MagicLoot3 extends JavaPlugin implements Listener {
         LivingDropper.cleanup();
         LootListener.clearSelfDamageTimers();
         TrainingDummy.cleanup();
+        MenuGUI.shutdown();
         instance = null;
     }
 

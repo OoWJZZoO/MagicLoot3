@@ -13,8 +13,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
-import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
-import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu;
 
 import com.github.oowjzzoo.magicloot3.util.SkullCreator;
 
@@ -28,10 +26,7 @@ public final class LostLibrarianGUI {
         int removed = 0;
         var it = deskState.entrySet().iterator();
         while (it.hasNext()) {
-            if (Bukkit.getPlayer(it.next().getKey()) == null) {
-                it.remove();
-                removed++;
-            }
+            if (Bukkit.getPlayer(it.next().getKey()) == null) { it.remove(); removed++; }
         }
         return removed;
     }
@@ -39,25 +34,20 @@ public final class LostLibrarianGUI {
     static void open(Player player, boolean isDesk) {
         deskState.put(player.getUniqueId(), isDesk);
         String title = isDesk ? Messages.get("desk.title") : Messages.get("gui.title");
-        ChestMenu menu = new ChestMenu(title);
-        menu.setEmptySlotsClickable(false);
 
-        // Fill rows 3-6 (slots 18-53) with background
-        for (int i = 18; i < 54; i++)
-            menu.addItem(i, ChestMenuUtils.getBackground(), ChestMenuUtils.getEmptyClickHandler());
+        MenuGUI menu = new MenuGUI(18, title);
 
-        // Slots 1-3, 5-7 (empty decorative) — background
-        for (int i : new int[]{1,2,3, 5,6,7, 10, 16})
-            menu.addItem(i, ChestMenuUtils.getBackground(), ChestMenuUtils.getEmptyClickHandler());
+        // Background slots
+        menu.fillBg(1,2,3, 5,6,7, 10, 16);
 
-        // Border panes
+        // Border panes (darker glass for visual distinction)
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta borderMeta = border.getItemMeta();
         borderMeta.setDisplayName(Messages.get("gui.border"));
         border.setItemMeta(borderMeta);
-        menu.addItem(0, border, ChestMenuUtils.getEmptyClickHandler());
-        menu.addItem(8, border, ChestMenuUtils.getEmptyClickHandler());
-        menu.addItem(9, border, ChestMenuUtils.getEmptyClickHandler());
+        menu.setDisplay(0, border);
+        menu.setDisplay(8, border);
+        menu.setDisplay(9, border);
 
         // Random option (slot 4)
         ItemStack randomIcon = SkullCreator.createSkull(
@@ -69,10 +59,8 @@ public final class LostLibrarianGUI {
         randomLore.add(Messages.get("gui.cost", getCost("RANDOM")));
         randomMeta.setLore(randomLore);
         randomIcon.setItemMeta(randomMeta);
-        menu.addItem(4, randomIcon);
-        menu.addMenuClickHandler(4, (pl, s, it, a) -> {
+        menu.setButton(4, randomIcon, (pl, s, a) -> {
             LostLibrarian.examineTier(pl, null, isDesk);
-            return false;
         });
 
         // Tier buttons (slots 11-15)
@@ -89,10 +77,8 @@ public final class LostLibrarianGUI {
             paneMeta.setLore(lore);
             paneItem.setItemMeta(paneMeta);
             final LootTier snap = tier;
-            menu.addItem(11 + i, paneItem);
-            menu.addMenuClickHandler(11 + i, (pl, s, it, a) -> {
+            menu.setButton(11 + i, paneItem, (pl, s, a) -> {
                 LostLibrarian.examineTier(pl, snap, isDesk);
-                return false;
             });
         }
 
@@ -104,10 +90,8 @@ public final class LostLibrarianGUI {
         exLore.add(Messages.get("gui.exchange_button_warning"));
         exMeta.setLore(exLore);
         exchangeBtn.setItemMeta(exMeta);
-        menu.addItem(17, exchangeBtn);
-        menu.addMenuClickHandler(17, (pl, s, it, a) -> {
+        menu.setButton(17, exchangeBtn, (pl, s, a) -> {
             exchangeVoucher(pl);
-            return false;
         });
 
         menu.open(player);

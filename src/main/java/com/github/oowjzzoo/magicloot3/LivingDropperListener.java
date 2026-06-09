@@ -30,9 +30,6 @@ import org.bukkit.util.Vector;
 
 import com.github.oowjzzoo.magicloot3.machines.LivingDropper;
 
-import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
-import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu;
-
 public class LivingDropperListener implements Listener {
 
     private static final Map<UUID, Location> playerToOpenLoc = new HashMap<>();
@@ -108,32 +105,29 @@ public class LivingDropperListener implements Listener {
         });
     }
 
-    // --- Binding GUI (ChestMenu) ---
+    // --- Binding GUI (9-slot MenuGUI) ---
 
     static void openBindingGUI(Player player, Location loc) {
         playerToOpenLoc.put(player.getUniqueId(), loc);
 
-        ChestMenu menu = new ChestMenu(Messages.get("living_dropper.gui_title"));
-        menu.setEmptySlotsClickable(false);
+        // Title matches the item's display name
+        var sfItem = io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem
+                .getById("LIVING_DROPPER");
+        String title = sfItem != null ? sfItem.getItemName()
+                : Messages.get("living_dropper.gui_title");
 
-        // Fill all slots with background
-        for (int i = 0; i < 54; i++)
-            menu.addItem(i, ChestMenuUtils.getBackground(), ChestMenuUtils.getEmptyClickHandler());
-
-        // Slot 4: bind/unbind button
-        menu.addItem(4, buildBindButton(loc));
-        menu.addMenuClickHandler(4, (pl, s, it, a) -> {
+        MenuGUI menu = new MenuGUI(9, title);
+        menu.fillBg(0,1,2,3, 5,6,7,8);
+        menu.setButton(4, buildBindButton(loc), (pl, s, a) -> {
             UUID current = LivingDropper.getBoundUUID(loc);
             if (current != null && current.equals(pl.getUniqueId())) {
                 LivingDropper.unbind(loc);
             } else {
                 LivingDropper.bind(loc, pl.getUniqueId());
             }
-            menu.replaceExistingItem(4, buildBindButton(loc));
-            return false;
+            menu.getInventory().setItem(4, buildBindButton(loc));
         });
-
-        menu.addMenuCloseHandler(pl -> playerToOpenLoc.remove(pl.getUniqueId()));
+        menu.onClose(() -> playerToOpenLoc.remove(player.getUniqueId()));
         menu.open(player);
     }
 
