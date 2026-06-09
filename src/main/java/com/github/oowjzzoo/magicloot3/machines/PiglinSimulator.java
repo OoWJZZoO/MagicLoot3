@@ -9,7 +9,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Piglin;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -145,9 +147,12 @@ public class PiglinSimulator extends AContainer {
         Inventory sim = Bukkit.createInventory(null, menu.toInventory().getSize());
         sim.setContents(menu.toInventory().getContents());
 
+        // Create a virtual (unspawned) piglin to satisfy this_entity parameter
+        World world = Bukkit.getWorlds().get(0);
+        Piglin piglin = world.createEntity(world.getSpawnLocation(), Piglin.class);
         LootTable table = LootTables.PIGLIN_BARTERING.getLootTable();
-        LootContext ctx = new LootContext.Builder(
-                Bukkit.getWorlds().get(0).getSpawnLocation()).build();
+        LootContext ctx = new LootContext.Builder(world.getSpawnLocation())
+                .lootedEntity(piglin).build();
 
         List<ItemStack> outputs = new ArrayList<>();
 
