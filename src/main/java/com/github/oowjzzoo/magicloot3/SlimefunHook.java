@@ -180,6 +180,23 @@ final class SlimefunHook implements SlimefunAddon {
         });
         desk.register(this);
 
+        // Copper Unifier
+        String copperName = zh ? "§6铜锭大一统机" : "§6Copper Unifier";
+        String[] copperLore = {"",
+                zh ? "&7我受够了!!!" : "&7I've had enough!!!",
+                zh ? "&7...本该如此" : "&7...as it should be",
+                "",
+                zh ? "&7可以转化粘液科技与原版的铜锭" : "&7Converts between Slimefun and vanilla copper ingots"};
+        SlimefunItemStack copperStack = new SlimefunItemStack(
+                "COPPER_UNIFIER", Material.COPPER_BLOCK, copperName, copperLore);
+        ItemStack[] copperRecipe = {
+                SlimefunItems.COPPER_INGOT, new ItemStack(Material.COPPER_INGOT), SlimefunItems.COPPER_INGOT,
+                new ItemStack(Material.COPPER_INGOT), new ItemStack(Material.CRAFTING_TABLE), new ItemStack(Material.COPPER_INGOT),
+                SlimefunItems.COPPER_INGOT, new ItemStack(Material.COPPER_INGOT), SlimefunItems.COPPER_INGOT};
+        new CopperUnifier(basicMachinesGroup, copperStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, copperRecipe)
+                .register(this);
+
         // Equipment Splitter
         String splitterName = zh ? "§a装备分流器" : "§aEquipment Splitter";
         String[] splitterLore = zh
@@ -496,17 +513,7 @@ final class SlimefunHook implements SlimefunAddon {
                 new SlimefunItemStack(timeStack, 4))
                 .register(this);
 
-        // Dragon Head (VanillaItem with Ancient Altar recipe)
-        ItemStack[] dragonHeadRecipe = {
-                new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH),
-                SlimefunItems.ENDER_LUMP_3, new ItemStack(Material.NETHERITE_BLOCK), SlimefunItems.ENDER_LUMP_3,
-                new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH)};
-        new VanillaItem(itemsGroup, new ItemStack(Material.DRAGON_HEAD), "DRAGON_HEAD",
-                RecipeType.ANCIENT_ALTAR, dragonHeadRecipe)
-                .register(this);
-
         // Activated Sculk Shrieker (can summon Warden)
-        // Activated Sculk Shrieker
         String shriekerName = zh
                 ? "§f幽匿尖啸体 §8§l[§3§l活化§8§l]"
                 : "§fSculk Shrieker §8§l[§3§lActivated§8§l]";
@@ -531,14 +538,62 @@ final class SlimefunHook implements SlimefunAddon {
                 RecipeType.ANCIENT_ALTAR, shriekerRecipe)
                 .register(this);
 
+        // Dragon Head (VanillaItem with Ancient Altar recipe) — last in items
+        ItemStack[] dragonHeadRecipe = {
+                new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH),
+                SlimefunItems.ENDER_LUMP_3, new ItemStack(Material.NETHERITE_BLOCK), SlimefunItems.ENDER_LUMP_3,
+                new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH)};
+        new VanillaItem(itemsGroup, new ItemStack(Material.DRAGON_HEAD), "DRAGON_HEAD",
+                RecipeType.ANCIENT_ALTAR, dragonHeadRecipe)
+                .register(this);
+
         // --- Machines ---
+
+        // Dirt Generator (Magic Bulldozer) — first
+        String[] dirtGenLore = {"",
+                zh ? "&7泥土遍地都是" : "&7Dirt is everywhere",
+                zh ? "&7但是手挖是不健康的行为" : "&7But digging by hand is unhealthy",
+                zh ? "&7魔法推土机，你值得拥有" : "&7Magic Bulldozer, you deserve it",
+                "",
+                LoreBuilder.machine(MachineTier.MEDIUM, MachineType.MACHINE),
+                LoreBuilder.speed(4), LoreBuilder.powerPerSecond(32)};
+        String dirtGenName = zh ? "§6魔法推土机" : "§6Magic Bulldozer";
+        SlimefunItemStack dirtGenStack = new SlimefunItemStack(
+                "DIRT_GENERATOR", Material.MUD_BRICKS, dirtGenName, dirtGenLore);
+        ItemStack[] dirtGenRecipe = {
+                null, new ItemStack(Material.DIAMOND_SHOVEL), null,
+                SlimefunItems.EXPLOSIVE_SHOVEL, new ItemStack(Material.MUD_BRICKS), SlimefunItems.EXPLOSIVE_SHOVEL,
+                new ItemStack(Material.PISTON), new ItemStack(Material.CAULDRON), new ItemStack(Material.PISTON)};
+        new DirtGenerator(machinesGroup, dirtGenStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, dirtGenRecipe)
+                .register(this);
+
+        // Piglin Simulator — second
+        String piglinName = zh ? "§e§l猪灵模拟机" : "§e§lPiglin Simulator";
+        String[] piglinLore = {"",
+                zh ? "&7金光闪闪!" : "&7Shiny gold!",
+                zh ? "&7产物真多!" : "&7So many drops!",
+                zh ? "&7物流抓不过来啦!" : "&7Cargo can't keep up!",
+                "",
+                LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
+                zh ? "&8⇨ &b⚡ &7速度: &b1x~64x" : "&8⇨ &b⚡ &7Speed: &b1x~64x",
+                LoreBuilder.powerPerSecond(144)};
+        SlimefunItemStack piglinStack = new SlimefunItemStack(
+                "PIGLIN_SIMULATOR", Material.GILDED_BLACKSTONE, piglinName, piglinLore);
+        ItemStack[] piglinRecipe = {
+                SlimefunItems.GOLD_24K_BLOCK, new ItemStack(Material.PIGLIN_HEAD), SlimefunItems.GOLD_24K_BLOCK,
+                SlimefunItems.PRODUCE_COLLECTOR, SlimefunItems.CARGO_MANAGER, SlimefunItems.AUTO_BREEDER,
+                SlimefunItems.REINFORCED_PLATE, SlimefunItems.REINFORCED_PLATE, SlimefunItems.REINFORCED_PLATE};
+        new PiglinSimulator(machinesGroup, piglinStack,
+                RecipeType.ENHANCED_CRAFTING_TABLE, piglinRecipe)
+                .register(this);
 
         String[] machineLore = {"",
                 zh ? "&7花费了大量的 &b&l探索的时光" : "&7After spending a great deal of &b&lAdventuring Time",
                 zh ? "&7你终于打造出了一套神装" : "&7you have finally crafted a set of godly gear",
                 "",
                 LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
-                LoreBuilder.speed(5), LoreBuilder.powerPerSecond(128)};
+                LoreBuilder.speed(5), LoreBuilder.powerPerSecond(150)};
 
         // Auto Appraiser
         String[] appraiserLore = {"",
@@ -546,7 +601,7 @@ final class SlimefunHook implements SlimefunAddon {
                 zh ? "&7消耗附魔之瓶或学识之瓶作为经验来源" : "&7Consumes Bottles o' Enchanting or Flasks of Knowledge as XP",
                 "",
                 LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
-                LoreBuilder.speed(3), LoreBuilder.powerPerSecond(96)};
+                LoreBuilder.speed(3), LoreBuilder.powerPerSecond(128)};
         String appraiserName = zh ? "&c&l自动鉴定仪" : "&c&lAuto Appraiser";
         SlimefunItemStack appraiserStack = new SlimefunItemStack(
                 "AUTO_APPRAISER", Material.GRINDSTONE, appraiserName, appraiserLore);
@@ -584,62 +639,6 @@ final class SlimefunHook implements SlimefunAddon {
                 timeStack, SlimefunItems.NETHER_STAR_REACTOR, timeStack};
         new PotionAffixEnchanter(machinesGroup, enchStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, enchRecipe)
-                .register(this);
-
-        // Dirt Generator (Magic Bulldozer)
-        String[] dirtGenLore = {"",
-                zh ? "&7泥土遍地都是" : "&7Dirt is everywhere",
-                zh ? "&7但是手挖是不健康的行为" : "&7But digging by hand is unhealthy",
-                zh ? "&7魔法推土机，你值得拥有" : "&7Magic Bulldozer, you deserve it",
-                "",
-                LoreBuilder.machine(MachineTier.MEDIUM, MachineType.MACHINE),
-                LoreBuilder.speed(4), LoreBuilder.powerPerSecond(32)};
-        String dirtGenName = zh ? "§6魔法推土机" : "§6Magic Bulldozer";
-        SlimefunItemStack dirtGenStack = new SlimefunItemStack(
-                "DIRT_GENERATOR", Material.MUD_BRICKS, dirtGenName, dirtGenLore);
-        ItemStack[] dirtGenRecipe = {
-                null, new ItemStack(Material.DIAMOND_SHOVEL), null,
-                SlimefunItems.EXPLOSIVE_SHOVEL, new ItemStack(Material.MUD_BRICKS), SlimefunItems.EXPLOSIVE_SHOVEL,
-                new ItemStack(Material.PISTON), new ItemStack(Material.CAULDRON), new ItemStack(Material.PISTON)};
-        new DirtGenerator(machinesGroup, dirtGenStack,
-                RecipeType.ENHANCED_CRAFTING_TABLE, dirtGenRecipe)
-                .register(this);
-
-        // Piglin Simulator
-        String piglinName = zh ? "§e§l猪灵模拟机" : "§e§lPiglin Simulator";
-        String[] piglinLore = {"",
-                zh ? "&7金光闪闪!" : "&7Shiny gold!",
-                zh ? "&7产物真多!" : "&7So many drops!",
-                zh ? "&7物流抓不过来啦!" : "&7Cargo can't keep up!",
-                "",
-                LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
-                LoreBuilder.powerPerSecond(144),
-                zh ? "&8⇨ &b⚡ &7速度: &b1x~64x" : "&8⇨ &b⚡ &7Speed: &b1x~64x"};
-        SlimefunItemStack piglinStack = new SlimefunItemStack(
-                "PIGLIN_SIMULATOR", Material.GILDED_BLACKSTONE, piglinName, piglinLore);
-        ItemStack[] piglinRecipe = {
-                SlimefunItems.GOLD_24K_BLOCK, new ItemStack(Material.PIGLIN_HEAD), SlimefunItems.GOLD_24K_BLOCK,
-                SlimefunItems.PRODUCE_COLLECTOR, SlimefunItems.CARGO_MANAGER, SlimefunItems.AUTO_BREEDER,
-                SlimefunItems.REINFORCED_PLATE, SlimefunItems.REINFORCED_PLATE, SlimefunItems.REINFORCED_PLATE};
-        new PiglinSimulator(machinesGroup, piglinStack,
-                RecipeType.ENHANCED_CRAFTING_TABLE, piglinRecipe)
-                .register(this);
-
-        // Copper Unifier
-        String copperName = zh ? "§6铜锭大一统机" : "§6Copper Unifier";
-        String[] copperLore = {"",
-                zh ? "&7我受够了!!!" : "&7I've had enough!!!",
-                zh ? "&7...本该如此" : "&7...as it should be",
-                "",
-                zh ? "&7可以转化粘液科技与原版的铜锭" : "&7Converts between Slimefun and vanilla copper ingots"};
-        SlimefunItemStack copperStack = new SlimefunItemStack(
-                "COPPER_UNIFIER", Material.COPPER_BLOCK, copperName, copperLore);
-        ItemStack[] copperRecipe = {
-                SlimefunItems.COPPER_INGOT, new ItemStack(Material.COPPER_INGOT), SlimefunItems.COPPER_INGOT,
-                new ItemStack(Material.COPPER_INGOT), new ItemStack(Material.CRAFTING_TABLE), new ItemStack(Material.COPPER_INGOT),
-                SlimefunItems.COPPER_INGOT, new ItemStack(Material.COPPER_INGOT), SlimefunItems.COPPER_INGOT};
-        new CopperUnifier(basicMachinesGroup, copperStack,
-                RecipeType.ENHANCED_CRAFTING_TABLE, copperRecipe)
                 .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));

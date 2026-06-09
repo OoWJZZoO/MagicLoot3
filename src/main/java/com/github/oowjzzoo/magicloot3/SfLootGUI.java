@@ -271,6 +271,13 @@ final class SfLootGUI extends LootConfigGUI {
             } else if (group.isHidden(player)) continue;
             groups.add(group);
         }
+        // NestedItemGroup may report isHidden=true when it has no direct items,
+        // but it should still appear if it has visible sub-groups
+        for (ItemGroup group : Slimefun.getRegistry().getAllItemGroups()) {
+            if (group instanceof NestedItemGroup && !groups.contains(group)) {
+                groups.add(group);
+            }
+        }
         return groups;
     }
 }

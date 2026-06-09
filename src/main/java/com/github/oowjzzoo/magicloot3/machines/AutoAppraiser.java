@@ -53,7 +53,7 @@ public class AutoAppraiser extends AContainer implements RecipeDisplayItem {
                          RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
         setCapacity(512);
-        setEnergyConsumption(48);
+        setEnergyConsumption(64);
         setProcessingSpeed(3);
     }
 
