@@ -38,6 +38,7 @@ import com.github.oowjzzoo.magicloot3.machines.LivingDropper;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixDisenchanter;
 import com.github.oowjzzoo.magicloot3.machines.AutoAppraiser;
 import com.github.oowjzzoo.magicloot3.machines.DirtGenerator;
+import com.github.oowjzzoo.magicloot3.machines.PiglinSimulator;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixEnchanter;
 
 /**
@@ -552,6 +553,22 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack(Material.PISTON), new ItemStack(Material.CAULDRON), new ItemStack(Material.PISTON)};
         new DirtGenerator(itemGroup, dirtGenStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, dirtGenRecipe)
+                .register(this);
+
+        // Piglin Simulator
+        String piglinName = zh ? "§e猪灵模拟机" : "§ePiglin Simulator";
+        String[] piglinLore = {"",
+                zh ? "&7模拟猪灵以物易物的过程" : "&7Simulates piglin bartering",
+                zh ? "&7猪灵头颅的数量决定效率倍率" : "&7Piglin head count determines efficiency",
+                zh ? "&76秒固定周期" : "&7Fixed 6-second cycle",
+                "",
+                LoreBuilder.machine(MachineTier.ADVANCED, MachineType.MACHINE),
+                LoreBuilder.speed(1), LoreBuilder.powerPerSecond(60)};
+        SlimefunItemStack piglinStack = new SlimefunItemStack(
+                "PIGLIN_SIMULATOR", Material.GILDED_BLACKSTONE, piglinName, piglinLore);
+        ItemStack[] piglinRecipe = {null,null,null, null,null,null, null,null,null};
+        new PiglinSimulator(itemGroup, piglinStack,
+                RecipeType.NULL, piglinRecipe)
                 .register(this);
 
         plugin.getLogger().info(Messages.get("log.items_registered"));
