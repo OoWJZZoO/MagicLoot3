@@ -30,6 +30,7 @@ import io.github.thebusybiscuit.slimefun4.utils.LoreBuilder;
 
 import io.github.thebusybiscuit.slimefun4.implementation.items.VanillaItem;
 
+import com.github.oowjzzoo.magicloot3.items.ActivatedSculkShrieker;
 import com.github.oowjzzoo.magicloot3.items.PastRune;
 import com.github.oowjzzoo.magicloot3.items.RenameRune;
 import com.github.oowjzzoo.magicloot3.machines.EquipmentSplitter;
@@ -451,6 +452,17 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack(Material.DRAGON_BREATH), new ItemStack(Material.SHULKER_SHELL), new ItemStack(Material.DRAGON_BREATH)};
         new VanillaItem(itemGroup, new ItemStack(Material.DRAGON_HEAD), "DRAGON_HEAD",
                 RecipeType.ANCIENT_ALTAR, dragonHeadRecipe)
+                .register(this);
+
+        // Activated Sculk Shrieker (can summon Warden)
+        String shriekerName = zh
+                ? "§f幽匿尖啸体 §8§l[§3活化§8§l]"
+                : "§fSculk Shrieker §8§l[§3Activated§8§l]";
+        SlimefunItemStack shriekerStack = new SlimefunItemStack(
+                "ACTIVATED_SCULK_SHRIEKER", Material.SCULK_SHRIEKER, shriekerName, new String[0]);
+        ItemStack[] shriekerRecipe = {null,null,null, null,null,null, null,null,null};
+        new ActivatedSculkShrieker(itemGroup, shriekerStack,
+                RecipeType.NULL, shriekerRecipe)
                 .register(this);
 
         // --- Machines ---
