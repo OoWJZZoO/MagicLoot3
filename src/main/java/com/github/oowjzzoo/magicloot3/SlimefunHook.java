@@ -80,7 +80,7 @@ final class SlimefunHook implements SlimefunAddon {
         // Machines (energy-consuming AContainers)
         ItemStack machinesIcon = new ItemStack(Material.SMITHING_TABLE);
         ItemMeta machinesMeta = machinesIcon.getItemMeta();
-        machinesMeta.setDisplayName(zh ? "§6机器" : "§6Machines");
+        machinesMeta.setDisplayName(zh ? "§5魔法战利品 §6机器" : "§5MagicLoot §6Machines");
         machinesIcon.setItemMeta(machinesMeta);
         SubItemGroup machinesGroup = new SubItemGroup(
                 new NamespacedKey(plugin, "magicloot_machines"), parentGroup, machinesIcon);
@@ -88,7 +88,7 @@ final class SlimefunHook implements SlimefunAddon {
         // Basic Machines (non-energy machines + desk)
         ItemStack basicMachinesIcon = new ItemStack(Material.CRAFTING_TABLE);
         ItemMeta basicMachinesMeta = basicMachinesIcon.getItemMeta();
-        basicMachinesMeta.setDisplayName(zh ? "§b基础机器" : "§bBasic Machines");
+        basicMachinesMeta.setDisplayName(zh ? "§5魔法战利品 §b基础机器" : "§5MagicLoot §bBasic Machines");
         basicMachinesIcon.setItemMeta(basicMachinesMeta);
         SubItemGroup basicMachinesGroup = new SubItemGroup(
                 new NamespacedKey(plugin, "magicloot_basic_machines"), parentGroup, basicMachinesIcon);
@@ -96,7 +96,7 @@ final class SlimefunHook implements SlimefunAddon {
         // Items (materials, runes, tools, dummies, etc.)
         ItemStack itemsIcon = new ItemStack(Material.FIREWORK_STAR);
         ItemMeta itemsMeta = itemsIcon.getItemMeta();
-        itemsMeta.setDisplayName(zh ? "§d物品" : "§dItems");
+        itemsMeta.setDisplayName(zh ? "§5魔法战利品 §d物品" : "§5MagicLoot §dItems");
         itemsIcon.setItemMeta(itemsMeta);
         SubItemGroup itemsGroup = new SubItemGroup(
                 new NamespacedKey(plugin, "magicloot_items"), parentGroup, itemsIcon);

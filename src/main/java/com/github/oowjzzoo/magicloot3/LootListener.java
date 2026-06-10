@@ -2,6 +2,7 @@ package com.github.oowjzzoo.magicloot3;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +45,8 @@ public class LootListener implements Listener {
 
     private static final Set<String> SELF_DAMAGE_EFFECTS = Set.of("instant_damage", "poison", "wither");
     private static final Map<UUID, Map<String, Long>> selfDamageTimers = new HashMap<>();
+    private static final Set<String> INSTANT_KEYS = Set.of("instant_damage", "instant_health");
+    private static final Map<UUID, Long> instantCooldown = new HashMap<>();
 
     private static final List<DamageCause> CAUSES = Arrays.asList(
             DamageCause.BLOCK_EXPLOSION,
@@ -57,6 +60,10 @@ public class LootListener implements Listener {
             DamageCause.MAGIC,
             DamageCause.THORNS
     );
+
+    private final Map<UUID, Map<String, Integer>> pendingInstants = new HashMap<>();
+    private final Set<UUID> pendingSelfDamage = new HashSet<>();
+    private boolean dispatchScheduled = false;
 
     public LootListener(Plugin plugin) {
         this.plugin = plugin;
@@ -223,7 +230,13 @@ public class LootListener implements Listener {
             PotionEffectType type = ItemManager.potionEffectMap.get(enKey);
             if (type == null) continue;
 
-            if (isPositive) {
+            if (INSTANT_KEYS.contains(enKey)) {
+                if (isPositive) {
+                    collectInstant(wearer, enKey, level, true);
+                } else if (attacker != null) {
+                    collectInstant(attacker, enKey, level, false);
+                }
+            } else if (isPositive) {
                 if (wearer instanceof Player && SELF_DAMAGE_EFFECTS.contains(enKey)) {
                     long durationMs = (level + 1) * 3 * 1000L;
                     Map<String, Long> t = selfDamageTimers.computeIfAbsent(wearer.getUniqueId(), k -> new HashMap<>());
@@ -235,6 +248,84 @@ public class LootListener implements Listener {
                 attacker.addPotionEffect(new PotionEffect(type, (level + 1) * 3 * 20, level));
             }
         }
+    }
+
+    private void collectInstant(LivingEntity target, String enKey, int level, boolean isSelfDamage) {
+        UUID targetId = target.getUniqueId();
+        Long cooldownEnd = instantCooldown.get(targetId);
+        if (cooldownEnd != null && System.currentTimeMillis() < cooldownEnd) return;
+
+        pendingInstants.computeIfAbsent(targetId, k -> new HashMap<>())
+                .merge(enKey, level, Math::max);
+        if (isSelfDamage && "instant_damage".equals(enKey) && target instanceof Player) {
+            pendingSelfDamage.add(targetId);
+        }
+        if (!dispatchScheduled) {
+            dispatchScheduled = true;
+            Bukkit.getScheduler().runTask(plugin, this::dispatchInstantEffects);
+        }
+    }
+
+    private void dispatchInstantEffects() {
+        dispatchScheduled = false;
+
+        for (var entry : pendingInstants.entrySet()) {
+            UUID targetId = entry.getKey();
+            Map<String, Integer> effects = entry.getValue();
+
+            LivingEntity target = (LivingEntity) Bukkit.getEntity(targetId);
+            if (target == null || !target.isValid()) continue;
+
+            int dmgAmp = effects.getOrDefault("instant_damage", -1);
+            int healAmp = effects.getOrDefault("instant_health", -1);
+            boolean selfDmg = pendingSelfDamage.contains(targetId);
+
+            instantCooldown.put(targetId, System.currentTimeMillis() + 150L);
+
+            int tick = 0;
+            if (dmgAmp >= 0) {
+                final int amp = dmgAmp;
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    if (!target.isValid()) return;
+                    if (selfDmg) {
+                        setSelfDamageTimer(targetId, "instant_damage", amp);
+                    }
+                    applyInstantPotion(target, PotionEffectType.INSTANT_DAMAGE, amp);
+                }, ++tick);
+            }
+            if (healAmp >= 0) {
+                final int amp = healAmp;
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    if (!target.isValid()) return;
+                    applyInstantPotion(target, PotionEffectType.INSTANT_HEALTH, amp);
+                }, ++tick);
+            }
+        }
+
+        pendingInstants.clear();
+        pendingSelfDamage.clear();
+    }
+
+    private void applyInstantPotion(LivingEntity target, PotionEffectType type, int amplifier) {
+        int oldTicks = target.getNoDamageTicks();
+        if (oldTicks > 0) {
+            target.setNoDamageTicks(0);
+        }
+        target.addPotionEffect(new PotionEffect(type, 1, amplifier));
+        if (oldTicks > 0) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (target.isValid() && target.getNoDamageTicks() == 0) {
+                    target.setNoDamageTicks(Math.max(0, oldTicks - 1));
+                }
+            }, 1L);
+        }
+    }
+
+    private void setSelfDamageTimer(UUID playerId, String enKey, int level) {
+        long durationMs = (level + 1) * 3 * 1000L;
+        Map<String, Long> t = selfDamageTimers.computeIfAbsent(playerId, k -> new HashMap<>());
+        t.entrySet().removeIf(e2 -> System.currentTimeMillis() >= e2.getValue());
+        t.put(enKey, System.currentTimeMillis() + durationMs);
     }
 
     private ItemStack getItemInMainHand(LivingEntity entity) {
@@ -331,11 +422,16 @@ public class LootListener implements Listener {
             entry.getValue().entrySet().removeIf(e -> System.currentTimeMillis() >= e.getValue());
             if (entry.getValue().isEmpty()) { it.remove(); removed++; }
         }
+        var cit = instantCooldown.entrySet().iterator();
+        while (cit.hasNext()) {
+            if (System.currentTimeMillis() >= cit.next().getValue()) { cit.remove(); removed++; }
+        }
         return removed;
     }
 
     static void clearSelfDamageTimers() {
         selfDamageTimers.clear();
+        instantCooldown.clear();
     }
 
     @EventHandler

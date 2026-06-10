@@ -109,20 +109,26 @@ public final class MenuGUI {
         return this;
     }
 
-    /**
-     * Fill the given slots with light-gray stained glass pane background.
-     * All unfilled slots will be this automatically — call this for
-     * explicit visual separation.
-     */
+    /** Fill the given slots with light-gray glass pane background. */
     public MenuGUI fillBg(int... slots) {
-        ItemStack bg = bgPane();
+        return fillBg(Material.LIGHT_GRAY_STAINED_GLASS_PANE, slots);
+    }
+
+    /** Fill the given slots with a custom-color glass pane background. */
+    public MenuGUI fillBg(Material glassColor, int... slots) {
+        ItemStack bg = bgPane(glassColor);
         for (int s : slots) inventory.setItem(s, bg);
         return this;
     }
 
-    /** Fill all empty slots with background. Must be called LAST. */
+    /** Fill all empty slots with light-gray glass pane background. Must be called LAST. */
     public MenuGUI fillEmpty() {
-        ItemStack bg = bgPane();
+        return fillEmpty(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
+    }
+
+    /** Fill all empty slots with custom-color glass pane background. Must be called LAST. */
+    public MenuGUI fillEmpty(Material glassColor) {
+        ItemStack bg = bgPane(glassColor);
         for (int i = 0; i < inventory.getSize(); i++) {
             if (inventory.getItem(i) == null || inventory.getItem(i).getType().isAir())
                 inventory.setItem(i, bg);
@@ -158,8 +164,8 @@ public final class MenuGUI {
 
     // ── Helpers ──
 
-    private static ItemStack bgPane() {
-        ItemStack bg = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
+    private static ItemStack bgPane(Material glassColor) {
+        ItemStack bg = new ItemStack(glassColor);
         ItemMeta m = bg.getItemMeta(); m.setDisplayName(" "); bg.setItemMeta(m);
         return bg;
     }
