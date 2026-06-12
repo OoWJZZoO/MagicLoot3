@@ -18,7 +18,7 @@ import org.bukkit.plugin.Plugin;
  * Tools/Treasure loot weight config GUI — /ml tools_loot.
  * Flat list (no categories), items sourced from Items.yml tools section.
  */
-final class ToolsLootGUI extends LootConfigGUI {
+final class ToolsLootGUI extends LootGUI {
 
     private static final ToolsLootGUI INSTANCE = new ToolsLootGUI();
     private static ChatHandler chatListener;
@@ -67,6 +67,9 @@ final class ToolsLootGUI extends LootConfigGUI {
 
         var menu = newMenu(player, m("tools"));
         var sw = new HashSet<UUID>();
+        if (isReadonly(player)) {
+            addBack(menu, 1, sw, () -> LootViewerGUI.open(player, PLUGIN));
+        }
         int tw = computeTotal(cache);
 
         int start = MAX_ITEMS * (cur - 1);
@@ -74,7 +77,7 @@ final class ToolsLootGUI extends LootConfigGUI {
         for (int i = start; i < keys.size() && slot < 45; i++, slot++) {
             String id = keys.get(i);
             int weight = cache.getOrDefault(id, 0);
-            menu.addItem(slot, buildItem(id, weight, tw));
+            menu.addItem(slot, buildItem(id, weight, tw, player));
             final int pageSnap = cur;
             menu.addMenuClickHandler(slot, makeClickHandler(player, id, sw,
                     () -> openMainPage(player, pageSnap)));

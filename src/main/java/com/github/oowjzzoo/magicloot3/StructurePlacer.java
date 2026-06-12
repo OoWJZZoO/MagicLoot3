@@ -171,7 +171,7 @@ public final class StructurePlacer {
                             frame.setVisible(false);
                             frame.getPersistentDataContainer().set(ItemKeys.LIBRARIAN_FRAME,
                                     org.bukkit.persistence.PersistentDataType.BOOLEAN, true);
-                            SlimefunItem time = SlimefunItem.getById("TIME_OF_EXPLORATION");
+                            SlimefunItem time = SlimefunItem.getById("MAGICLOOT_TIME_OF_EXPLORATION");
                             if (time != null) frame.setItem(time.getItem().clone());
                         } catch (Exception ignored) {}
                     }

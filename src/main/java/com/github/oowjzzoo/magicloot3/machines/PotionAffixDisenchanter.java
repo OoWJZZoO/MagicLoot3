@@ -37,7 +37,7 @@ import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 public class PotionAffixDisenchanter extends AContainer implements RecipeDisplayItem {
 
     private static final int FUEL_SLOT = 13;
-    private static final String FUEL_ID = "TIME_OF_EXPLORATION";
+    private static final String FUEL_ID = "MAGICLOOT_TIME_OF_EXPLORATION";
     private static final Map<Location, ItemStack[]> pendingInputs = new ConcurrentHashMap<>();
 
     private static final int[] BORDER = { 0,1,2,3,4,5,6,7,8, 31, 36,37,38,39,40,41,42,43,44 };
@@ -53,7 +53,7 @@ public class PotionAffixDisenchanter extends AContainer implements RecipeDisplay
     }
 
     @Override
-    public String getMachineIdentifier() { return "POTION_AFFIX_DISENCHANTER"; }
+    public String getMachineIdentifier() { return "MAGICLOOT_POTION_AFFIX_DISENCHANTER"; }
 
     @Override
     public ItemStack getProgressBar() { return new ItemStack(Material.ENCHANTED_BOOK); }
@@ -169,40 +169,48 @@ public class PotionAffixDisenchanter extends AContainer implements RecipeDisplay
             if (!isDisenchantable(equipment)) continue;
             if (!AffixTransferUtil.hasPotionAffixes(equipment)) continue;
 
-            ItemStack book = menu.getItemInSlot(
-                    slot == getInputSlots()[0] ? getInputSlots()[1] : getInputSlots()[0]);
+            int bookSlot = slot == getInputSlots()[0] ? getInputSlots()[1] : getInputSlots()[0];
+            ItemStack book = menu.getItemInSlot(bookSlot);
             if (book == null || book.getType() != Material.BOOK) continue;
 
-            return createRecipe(menu, equipment, book);
+            return createRecipe(menu, equipment, book, slot, bookSlot);
         }
         return null;
     }
 
-    private MachineRecipe createRecipe(BlockMenu menu, ItemStack equipment, ItemStack book) {
+    private MachineRecipe createRecipe(BlockMenu menu, ItemStack equipment, ItemStack book,
+                                        int equipSlot, int bookSlot) {
         String pdcData = equipment.getItemMeta().getPersistentDataContainer()
                 .get(ItemKeys.EFFECTS, PersistentDataType.STRING);
         List<EffectEntry> effects = AffixTransferUtil.parseEffects(pdcData);
         if (effects.isEmpty()) return null;
 
-        ItemStack outputEquipment = AffixTransferUtil.stripAffixes(equipment.clone());
+        ItemStack singleEquipment = equipment.clone();
+        singleEquipment.setAmount(1);
+        ItemStack outputEquipment = AffixTransferUtil.stripAffixes(singleEquipment);
         ItemStack outputBook = AffixTransferUtil.createAffixBook(effects, LootTier.get(equipment));
 
         int ticks = 90 * effects.size() / getSpeed();
         if (ticks < 1) ticks = 1;
         if (MagicLoot3.getInstance() != null && MagicLoot3.isDebug()) ticks = 1;
 
+        ItemStack consumedEquipment = equipment.clone();
+        consumedEquipment.setAmount(1);
         MachineRecipe recipe = new MachineRecipe(ticks,
-                new ItemStack[]{equipment.clone(), book.clone()},
+                new ItemStack[]{consumedEquipment, book.clone()},
                 new ItemStack[]{outputEquipment, outputBook});
 
         if (!fitsAll(menu, recipe.getOutput())) return null;
 
         pendingInputs.put(menu.getLocation(), new ItemStack[]{
-                equipment.clone(), book.clone()});
+                consumedEquipment.clone(), book.clone()});
 
-        for (int inputSlot : getInputSlots()) {
-            menu.consumeItem(inputSlot);
+        if (equipment.getAmount() > 1) {
+            equipment.setAmount(equipment.getAmount() - 1);
+        } else {
+            menu.consumeItem(equipSlot);
         }
+        menu.consumeItem(bookSlot);
 
         if (ThreadLocalRandom.current().nextInt(100) < 40) {
             menu.consumeItem(FUEL_SLOT);

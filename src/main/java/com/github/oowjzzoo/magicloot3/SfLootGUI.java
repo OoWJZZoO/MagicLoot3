@@ -26,7 +26,7 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 /**
  * Slimefun loot weight config GUI — /ml sf_loot.
  */
-final class SfLootGUI extends LootConfigGUI {
+final class SfLootGUI extends LootGUI {
 
     private static final SfLootGUI INSTANCE = new SfLootGUI();
     private static ChatHandler chatListener;
@@ -74,6 +74,10 @@ final class SfLootGUI extends LootConfigGUI {
 
         var menu = newMenu(player, m("categories"));
         var sw = new HashSet<UUID>();
+
+        if (isReadonly(player)) {
+            addBack(menu, 1, sw, () -> LootViewerGUI.open(player, PLUGIN));
+        }
 
         int start = MAX_ITEMS * (cur - 1);
         int end = start + MAX_ITEMS;
@@ -245,7 +249,7 @@ final class SfLootGUI extends LootConfigGUI {
             SlimefunItem sfItem = items.get(i);
             String id = sfItem.getId();
             int weight = cache.getOrDefault(id, 0);
-            menu.addItem(slot, buildItem(id, weight, tw));
+            menu.addItem(slot, buildItem(id, weight, tw, player));
             final int pageSnap = cur;
             menu.addMenuClickHandler(slot, makeClickHandler(player, id, sw,
                     () -> openItems(player, group, pageSnap, back)));
@@ -279,7 +283,7 @@ final class SfLootGUI extends LootConfigGUI {
         for (int i = start; i < ids.size() && slot < 45; i++, slot++) {
             String id = ids.get(i);
             int weight = cache.getOrDefault(id, 0);
-            menu.addItem(slot, buildItem(id, weight, tw));
+            menu.addItem(slot, buildItem(id, weight, tw, player));
             final int pageSnap = cur;
             menu.addMenuClickHandler(slot, makeClickHandler(player, id, sw,
                     () -> openAllConfigItems(player, pageSnap, back)));
@@ -316,7 +320,7 @@ final class SfLootGUI extends LootConfigGUI {
         for (int i = start; i < ids.size() && slot < 45; i++, slot++) {
             String id = ids.get(i);
             int weight = cache.getOrDefault(id, 0);
-            menu.addItem(slot, buildItem(id, weight, tw));
+            menu.addItem(slot, buildItem(id, weight, tw, player));
             final int pageSnap = cur;
             menu.addMenuClickHandler(slot, makeClickHandler(player, id, sw,
                     () -> openFilteredItems(player, pageSnap, back, enabled)));

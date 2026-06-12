@@ -60,7 +60,7 @@ public class TrainingDummyListener implements Listener {
         SlimefunItem sfItem = SlimefunItem.getByItem(item);
         if (sfItem == null) return;
         String id = sfItem.getId();
-        if (!"TRAINING_DUMMY".equals(id) && !"TRAINING_DUMMY_UNDEAD".equals(id)) return;
+        if (!"MAGICLOOT_TRAINING_DUMMY".equals(id) && !"MAGICLOOT_TRAINING_DUMMY_UNDEAD".equals(id)) return;
 
         if (e.getClickedBlock() == null) return;
         e.setCancelled(true);
@@ -70,7 +70,7 @@ public class TrainingDummyListener implements Listener {
         else player.getInventory().setItem(e.getHand(), null);
 
         Location loc = e.getClickedBlock().getRelative(e.getBlockFace()).getLocation().add(0.5, 0, 0.5);
-        if ("TRAINING_DUMMY_UNDEAD".equals(id)) {
+        if ("MAGICLOOT_TRAINING_DUMMY_UNDEAD".equals(id)) {
             TrainingDummy.spawnSkeleton(loc);
         } else {
             TrainingDummy.spawnPiglin(loc);

@@ -48,7 +48,7 @@ public class DirtGenerator extends AContainer implements RecipeDisplayItem {
     }
 
     @Override
-    public String getMachineIdentifier() { return "DIRT_GENERATOR"; }
+    public String getMachineIdentifier() { return "MAGICLOOT_DIRT_GENERATOR"; }
 
     @Override
     public ItemStack getProgressBar() { return new ItemStack(Material.DIRT); }

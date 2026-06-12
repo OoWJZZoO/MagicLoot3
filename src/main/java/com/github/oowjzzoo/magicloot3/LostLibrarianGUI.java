@@ -37,17 +37,8 @@ public final class LostLibrarianGUI {
 
         MenuGUI menu = new MenuGUI(18, title);
 
-        // Background slots
-        menu.fillBg(1,2,3, 5,6,7, 10, 16);
-
-        // Border panes (darker glass for visual distinction)
-        ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-        ItemMeta borderMeta = border.getItemMeta();
-        borderMeta.setDisplayName(Messages.get("gui.border"));
-        border.setItemMeta(borderMeta);
-        menu.setDisplay(0, border);
-        menu.setDisplay(8, border);
-        menu.setDisplay(9, border);
+        // Background slots (all non-button slots use default bg with custom_model_data)
+        menu.fillBg(0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 16);
 
         // Random option (slot 4)
         ItemStack randomIcon = SkullCreator.createSkull(
@@ -105,7 +96,7 @@ public final class LostLibrarianGUI {
                     : Messages.get("npc.exchange_no_unidentified"));
             return;
         }
-        SlimefunItem voucher = SlimefunItem.getById("GARBLED_VOUCHER");
+        SlimefunItem voucher = SlimefunItem.getById("MAGICLOOT_GARBLED_VOUCHER");
         if (voucher == null) return;
         item.setAmount(item.getAmount() - 1);
         player.getInventory().addItem(voucher.getItem().clone());

@@ -3,6 +3,7 @@ package com.github.oowjzzoo.magicloot3;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,9 +12,12 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
@@ -22,12 +26,15 @@ import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu;
 /**
  * Abstract base for /ml sf_loot and /ml tools_loot weight-config GUIs.
  */
-abstract class LootConfigGUI {
+abstract class LootGUI {
 
     static final int MAX_ITEMS = 36;
     static final int WEIGHT_MAX = 999999;
     static final Map<UUID, Map<String, Integer>> CACHES = new HashMap<>();
+    static final Set<UUID> READONLY = new HashSet<>();
     static Plugin PLUGIN;
+
+    static boolean isReadonly(Player p) { return READONLY.contains(p.getUniqueId()); }
 
     // ── Subclass contract ──
 
@@ -87,9 +94,14 @@ abstract class LootConfigGUI {
     }
 
     void addBack(ChestMenu menu, int slot, Set<UUID> switching, Runnable action) {
-        ItemStack btn = new ItemStack(Material.ARROW);
+        ItemStack btn = new ItemStack(Material.ENCHANTED_BOOK);
         ItemMeta meta = btn.getItemMeta();
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', m("back")));
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&7⇦ " + m("back")));
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        meta.setCustomModelData(2200003);
+        meta.getPersistentDataContainer().set(
+                new NamespacedKey("slimefun", "slimefun_item"),
+                PersistentDataType.STRING, "_UI_BACK");
         btn.setItemMeta(meta);
         menu.addItem(slot, btn);
         menu.addMenuClickHandler(slot, (pl, s, it, a) -> { switching.add(pl.getUniqueId()); action.run(); return false; });
@@ -109,7 +121,7 @@ abstract class LootConfigGUI {
 
     // ── Display ──
 
-    ItemStack buildItem(String id, int weight, int totalWeight) {
+    ItemStack buildItem(String id, int weight, int totalWeight, Player player) {
         ItemStack icon = itemIcon(id);
         ItemMeta meta = icon.getItemMeta();
         if (meta == null) return icon;
@@ -121,17 +133,28 @@ abstract class LootConfigGUI {
         } else {
             if (weight > 0) {
                 String prob = totalWeight > 0
-                        ? String.format("%.2g", 1000.0 * weight / totalWeight) : "0";
+                        ? formatProbability(100.0 * weight / totalWeight) : "0";
                 lore.add(ChatColor.translateAlternateColorCodes('&',
                         m("enabled", String.valueOf(weight), prob)));
             } else {
                 lore.add(ChatColor.translateAlternateColorCodes('&', m("disabled")));
             }
-            lore.add(ChatColor.translateAlternateColorCodes('&', m("help")));
+            if (player == null || !isReadonly(player)) {
+                lore.add(ChatColor.translateAlternateColorCodes('&', m("help")));
+            }
         }
         meta.setLore(lore);
         icon.setItemMeta(meta);
         return icon;
+    }
+
+    /** Formats a probability as a percentage with 2 significant digits, never scientific notation. */
+    static String formatProbability(double pct) {
+        if (pct <= 0) return "0";
+        if (pct >= 100) return String.format("%.0f", pct);
+        int digits = 1 - (int) Math.floor(Math.log10(pct));
+        digits = Math.max(0, Math.min(digits, 6));
+        return String.format("%." + digits + "f", pct);
     }
 
     int computeTotal(Map<String, Integer> cache) {
@@ -145,6 +168,7 @@ abstract class LootConfigGUI {
     ChestMenu.MenuClickHandler makeClickHandler(Player player, String id, Set<UUID> switching,
                                                   Runnable refresh) {
         return (pl, slot, item, action) -> {
+            if (isReadonly(pl)) return false;
             Map<String, Integer> cache = CACHES.get(pl.getUniqueId());
             if (cache == null) return false;
             if (cache.getOrDefault(id, 0) == -1) return false;
@@ -163,6 +187,7 @@ abstract class LootConfigGUI {
     // ── Close ──
 
     void trySave(Player player) {
+        if (READONLY.remove(player.getUniqueId())) return;
         if (ChatHandler.PENDING.containsKey(player.getUniqueId())) return;
         if (CACHES.containsKey(player.getUniqueId())) saveConfig(player);
     }

@@ -20,18 +20,19 @@ public final class Housekeeper {
 
     public static void start(Plugin plugin) {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            int removed = 0;
-            removed += LootListener.cleanupStaleSelfDamageTimers();
-            removed += TrainingDummy.cleanupStaleDummies();
-            removed += LostLibrarianGUI.cleanupStaleDeskState();
-            removed += LivingDropperListener.cleanupStalePlayerLocs();
-            removed += EquipmentSplitter.cleanupStaleStates();
-            removed += TrainingDummyListener.cleanupStaleInteract();
+            int n = LootListener.cleanupStaleSelfDamageTimers();
+            if (n > 0) plugin.getLogger().log(Level.INFO, "Housekeeper: cleaned {0} stale self-damage timers", n);
+            n = TrainingDummy.cleanupStaleDummies();
+            if (n > 0) plugin.getLogger().log(Level.INFO, "Housekeeper: cleaned {0} stale training dummies", n);
+            n = LostLibrarianGUI.cleanupStaleDeskState();
+            if (n > 0) plugin.getLogger().log(Level.INFO, "Housekeeper: cleaned {0} stale desk states", n);
+            n = LivingDropperListener.cleanupStalePlayerLocs();
+            if (n > 0) plugin.getLogger().log(Level.INFO, "Housekeeper: cleaned {0} stale living-dropper locs", n);
+            n = EquipmentSplitter.cleanupStaleStates();
+            if (n > 0) plugin.getLogger().log(Level.INFO, "Housekeeper: cleaned {0} stale splitter states", n);
+            n = TrainingDummyListener.cleanupStaleInteract();
+            if (n > 0) plugin.getLogger().log(Level.INFO, "Housekeeper: cleaned {0} stale dummy-interact records", n);
             LivingDropper.saveData();
-            if (removed > 0) {
-                plugin.getLogger().log(Level.INFO,
-                        "Housekeeper: cleaned {0} stale entries", removed);
-            }
         }, 1200L, 1200L);
     }
 }

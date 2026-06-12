@@ -20,20 +20,20 @@ final class ChatHandler implements Listener {
 
     static final Map<UUID, Entry> PENDING = new HashMap<>();
 
-    record Entry(LootConfigGUI gui, String itemId, Runnable reopen, int taskId) {}
+    record Entry(LootGUI gui, String itemId, Runnable reopen, int taskId) {}
 
-    static void start(LootConfigGUI gui, Player player, String itemId, Runnable reopen) {
+    static void start(LootGUI gui, Player player, String itemId, Runnable reopen) {
         Entry old = PENDING.remove(player.getUniqueId());
         if (old != null) Bukkit.getScheduler().cancelTask(old.taskId);
-        int taskId = Bukkit.getScheduler().runTaskLater(LootConfigGUI.PLUGIN, () -> {
+        int taskId = Bukkit.getScheduler().runTaskLater(LootGUI.PLUGIN, () -> {
             Entry e = PENDING.remove(player.getUniqueId());
             if (e != null) {
-                player.sendMessage(LootConfigGUI.m("input_timeout"));
+                player.sendMessage(LootGUI.m("input_timeout"));
                 e.gui.saveConfig(player);
             }
         }, 600L).getTaskId();
         PENDING.put(player.getUniqueId(), new Entry(gui, itemId, reopen, taskId));
-        player.sendMessage(LootConfigGUI.m("input_prompt", gui.itemName(itemId)));
+        player.sendMessage(LootGUI.m("input_prompt", gui.itemName(itemId)));
     }
 
     @EventHandler
@@ -42,21 +42,21 @@ final class ChatHandler implements Listener {
         if (entry == null) return;
         e.setCancelled(true);
         Bukkit.getScheduler().cancelTask(entry.taskId);
-        Bukkit.getScheduler().runTask(LootConfigGUI.PLUGIN, () -> {
+        Bukkit.getScheduler().runTask(LootGUI.PLUGIN, () -> {
             Player player = e.getPlayer();
             try {
                 int w = Integer.parseInt(ChatColor.stripColor(e.getMessage()).trim());
-                if (w < 1 || w > LootConfigGUI.WEIGHT_MAX) {
-                    player.sendMessage(LootConfigGUI.m("invalid_range"));
+                if (w < 1 || w > LootGUI.WEIGHT_MAX) {
+                    player.sendMessage(LootGUI.m("invalid_range"));
                     entry.gui.saveConfig(player);
                     return;
                 }
-                Map<String, Integer> cache = LootConfigGUI.CACHES.get(player.getUniqueId());
+                Map<String, Integer> cache = LootGUI.CACHES.get(player.getUniqueId());
                 if (cache != null) cache.put(entry.itemId, w);
-                player.sendMessage(LootConfigGUI.m("set_weight",
+                player.sendMessage(LootGUI.m("set_weight",
                         entry.gui.itemName(entry.itemId), String.valueOf(w)));
             } catch (NumberFormatException ex) {
-                player.sendMessage(LootConfigGUI.m("invalid_number"));
+                player.sendMessage(LootGUI.m("invalid_number"));
                 entry.gui.saveConfig(player);
                 return;
             }

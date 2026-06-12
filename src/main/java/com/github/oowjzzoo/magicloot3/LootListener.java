@@ -14,12 +14,15 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Trident;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -29,12 +32,18 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityResurrectEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
+import com.github.oowjzzoo.magicloot3.items.TotemItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.world.ChunkPopulateEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -55,10 +64,7 @@ public class LootListener implements Listener {
             DamageCause.ENTITY_EXPLOSION,
             DamageCause.FALL,
             DamageCause.FALLING_BLOCK,
-            DamageCause.FIRE,
-            DamageCause.LAVA,
-            DamageCause.MAGIC,
-            DamageCause.THORNS
+            DamageCause.LAVA
     );
 
     private final Map<UUID, Map<String, Integer>> pendingInstants = new HashMap<>();
@@ -161,20 +167,72 @@ public class LootListener implements Listener {
             return;
         }
 
-        if (!CAUSES.contains(e.getCause())) return;
-
-        if (e instanceof EntityDamageByEntityEvent damageEvent) {
+        // Melee weapon effects: only for applicable damage causes (FIRE/MAGIC/THORNS excluded)
+        if (CAUSES.contains(e.getCause()) && e instanceof EntityDamageByEntityEvent damageEvent) {
             if (damageEvent.getDamager() instanceof LivingEntity attacker) {
                 applyWeaponEffects(attacker, victim);
-            } else if (damageEvent.getDamager() instanceof Projectile projectile
-                    && projectile.getShooter() instanceof LivingEntity shooter) {
-                applyWeaponEffects(shooter, victim);
             }
         }
-        // Armor effects on victim
-        for (ItemStack armor : getArmorContents(victim)) {
-            applyArmorEffects(victim, armor, e);
+
+        // Projectile effects: read PDC from projectile entity (new logic, any damage cause)
+        if (e instanceof EntityDamageByEntityEvent damageEvent
+                && damageEvent.getDamager() instanceof Projectile projectile) {
+            applyProjectileEffects(projectile, victim);
         }
+
+        // Armor effects on victim
+        if (CAUSES.contains(e.getCause())) {
+            for (ItemStack armor : getArmorContents(victim)) {
+                applyArmorEffects(victim, armor, e);
+            }
+        }
+    }
+
+    // --- Projectile launch: tag projectiles with weapon effects ---
+
+    /** Bow: copy bow's EFFECTS PDC to arrow. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onShootBow(EntityShootBowEvent e) {
+        if (!(e.getEntity() instanceof LivingEntity shooter)) return;
+        if (e.getBow() == null || !e.getBow().hasItemMeta()) return;
+        String effects = e.getBow().getItemMeta().getPersistentDataContainer()
+                .get(ItemKeys.EFFECTS, org.bukkit.persistence.PersistentDataType.STRING);
+        if (effects == null || effects.isEmpty()) return;
+
+        e.getProjectile().getPersistentDataContainer()
+                .set(ItemKeys.EFFECTS, org.bukkit.persistence.PersistentDataType.STRING, effects);
+        e.getProjectile().getPersistentDataContainer()
+                .set(ItemKeys.SHOOTER_UUID, org.bukkit.persistence.PersistentDataType.STRING,
+                        shooter.getUniqueId().toString());
+    }
+
+    /** Crossbow / Trident: copy weapon's EFFECTS PDC to projectile. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onProjectileLaunch(ProjectileLaunchEvent e) {
+        if (!(e.getEntity().getShooter() instanceof LivingEntity shooter)) return;
+        Projectile proj = e.getEntity();
+
+        String effects = null;
+        if (proj instanceof Trident trident) {
+            ItemStack tridentItem = trident.getItem();
+            if (tridentItem.hasItemMeta()) {
+                effects = tridentItem.getItemMeta().getPersistentDataContainer()
+                        .get(ItemKeys.EFFECTS, org.bukkit.persistence.PersistentDataType.STRING);
+            }
+        } else if (proj instanceof Arrow || proj instanceof Firework) {
+            ItemStack weapon = getItemInMainHand(shooter);
+            if (weapon != null && weapon.hasItemMeta()) {
+                effects = weapon.getItemMeta().getPersistentDataContainer()
+                        .get(ItemKeys.EFFECTS, org.bukkit.persistence.PersistentDataType.STRING);
+            }
+        }
+        if (effects == null || effects.isEmpty()) return;
+
+        proj.getPersistentDataContainer()
+                .set(ItemKeys.EFFECTS, org.bukkit.persistence.PersistentDataType.STRING, effects);
+        proj.getPersistentDataContainer()
+                .set(ItemKeys.SHOOTER_UUID, org.bukkit.persistence.PersistentDataType.STRING,
+                        shooter.getUniqueId().toString());
     }
 
     // --- Mob spawn equipment ---
@@ -210,13 +268,19 @@ public class LootListener implements Listener {
         applyEffectsFromItem(armor, wearer, attacker);
     }
 
-    /** Reads effects from PDC and applies them. Language-independent. */
+    /** Reads effects from ItemStack PDC and applies them. */
     private void applyEffectsFromItem(ItemStack item, LivingEntity wearer, LivingEntity attacker) {
         if (item == null || !item.hasItemMeta()) return;
         var meta = item.getItemMeta();
         if (meta == null) return;
         String data = meta.getPersistentDataContainer().get(ItemKeys.EFFECTS,
                 org.bukkit.persistence.PersistentDataType.STRING);
+        applyEffectsFromData(data, wearer, attacker);
+    }
+
+    /** Parses effects string and applies to wearer/attacker. Language-independent.
+     *  Effects format: "key:+/-:level,key:+/-:level,..." */
+    private void applyEffectsFromData(String data, LivingEntity wearer, LivingEntity attacker) {
         if (data == null || data.isEmpty()) return;
 
         for (String entry : data.split(",")) {
@@ -238,15 +302,40 @@ public class LootListener implements Listener {
                 }
             } else if (isPositive) {
                 if (wearer instanceof Player && SELF_DAMAGE_EFFECTS.contains(enKey)) {
-                    long durationMs = (level + 1) * 3 * 1000L;
+                    long durationMs = (level + 1) * 1000L;
                     Map<String, Long> t = selfDamageTimers.computeIfAbsent(wearer.getUniqueId(), k -> new HashMap<>());
                     t.entrySet().removeIf(e2 -> System.currentTimeMillis() >= e2.getValue());
                     t.put(enKey, System.currentTimeMillis() + durationMs);
                 }
-                wearer.addPotionEffect(new PotionEffect(type, (level + 1) * 3 * 20, level));
+                wearer.addPotionEffect(new PotionEffect(type, (level + 1) * 20, level));
             } else if (attacker != null) {
-                attacker.addPotionEffect(new PotionEffect(type, (level + 1) * 3 * 20, level));
+                attacker.addPotionEffect(new PotionEffect(type, (level + 1) * 20, level));
             }
+        }
+    }
+
+    /** Read EFFECTS + SHOOTER_UUID from projectile PDC, resolve shooter, apply effects. */
+    private void applyProjectileEffects(Projectile projectile, LivingEntity victim) {
+        var pdc = projectile.getPersistentDataContainer();
+        String effects = pdc.get(ItemKeys.EFFECTS, org.bukkit.persistence.PersistentDataType.STRING);
+        if (effects == null || effects.isEmpty()) return;
+
+        // Resolve shooter
+        LivingEntity shooter = null;
+        String uuidStr = pdc.get(ItemKeys.SHOOTER_UUID, org.bukkit.persistence.PersistentDataType.STRING);
+        if (uuidStr != null) {
+            try {
+                Entity e = Bukkit.getEntity(UUID.fromString(uuidStr));
+                if (e instanceof LivingEntity le && le.isValid()) shooter = le;
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        // Apply weapon effects from projectile PDC (wearer=shooter, attacker=victim)
+        applyEffectsFromData(effects, shooter, victim);
+
+        // Apply victim's armor effects (same as melee path)
+        for (ItemStack armor : getArmorContents(victim)) {
+            applyEffectsFromItem(armor, victim, shooter);
         }
     }
 
@@ -293,6 +382,7 @@ public class LootListener implements Listener {
                     applyInstantPotion(target, PotionEffectType.INSTANT_DAMAGE, amp);
                 }, ++tick);
             }
+            ++tick; // tick 2 is intentionally empty
             if (healAmp >= 0) {
                 final int amp = healAmp;
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -322,10 +412,9 @@ public class LootListener implements Listener {
     }
 
     private void setSelfDamageTimer(UUID playerId, String enKey, int level) {
-        long durationMs = (level + 1) * 3 * 1000L;
         Map<String, Long> t = selfDamageTimers.computeIfAbsent(playerId, k -> new HashMap<>());
         t.entrySet().removeIf(e2 -> System.currentTimeMillis() >= e2.getValue());
-        t.put(enKey, System.currentTimeMillis() + durationMs);
+        t.put(enKey, System.currentTimeMillis() + 250L); // 5 ticks
     }
 
     private ItemStack getItemInMainHand(LivingEntity entity) {
@@ -351,7 +440,7 @@ public class LootListener implements Listener {
         // Existing Librarian logic
         if (e.getEntity() instanceof Villager
                 && e.getEntity().getPersistentDataContainer().has(ItemKeys.LIBRARIAN)) {
-            SlimefunItem brainItem = SlimefunItem.getById("LOST_LIBRARIAN_BRAIN");
+            SlimefunItem brainItem = SlimefunItem.getById("MAGICLOOT_LOST_LIBRARIAN_BRAIN");
             if (brainItem != null)
                 e.getEntity().getWorld().dropItemNaturally(
                         e.getEntity().getLocation(), brainItem.getItem().clone());
@@ -365,7 +454,7 @@ public class LootListener implements Listener {
             String enName = ChatColor.translateAlternateColorCodes('&', "&eMagic Silicone Dummy");
             if ((name != null && name.equals(zhName)) || (name != null && name.equals(enName))) {
                 e.getDrops().removeIf(drop -> drop.getType() == Material.ARMOR_STAND);
-                SlimefunItem dummy = SlimefunItem.getById("MAGIC_SILICONE_DUMMY");
+                SlimefunItem dummy = SlimefunItem.getById("MAGICLOOT_MAGIC_SILICONE_DUMMY");
                 if (dummy != null)
                     e.getEntity().getWorld().dropItemNaturally(
                             e.getEntity().getLocation(), dummy.getItem().clone());
@@ -386,8 +475,9 @@ public class LootListener implements Listener {
         Map<String, Long> timers = selfDamageTimers.get(deadPlayer.getUniqueId());
 
         if (cause != null && timers != null) {
+            long now = System.currentTimeMillis();
             for (Map.Entry<String, Long> entry : timers.entrySet()) {
-                if (matchesDeathCause(entry.getKey(), cause)) {
+                if (now < entry.getValue() && matchesDeathCause(entry.getKey(), cause)) {
                     potionSuicide = true;
                     break;
                 }
@@ -445,8 +535,48 @@ public class LootListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onHangingBreak(HangingBreakEvent e) {
         if (e.getEntity().getPersistentDataContainer()
-                .has(ItemKeys.LIBRARIAN_FRAME, org.bukkit.persistence.PersistentDataType.BOOLEAN)) {
+                .has(ItemKeys.LIBRARIAN_FRAME, PersistentDataType.BOOLEAN)) {
             e.setCancelled(true);
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onResurrect(EntityResurrectEvent e) {
+        if (!(e.getEntity() instanceof Player player)) return;
+
+        EquipmentSlot hand = e.getHand();
+        if (hand == null) return;
+
+        ItemStack totem = hand == EquipmentSlot.HAND
+                ? player.getInventory().getItemInMainHand()
+                : player.getInventory().getItemInOffHand();
+
+        if (totem == null || !totem.hasItemMeta()) return;
+
+        // Check if this is a sealed Crystal Totem
+        Byte sealed = totem.getItemMeta().getPersistentDataContainer()
+                .get(ItemKeys.TOTEM_SEALED, PersistentDataType.BYTE);
+        if (sealed == null || sealed != 1) return;
+
+        Integer forgeObj = totem.getItemMeta().getPersistentDataContainer()
+                .get(ItemKeys.TOTEM_FORGE_COUNT, PersistentDataType.INTEGER);
+        int forge = forgeObj != null ? forgeObj : 0;
+
+        if (forge > 0) {
+            // Clone before vanilla consumes the original
+            ItemStack saved = totem.clone();
+            TotemItem.decrementForgeCount(saved);
+
+            final EquipmentSlot slot = hand;
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (slot == EquipmentSlot.HAND) {
+                    player.getInventory().setItemInMainHand(saved);
+                } else {
+                    player.getInventory().setItemInOffHand(saved);
+                }
+                player.sendMessage(Messages.get("totem.forge.resurrect", forge - 1));
+            });
+        }
+        // forge == 0: let vanilla consume the totem
     }
 }

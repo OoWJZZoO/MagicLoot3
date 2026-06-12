@@ -195,8 +195,8 @@ gui:
     title: "战利品配置"
     categories: "分类"
     tools: "原版物品"
-    back: "&7← 返回分类"
-    enabled: "&a✔ 已启用（权重: {0}, 概率: {1}‰）"
+    back: "返回分类"
+    enabled: "&a✔ 已启用（权重: {0}, 概率: {1}%）"
     disabled: "&c✘ 已禁用"
     multiblock: "&8🚫 多方块结构，无法作为战利品生成"
     help: "&7左键启用(100) | 右键禁用(0) | Shift+点击自定义"
@@ -209,6 +209,30 @@ gui:
     input_timeout: "&c输入超时，配置已保存。待设置的物品未修改。"
     saved: "&a战利品配置已保存并重载。"
     set_weight: "&a已将 {0} &a设为 {1}。"
+  viewer:
+    browse_title: "信息公示"
+    sf_loot: "&a粘液科技战利品概率"
+    tools_loot: "&6装备战利品概率"
+    enchants: "&d附魔等级上限"
+    effects: "&b药水词缀等级上限"
+    enchant_group: "&f以下是可获取的最高等级附魔"
+    effect_group: "&f以下是可获取的最高等级药水词缀"
+    effect_row: "&7{0} {1}"
+  totem:
+    title: "&5嵌晶图腾"
+    insert_title: "&f拿起宝石点击槽位以嵌入宝石"
+    insert_lore:
+      - ""
+      - "&c注意，嵌入宝石不可逆"
+      - "&c凿子可以剔凿宝石，但不能返还"
+    full_title: "&c&l槽位已满"
+    seal_button_title: "&d&l封定图腾"
+    seal_button_lore:
+      - ""
+      - "&7花费: &b{0} 级经验"
+      - ""
+      - "&c&l警告：不可逆！"
+      - "&c封定后无法再调整宝石"
 
 cmd:
   header: "&6MagicLoot3 &7v{0} (build #{1})"
@@ -281,8 +305,70 @@ machine:
     bell_title: "&f请在输入槽放入附魔之瓶/学识之瓶"
     bell_lore: "&f每一个瓶子相当于一级经验"
     rank_button_title: "&b鉴定档位:"
-    rank_switch_hint: "&7点击以切换"
+    rank_switch_hint: "&a点击以切换"
+    rank_locked_hint: "&a机器工作时无法切换"
     level_unit: 级
+  totem:
+    title: "&5嵌晶图腾"
+    insert_hint: "&7放入"
+    full_hint: "&c已满"
+totem_slot:
+  attack_damage: "攻击力"
+  entity_interaction_range: "触及距离"
+  max_health: "生命值"
+  block_break_speed: "挖掘速度"
+  safe_fall_distance: "安全跌落"
+  movement_speed: "移动速度"
+  jump_strength: "跳跃力"
+  step_height: "跨越高度"
+  special: "特殊"
+totem_tier:
+  1: "&a普通"
+  2: "&9稀有"
+  3: "&5非凡"
+  4: "&e&l史诗"
+  5: "&6&l传说"
+totem:
+  sealed_title: "&d&l嵌晶图腾（已封定）"
+  sealed_lore:
+    - "&7已封定 - 宝石已永久熔铸"
+    - "&7封定费用: &f{cost}"
+    - "&7叠锻次数: &b{forge}"
+    - ""
+    - "&a手持此图腾死亡时复活"
+    - "&a（消耗1次叠锻次数）"
+  sealed_cannot_open: "&d嵌晶图腾 &8> &c该图腾已封定，无法打开嵌晶界面。"
+  seal:
+    no_gems: "&d嵌晶图腾 &8> &c未嵌入宝石，无法封定。"
+    no_xp: "&d嵌晶图腾 &8> &c经验不足。需要 {0} 级，你有 {1} 级。"
+    success: "&d嵌晶图腾 &8> &a封定成功！花费 {0} 级经验。现在可以进行叠锻了。"
+  forge:
+    no_totem: "&f媒质符文 &8> &c附近没有已封定的嵌晶图腾。"
+    shortfall: "&f媒质符文 &8> &c媒质值不足。当前提供: {0}，需要: {1}。"
+    success: "&f媒质符文 &8> &a叠锻成功！当前叠锻次数: {0}。消耗 {1} 个符文。"
+    resurrect: "&d嵌晶图腾 &8> &a你被图腾救了一命！叠锻次数降至 {0}。"
+medium_rune:
+  basic:
+    name: "&f媒质符文 &8&l[&7&l初级&8&l]"
+    lore:
+      - ""
+      - "&7媒质值: &f1"
+      - "&7丢在已封定的嵌晶图腾上"
+      - "&7以进行叠锻"
+  intermediate:
+    name: "&f媒质符文 &8&l[&a&l中级&8&l]"
+    lore:
+      - ""
+      - "&7媒质值: &f4"
+      - "&7丢在已封定的嵌晶图腾上"
+      - "&7以进行叠锻"
+  advanced:
+    name: "&f媒质符文 &8&l[&d&l高级&8&l]"
+    lore:
+      - ""
+      - "&7媒质值: &f16"
+      - "&7丢在已封定的嵌晶图腾上"
+      - "&7以进行叠锻"
 living_dropper:
   gui_title: "&f投掷器(活的!)"
   bind_button_title: "&b绑定玩家"

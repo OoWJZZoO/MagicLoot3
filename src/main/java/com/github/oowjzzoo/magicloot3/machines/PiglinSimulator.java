@@ -93,7 +93,7 @@ public class PiglinSimulator extends AContainer implements RecipeDisplayItem {
         setProcessingSpeed(1);
     }
 
-    @Override public String getMachineIdentifier() { return "PIGLIN_SIMULATOR"; }
+    @Override public String getMachineIdentifier() { return "MAGICLOOT_PIGLIN_SIMULATOR"; }
     @Override public ItemStack getProgressBar() { return new ItemStack(Material.GOLDEN_HELMET); }
     @Override protected void registerDefaultRecipes() {
         ItemStack head = new ItemStack(Material.PIGLIN_HEAD);

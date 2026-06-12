@@ -112,7 +112,7 @@ public class LivingDropperListener implements Listener {
 
         // Title matches the item's display name
         var sfItem = io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem
-                .getById("LIVING_DROPPER");
+                .getById("MAGICLOOT_LIVING_DROPPER");
         String title = sfItem != null ? sfItem.getItemName()
                 : Messages.get("living_dropper.gui_title");
 

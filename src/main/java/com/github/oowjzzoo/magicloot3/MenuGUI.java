@@ -56,8 +56,17 @@ public final class MenuGUI {
         @EventHandler
         public void onClick(InventoryClickEvent e) {
             if (!(e.getInventory().getHolder() instanceof MenuHolder holder)) return;
+            if (e.getClickedInventory() != e.getView().getTopInventory()) {
+                if (!holder.menu.allowBottom) e.setCancelled(true);
+                else if (holder.menu.lockMainHand) {
+                    Player p = (Player) e.getWhoClicked();
+                    int hotbarSlot = holder.menu.inventory.getSize() + 27 + p.getInventory().getHeldItemSlot();
+                    if (e.getRawSlot() == hotbarSlot)
+                        e.setCancelled(true);
+                }
+                return;
+            }
             e.setCancelled(true);
-            if (e.getClickedInventory() != e.getView().getTopInventory()) return;
             if (e.getCurrentItem() == null || e.getCurrentItem().getType().isAir()) return;
 
             MenuGUI.ClickHandler h = holder.menu.handlers.get(e.getRawSlot());
@@ -82,6 +91,8 @@ public final class MenuGUI {
     private final Inventory inventory;
     private final Map<Integer, ClickHandler> handlers = new HashMap<>();
     private Runnable closeCallback;
+    private boolean allowBottom;
+    private boolean lockMainHand;
 
     /** Create a menu with the given row count and title. */
     public MenuGUI(int size, String title) {
@@ -109,9 +120,9 @@ public final class MenuGUI {
         return this;
     }
 
-    /** Fill the given slots with light-gray glass pane background. */
+    /** Fill the given slots with gray glass pane background. */
     public MenuGUI fillBg(int... slots) {
-        return fillBg(Material.LIGHT_GRAY_STAINED_GLASS_PANE, slots);
+        return fillBg(Material.GRAY_STAINED_GLASS_PANE, slots);
     }
 
     /** Fill the given slots with a custom-color glass pane background. */
@@ -121,9 +132,9 @@ public final class MenuGUI {
         return this;
     }
 
-    /** Fill all empty slots with light-gray glass pane background. Must be called LAST. */
+    /** Fill all empty slots with gray glass pane background. Must be called LAST. */
     public MenuGUI fillEmpty() {
-        return fillEmpty(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
+        return fillEmpty(Material.GRAY_STAINED_GLASS_PANE);
     }
 
     /** Fill all empty slots with custom-color glass pane background. Must be called LAST. */
@@ -139,6 +150,18 @@ public final class MenuGUI {
     /** Set a callback that fires when the menu is closed. */
     public MenuGUI onClose(Runnable callback) {
         this.closeCallback = callback;
+        return this;
+    }
+
+    /** Allow the player to pick up items from their own inventory while this menu is open. */
+    public MenuGUI allowBottom() {
+        this.allowBottom = true;
+        return this;
+    }
+
+    /** Prevent the player from picking up the item in their main hand hotbar slot. */
+    public MenuGUI lockMainHand() {
+        this.lockMainHand = true;
         return this;
     }
 
@@ -166,7 +189,10 @@ public final class MenuGUI {
 
     private static ItemStack bgPane(Material glassColor) {
         ItemStack bg = new ItemStack(glassColor);
-        ItemMeta m = bg.getItemMeta(); m.setDisplayName(" "); bg.setItemMeta(m);
+        ItemMeta m = bg.getItemMeta();
+        m.setDisplayName(" ");
+        m.setCustomModelData(2200002);
+        bg.setItemMeta(m);
         return bg;
     }
 

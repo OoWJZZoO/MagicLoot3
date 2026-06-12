@@ -58,7 +58,7 @@ public class AutoAppraiser extends AContainer implements RecipeDisplayItem {
     }
 
     @Override
-    public String getMachineIdentifier() { return "AUTO_APPRAISER"; }
+    public String getMachineIdentifier() { return "MAGICLOOT_AUTO_APPRAISER"; }
 
     @Override
     public ItemStack getProgressBar() { return new ItemStack(Material.GRINDSTONE); }
@@ -193,6 +193,7 @@ public class AutoAppraiser extends AContainer implements RecipeDisplayItem {
             lore.add(ChatColor.translateAlternateColorCodes('&', line));
         }
         lore.add("");
+        lore.add(Messages.get("machine.auto_appraiser.rank_locked_hint"));
         lore.add(Messages.get("machine.auto_appraiser.rank_switch_hint"));
         meta.setLore(lore);
         btn.setItemMeta(meta);
@@ -296,11 +297,12 @@ public class AutoAppraiser extends AContainer implements RecipeDisplayItem {
             int cost = MagicLoot3.getInstance().getConfig().getInt("costs." + rankStr);
             if (bottles.getAmount() < cost) continue;
 
-            ItemStack outputEquipment = equipment.clone();
+            ItemStack singleEquipment = equipment.clone();
+            singleEquipment.setAmount(1);
             if ("RANDOM".equals(rankStr)) {
-                outputEquipment = ItemManager.applyTier(outputEquipment, LootTier.getRandomApplicable());
+                singleEquipment = ItemManager.applyTier(singleEquipment, LootTier.getRandomApplicable());
             } else {
-                outputEquipment = ItemManager.applyTier(outputEquipment, LootTier.valueOf(rankStr));
+                singleEquipment = ItemManager.applyTier(singleEquipment, LootTier.valueOf(rankStr));
             }
 
             int ticks = cost * 6 / getSpeed();
@@ -309,17 +311,23 @@ public class AutoAppraiser extends AContainer implements RecipeDisplayItem {
 
             ItemStack consumedBottles = bottles.clone();
             consumedBottles.setAmount(cost);
+            ItemStack consumedEquipment = equipment.clone();
+            consumedEquipment.setAmount(1);
 
             MachineRecipe recipe = new MachineRecipe(ticks,
-                    new ItemStack[]{equipment.clone(), consumedBottles},
-                    new ItemStack[]{outputEquipment});
+                    new ItemStack[]{consumedEquipment, consumedBottles},
+                    new ItemStack[]{singleEquipment});
 
             if (!fitsAll(menu, recipe.getOutput())) return null;
 
             pendingInputs.put(menu.getLocation(), new ItemStack[]{
-                    equipment.clone(), consumedBottles.clone()});
+                    consumedEquipment.clone(), consumedBottles.clone()});
 
-            menu.consumeItem(slot);
+            if (equipment.getAmount() > 1) {
+                equipment.setAmount(equipment.getAmount() - 1);
+            } else {
+                menu.consumeItem(slot);
+            }
             if (bottles.getAmount() > cost) {
                 bottles.setAmount(bottles.getAmount() - cost);
             } else {

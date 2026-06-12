@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkEffectMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -28,6 +29,7 @@ import io.github.thebusybiscuit.slimefun4.api.items.groups.SubItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockUseHandler;
+import io.github.thebusybiscuit.slimefun4.core.handlers.ItemUseHandler;
 import io.github.thebusybiscuit.slimefun4.core.attributes.MachineTier;
 import io.github.thebusybiscuit.slimefun4.core.attributes.MachineType;
 import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
@@ -36,8 +38,11 @@ import io.github.thebusybiscuit.slimefun4.utils.LoreBuilder;
 import io.github.thebusybiscuit.slimefun4.implementation.items.VanillaItem;
 
 import com.github.oowjzzoo.magicloot3.items.ActivatedSculkShrieker;
+import com.github.oowjzzoo.magicloot3.items.GemStone;
+import com.github.oowjzzoo.magicloot3.items.MediumRune;
 import com.github.oowjzzoo.magicloot3.items.PastRune;
 import com.github.oowjzzoo.magicloot3.items.RenameRune;
+import com.github.oowjzzoo.magicloot3.items.TotemItem;
 import com.github.oowjzzoo.magicloot3.machines.EquipmentSplitter;
 import com.github.oowjzzoo.magicloot3.machines.LivingDropper;
 import com.github.oowjzzoo.magicloot3.machines.PotionAffixDisenchanter;
@@ -101,6 +106,14 @@ final class SlimefunHook implements SlimefunAddon {
         SubItemGroup itemsGroup = new SubItemGroup(
                 new NamespacedKey(plugin, "magicloot_items"), parentGroup, itemsIcon);
 
+        // Gemstones (attribute gems for totem)
+        ItemStack gemsIcon = new ItemStack(Material.EMERALD);
+        ItemMeta gemsMeta = gemsIcon.getItemMeta();
+        gemsMeta.setDisplayName(zh ? "§5魔法战利品 §a宝石" : "§5MagicLoot §aGemstones");
+        gemsIcon.setItemMeta(gemsMeta);
+        SubItemGroup gemsGroup = new SubItemGroup(
+                new NamespacedKey(plugin, "magicloot_gems"), parentGroup, gemsIcon);
+
         // Lost Bookshelf
         String shelfName = zh ? "§d旧日书架" : "§dLost Bookshelf";
         String[] shelfLore = zh
@@ -112,7 +125,7 @@ final class SlimefunHook implements SlimefunAddon {
                         "§7knowledge lies within..."};
 
         SlimefunItemStack bookshelfStack = new SlimefunItemStack(
-                "LOST_BOOKSHELF", Material.BOOKSHELF,
+                "MAGICLOOT_LOST_BOOKSHELF", Material.BOOKSHELF,
                 shelfName, shelfLore);
 
         ItemStack[] bookshelfRecipe = {
@@ -147,7 +160,7 @@ final class SlimefunHook implements SlimefunAddon {
                         "§7Perfect for examining mysterious relics"};
 
         SlimefunItemStack deskStack = new SlimefunItemStack(
-                "LOST_LIBRARIANS_DESK", Material.CRAFTING_TABLE,
+                "MAGICLOOT_LOST_LIBRARIANS_DESK", Material.CRAFTING_TABLE,
                 deskName, deskLore);
 
         ItemStack[] deskRecipe = {
@@ -188,7 +201,7 @@ final class SlimefunHook implements SlimefunAddon {
                 "",
                 zh ? "&7可以转化粘液科技与原版的铜锭" : "&7Converts between Slimefun and vanilla copper ingots"};
         SlimefunItemStack copperStack = new SlimefunItemStack(
-                "COPPER_UNIFIER", Material.COPPER_BLOCK, copperName, copperLore);
+                "MAGICLOOT_COPPER_UNIFIER", Material.COPPER_BLOCK, copperName, copperLore);
         ItemStack[] copperRecipe = {
                 SlimefunItems.COPPER_INGOT, new ItemStack(Material.COPPER_INGOT), SlimefunItems.COPPER_INGOT,
                 new ItemStack(Material.COPPER_INGOT), new ItemStack(Material.CRAFTING_TABLE), new ItemStack(Material.COPPER_INGOT),
@@ -203,7 +216,7 @@ final class SlimefunHook implements SlimefunAddon {
                 ? new String[]{"", "&7词条太多太杂?", "&7懒得手动分类?", "&7试试装备分流机"}
                 : new String[]{"", "&7Too many affixes to sort?", "&7Tired of manual classification?", "&7Try the Equipment Splitter"};
         SlimefunItemStack splitterStack = new SlimefunItemStack(
-                "EQUIPMENT_SPLITTER", Material.STONECUTTER, splitterName, splitterLore);
+                "MAGICLOOT_EQUIPMENT_SPLITTER", Material.STONECUTTER, splitterName, splitterLore);
         ItemStack[] splitterRecipe = {
                 null, SlimefunItems.REINFORCED_ALLOY_INGOT, null,
                 bookshelfStack, new ItemStack(Material.DISPENSER), bookshelfStack,
@@ -224,7 +237,7 @@ final class SlimefunHook implements SlimefunAddon {
                         "&7Though honestly...",
                         "&7This feels unethical"};
         SlimefunItemStack brainStack = new SlimefunItemStack(
-                "LOST_LIBRARIAN_BRAIN", Material.ROTTEN_FLESH, brainName, brainLore);
+                "MAGICLOOT_LOST_LIBRARIAN_BRAIN", Material.BONE_MEAL, brainName, brainLore);
         ItemStack eggIcon = new ItemStack(Material.VILLAGER_SPAWN_EGG);
         ItemMeta eggMeta = eggIcon.getItemMeta();
         eggMeta.setDisplayName(zh ? "§5§l无魂鉴定师" : "§5§lLost Librarian");
@@ -246,9 +259,10 @@ final class SlimefunHook implements SlimefunAddon {
         dropIcon.setItemMeta(dropMeta);
         RecipeType librarianDrop = new RecipeType(
                 new NamespacedKey(plugin, "librarian_drop"), dropIcon);
-        new SlimefunItem(itemsGroup, brainStack, librarianDrop,
-                new ItemStack[]{null, null, null, null, eggIcon, null, null, null, null})
-                .register(this);
+        SlimefunItem brainItem = new SlimefunItem(itemsGroup, brainStack, librarianDrop,
+                new ItemStack[]{null, null, null, null, eggIcon, null, null, null, null});
+        brainItem.addItemHandler((ItemUseHandler) e -> e.cancel());
+        brainItem.register(this);
 
         // Hidden player head for recipes (obtained by suicide)
         String headIngredientName = zh ? "&e玩家的头" : "&ePlayer Head";
@@ -289,7 +303,7 @@ final class SlimefunHook implements SlimefunAddon {
                 ? new String[]{"", "&7QQ弹弹", "&7可以用来做什么呢..."}
                 : new String[]{"", "&7Squishy and bouncy", "&7What could this be used for..."};
         SlimefunItemStack dummyStack = new SlimefunItemStack(
-                "MAGIC_SILICONE_DUMMY", Material.ARMOR_STAND, dummyName, dummyLore);
+                "MAGICLOOT_MAGIC_SILICONE_DUMMY", Material.ARMOR_STAND, dummyName, dummyLore);
         // Display recipe: uses hidden head ingredient
         ItemStack[] dummyRecipe = {
                 SlimefunItems.MAGIC_LUMP_3, headIngredientStack, SlimefunItems.MAGIC_LUMP_3,
@@ -333,7 +347,7 @@ final class SlimefunHook implements SlimefunAddon {
                         "",
                         "&aShift+Right-click with empty hand to configure"};
         SlimefunItemStack dropperStack = new SlimefunItemStack(
-                "LIVING_DROPPER", Material.DROPPER, dropperName, dropperLore);
+                "MAGICLOOT_LIVING_DROPPER", Material.DROPPER, dropperName, dropperLore);
         ItemStack[] dropperRecipe = {
                 null, new ItemStack(Material.DROPPER), null,
                 null, dummyStack, null,
@@ -351,7 +365,7 @@ final class SlimefunHook implements SlimefunAddon {
                 : new String[]{"", "&7This can't be right", "&7It's warm and soft!", "&7Don't worry, it's magic",
                         "&7Use it to your heart's content", "", "&aShift+Right-click to dismantle"};
         SlimefunItemStack trainingDummyStack = new SlimefunItemStack(
-                "TRAINING_DUMMY", Material.ARMOR_STAND, dummyName2, trainingDummyLore);
+                "MAGICLOOT_TRAINING_DUMMY", Material.ARMOR_STAND, dummyName2, trainingDummyLore);
         ItemStack[] trainingDummyRecipe = {
                 null, new ItemStack(Material.OBSERVER), null,
                 null, dummyStack, null,
@@ -376,7 +390,7 @@ final class SlimefunHook implements SlimefunAddon {
                 new ItemStack(Material.IRON_SWORD), trainingDummyStack, new ItemStack(Material.IRON_AXE),
                 null, new ItemStack(Material.BONE), null};
         SlimefunItemStack undeadStack = new SlimefunItemStack(
-                "TRAINING_DUMMY_UNDEAD", Material.ARMOR_STAND, undeadName, undeadLore);
+                "MAGICLOOT_TRAINING_DUMMY_UNDEAD", Material.ARMOR_STAND, undeadName, undeadLore);
         new SlimefunItem(itemsGroup, undeadStack,
                 RecipeType.ENHANCED_CRAFTING_TABLE, undeadRecipe)
                 .register(this);
@@ -393,7 +407,7 @@ final class SlimefunHook implements SlimefunAddon {
                         "&7with a Blank Rune",
                         "&7to craft an &7Ancient Rune &8&l[&e&lPast&8&l]"};
         SlimefunItemStack voucherStack = new SlimefunItemStack(
-                "GARBLED_VOUCHER", Material.PAPER, voucherName, voucherLore);
+                "MAGICLOOT_GARBLED_VOUCHER", Material.PAPER, voucherName, voucherLore);
 
         ItemStack voucherDeskIcon = new ItemStack(Material.CRAFTING_TABLE);
         ItemMeta voucherDeskMeta = voucherDeskIcon.getItemMeta();
@@ -433,7 +447,7 @@ final class SlimefunHook implements SlimefunAddon {
         fwMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
         runeBase.setItemMeta(fwMeta);
         SlimefunItemStack runeStack = new SlimefunItemStack(
-                "ANCIENT_RUNE_PAST", runeBase, runeName, runeLore);
+                "MAGICLOOT_ANCIENT_RUNE_PAST", runeBase, runeName, runeLore);
 
         ItemStack[] runeRecipe = {
                 new ItemStack(Material.ANCIENT_DEBRIS),
@@ -486,7 +500,7 @@ final class SlimefunHook implements SlimefunAddon {
         renameFwMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
         renameRuneBase.setItemMeta(renameFwMeta);
         SlimefunItemStack renameRuneStack = new SlimefunItemStack(
-                "ANCIENT_RUNE_RENAME", renameRuneBase, renameRuneName, renameRuneLore);
+                "MAGICLOOT_ANCIENT_RUNE_RENAME", renameRuneBase, renameRuneName, renameRuneLore);
 
         ItemStack[] renameRuneRecipe = {
                 new ItemStack(Material.NAME_TAG), SlimefunItems.RAINBOW_LEATHER, runeStack,
@@ -502,7 +516,7 @@ final class SlimefunHook implements SlimefunAddon {
                 ? new String[]{"", "&7一缕光阴"}
                 : new String[]{"", "&7A sliver of time"};
         SlimefunItemStack timeStack = new SlimefunItemStack(
-                "TIME_OF_EXPLORATION", Material.NETHER_STAR, timeName, timeLore);
+                "MAGICLOOT_TIME_OF_EXPLORATION", Material.NETHER_STAR, timeName, timeLore);
         ItemStack[] timeRecipe = {
                 runeStack, new ItemStack(Material.DRAGON_HEAD), runeStack,
                 new ItemStack(Material.WAXED_WEATHERED_COPPER_BULB),
@@ -529,7 +543,7 @@ final class SlimefunHook implements SlimefunAddon {
                         "",
                         "&7Can summon the Warden"};
         SlimefunItemStack shriekerStack = new SlimefunItemStack(
-                "ACTIVATED_SCULK_SHRIEKER", Material.SCULK_SHRIEKER, shriekerName, shriekerLore);
+                "MAGICLOOT_ACTIVATED_SCULK_SHRIEKER", Material.SCULK_SHRIEKER, shriekerName, shriekerLore);
         ItemStack[] shriekerRecipe = {
                 new ItemStack(Material.ECHO_SHARD), new ItemStack(Material.MUSIC_DISC_5), new ItemStack(Material.ECHO_SHARD),
                 new ItemStack(Material.SOUL_TORCH), new ItemStack(Material.SCULK_SHRIEKER), new ItemStack(Material.SOUL_TORCH),
@@ -547,6 +561,132 @@ final class SlimefunHook implements SlimefunAddon {
                 RecipeType.ANCIENT_ALTAR, dragonHeadRecipe)
                 .register(this);
 
+        // --- Gemstones ---
+
+        String[][] gemDefs = {
+            // id, attrs (name:OP:val,...), slots, capacity, cost
+            {"MAGICLOOT_GEM_ATTACK_5",   "attack_damage:ADD:5.0",                          "0",   "0", "3"},
+            {"MAGICLOOT_GEM_ATTACK_MUL", "attack_damage:MUL:0.3",                          "0",   "0", "5"},
+            {"MAGICLOOT_GEM_HEALTH_4",   "max_health:ADD:4.0",                             "2",   "0", "2"},
+            {"MAGICLOOT_GEM_HEALTH_MUL", "max_health:MUL:0.25",                            "2",   "0", "4"},
+            {"MAGICLOOT_GEM_SPEED_01",   "movement_speed:ADD:0.02",                        "5",   "0", "1"},
+            {"MAGICLOOT_GEM_SPEED_MUL",  "movement_speed:MUL:0.15",                        "5",   "0", "4"},
+            {"MAGICLOOT_GEM_SPEED_FIN",  "movement_speed:FIN:0.1",                         "5",   "0", "6"},
+            {"MAGICLOOT_GEM_EXPAND",     "movement_speed:ADD:-0.02",                       "2,5", "2", "3"},
+            {"MAGICLOOT_GEM_TEST",       "attack_damage:ADD:1.0",                          "0,1", "1", "1"},
+        };
+        for (String[] def : gemDefs) {
+            String id = def[0], attrs = def[1], slot = def[2];
+            int cap = Integer.parseInt(def[3]);
+            int cost = Integer.parseInt(def[4]);
+            String name = zh ? "§a宝石" : "§aGemstone";
+            String[] lore = zh
+                    ? new String[]{"", "§7属性: §f" + attrs, "§7槽位: §f" + slot, "§7费用: §f" + cost}
+                    : new String[]{"", "§7Attribute: §f" + attrs, "§7Slot: §f" + slot, "§7Cost: §f" + cost};
+            SlimefunItemStack gemStack = new SlimefunItemStack(id, cap > 0 ? Material.DIAMOND : Material.EMERALD, name, lore);
+            new GemStone(gemsGroup, gemStack, attrs, slot, cap, cost).register(this);
+        }
+
+        // Chisel
+        String chiselName = zh ? "§8凿子" : "§8Chisel";
+        String[] chiselLore = zh
+                ? new String[]{"", "§7手持凿子点击图腾中已镶嵌的宝石", "§7可以将其打碎剔除（不返还宝石）"}
+                : new String[]{"", "§7Click a slotted gem with this chisel", "§7to shatter and remove it (gem is lost)"};
+        SlimefunItemStack chiselStack = new SlimefunItemStack("MAGICLOOT_CHISEL", Material.SHEARS, chiselName, chiselLore);
+        new SlimefunItem(gemsGroup, chiselStack, RecipeType.NULL, new ItemStack[9]).register(this);
+
+        // --- Medium Runes (for totem forging) ---
+
+        // Basic Medium Rune (1 medium value)
+        ItemStack basicRuneBase = new ItemStack(Material.FIREWORK_STAR);
+        FireworkEffectMeta basicFwMeta = (FireworkEffectMeta) basicRuneBase.getItemMeta();
+        basicFwMeta.setEffect(FireworkEffect.builder()
+                .with(FireworkEffect.Type.BURST).withColor(Color.WHITE).build());
+        basicFwMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+        basicRuneBase.setItemMeta(basicFwMeta);
+        String[] basicRuneLore = zh
+                ? new String[]{"", "&7媒质值: &f1", "&7丢在已封定的嵌晶图腾上", "&7以进行叠锻"}
+                : new String[]{"", "&7Medium Value: &f1", "&7Drop on a sealed Crystal Totem", "&7to perform forging."};
+        SlimefunItemStack basicRuneStack = new SlimefunItemStack("MAGICLOOT_MEDIUM_RUNE_BASIC", basicRuneBase,
+                zh ? "&f媒质符文 &8&l[&7&l初级&8&l]" : "&fMedium Rune &8&l[&7&lBasic&8&l]",
+                basicRuneLore);
+        ItemStack[] basicRuneRecipe = {
+                new ItemStack(Material.EMERALD), new ItemStack(Material.AMETHYST_SHARD), new ItemStack(Material.EMERALD),
+                new ItemStack(Material.AMETHYST_SHARD), new ItemStack(Material.FIREWORK_STAR), new ItemStack(Material.AMETHYST_SHARD),
+                new ItemStack(Material.EMERALD), new ItemStack(Material.AMETHYST_SHARD), new ItemStack(Material.EMERALD)};
+        new MediumRune(itemsGroup, basicRuneStack, RecipeType.ANCIENT_ALTAR, basicRuneRecipe,
+                new SlimefunItemStack(basicRuneStack, 1), 1).register(this);
+
+        // Intermediate Medium Rune (4 medium value) — 4x basic in Enhanced Crafting Table
+        ItemStack interRuneBase = new ItemStack(Material.FIREWORK_STAR);
+        FireworkEffectMeta interFwMeta = (FireworkEffectMeta) interRuneBase.getItemMeta();
+        interFwMeta.setEffect(FireworkEffect.builder()
+                .with(FireworkEffect.Type.BURST).withColor(Color.GREEN).build());
+        interFwMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+        interRuneBase.setItemMeta(interFwMeta);
+        String[] interRuneLore = zh
+                ? new String[]{"", "&7媒质值: &f4", "&7丢在已封定的嵌晶图腾上", "&7以进行叠锻"}
+                : new String[]{"", "&7Medium Value: &f4", "&7Drop on a sealed Crystal Totem", "&7to perform forging."};
+        SlimefunItemStack interRuneStack = new SlimefunItemStack("MAGICLOOT_MEDIUM_RUNE_INTERMEDIATE", interRuneBase,
+                zh ? "&f媒质符文 &8&l[&a&l中级&8&l]" : "&fMedium Rune &8&l[&a&lIntermediate&8&l]",
+                interRuneLore);
+        ItemStack[] interRuneRecipe = {
+                basicRuneStack, basicRuneStack, null,
+                basicRuneStack, basicRuneStack, null,
+                null, null, null};
+        new MediumRune(itemsGroup, interRuneStack, RecipeType.ENHANCED_CRAFTING_TABLE, interRuneRecipe,
+                new SlimefunItemStack(interRuneStack, 1), 4).register(this);
+
+        // Advanced Medium Rune (16 medium value) — 4x intermediate in Enhanced Crafting Table
+        ItemStack advRuneBase = new ItemStack(Material.FIREWORK_STAR);
+        FireworkEffectMeta advFwMeta = (FireworkEffectMeta) advRuneBase.getItemMeta();
+        advFwMeta.setEffect(FireworkEffect.builder()
+                .with(FireworkEffect.Type.BURST).withColor(Color.PURPLE).build());
+        advFwMeta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+        advRuneBase.setItemMeta(advFwMeta);
+        String[] advRuneLore = zh
+                ? new String[]{"", "&7媒质值: &f16", "&7丢在已封定的嵌晶图腾上", "&7以进行叠锻"}
+                : new String[]{"", "&7Medium Value: &f16", "&7Drop on a sealed Crystal Totem", "&7to perform forging."};
+        SlimefunItemStack advRuneStack = new SlimefunItemStack("MAGICLOOT_MEDIUM_RUNE_ADVANCED", advRuneBase,
+                zh ? "&f媒质符文 &8&l[&d&l高级&8&l]" : "&fMedium Rune &8&l[&d&lAdvanced&8&l]",
+                advRuneLore);
+        ItemStack[] advRuneRecipe = {
+                interRuneStack, interRuneStack, null,
+                interRuneStack, interRuneStack, null,
+                null, null, null};
+        new MediumRune(itemsGroup, advRuneStack, RecipeType.ENHANCED_CRAFTING_TABLE, advRuneRecipe,
+                new SlimefunItemStack(advRuneStack, 1), 16).register(this);
+
+        // --- Totem ---
+        String totemName = zh ? "&d&l嵌晶图腾" : "&d&lCrystal Totem";
+        String[] totemLore = zh
+                ? new String[]{"",
+                    "&7经过改造的不死图腾",
+                    "&7嵌入宝石后提供属性加成",
+                    "",
+                    "&a放在主手 Shift+右键 打开嵌晶界面",
+                    "",
+                    "&7品级：&5非凡"}
+                : new String[]{"",
+                    "&7A modified Totem of Undying",
+                    "&7Embed gemstones for attribute bonuses",
+                    "",
+                    "&aHold in main hand, Shift+Right-click to open socket UI",
+                    "",
+                    "&7Tier: &5Extraordinary"};
+        SlimefunItemStack totemStack = new SlimefunItemStack(
+                "MAGICLOOT_CRYSTAL_TOTEM", Material.TOTEM_OF_UNDYING, totemName, totemLore);
+        ItemMeta totemMeta = totemStack.getItemMeta();
+        totemMeta.getPersistentDataContainer().set(ItemKeys.TOTEM_TIER, PersistentDataType.INTEGER, 3);
+        totemMeta.getPersistentDataContainer().set(ItemKeys.TOTEM_CAPACITY, PersistentDataType.INTEGER, 3);
+        totemStack.setItemMeta(totemMeta);
+        ItemStack[] totemRecipe = {
+                new ItemStack(Material.EMERALD_BLOCK), new ItemStack(Material.AMETHYST_SHARD), new ItemStack(Material.EMERALD_BLOCK),
+                new ItemStack(Material.DIAMOND), new ItemStack(Material.TOTEM_OF_UNDYING), new ItemStack(Material.DIAMOND),
+                new ItemStack(Material.EMERALD_BLOCK), new ItemStack(Material.AMETHYST_SHARD), new ItemStack(Material.EMERALD_BLOCK)};
+        new TotemItem(itemsGroup, totemStack, RecipeType.ENHANCED_CRAFTING_TABLE, totemRecipe)
+                .register(this);
+
         // --- Machines ---
 
         // Dirt Generator (Magic Bulldozer) — first
@@ -559,7 +699,7 @@ final class SlimefunHook implements SlimefunAddon {
                 LoreBuilder.speed(4), LoreBuilder.powerPerSecond(32)};
         String dirtGenName = zh ? "§6魔法推土机" : "§6Magic Bulldozer";
         SlimefunItemStack dirtGenStack = new SlimefunItemStack(
-                "DIRT_GENERATOR", Material.MUD_BRICKS, dirtGenName, dirtGenLore);
+                "MAGICLOOT_DIRT_GENERATOR", Material.MUD_BRICKS, dirtGenName, dirtGenLore);
         ItemStack[] dirtGenRecipe = {
                 null, new ItemStack(Material.DIAMOND_SHOVEL), null,
                 SlimefunItems.EXPLOSIVE_SHOVEL, new ItemStack(Material.MUD_BRICKS), SlimefunItems.EXPLOSIVE_SHOVEL,
@@ -579,7 +719,7 @@ final class SlimefunHook implements SlimefunAddon {
                 zh ? "&8⇨ &b⚡ &7速度: &b1x~64x" : "&8⇨ &b⚡ &7Speed: &b1x~64x",
                 LoreBuilder.powerPerSecond(144)};
         SlimefunItemStack piglinStack = new SlimefunItemStack(
-                "PIGLIN_SIMULATOR", Material.GILDED_BLACKSTONE, piglinName, piglinLore);
+                "MAGICLOOT_PIGLIN_SIMULATOR", Material.GILDED_BLACKSTONE, piglinName, piglinLore);
         ItemStack[] piglinRecipe = {
                 SlimefunItems.GOLD_24K_BLOCK, new ItemStack(Material.PIGLIN_HEAD), SlimefunItems.GOLD_24K_BLOCK,
                 SlimefunItems.PRODUCE_COLLECTOR, SlimefunItems.CARGO_MANAGER, SlimefunItems.AUTO_BREEDER,
@@ -604,7 +744,7 @@ final class SlimefunHook implements SlimefunAddon {
                 LoreBuilder.speed(3), LoreBuilder.powerPerSecond(128)};
         String appraiserName = zh ? "&c&l自动鉴定仪" : "&c&lAuto Appraiser";
         SlimefunItemStack appraiserStack = new SlimefunItemStack(
-                "AUTO_APPRAISER", Material.GRINDSTONE, appraiserName, appraiserLore);
+                "MAGICLOOT_AUTO_APPRAISER", Material.GRINDSTONE, appraiserName, appraiserLore);
         ItemStack[] appraiserRecipe = {
                 null, SlimefunItems.NECROTIC_SKULL, null,
                 renameRuneStack, brainStack, renameRuneStack,
@@ -616,7 +756,7 @@ final class SlimefunHook implements SlimefunAddon {
         // Potion Affix Disenchanter
         String disName = zh ? "§6§l药水词缀祛魔机" : "§6§lPotion Affix Disenchanter";
         SlimefunItemStack disStack = new SlimefunItemStack(
-                "POTION_AFFIX_DISENCHANTER", Material.NOTE_BLOCK, disName, machineLore);
+                "MAGICLOOT_POTION_AFFIX_DISENCHANTER", Material.NOTE_BLOCK, disName, machineLore);
         ItemStack[] disRecipe = {
                 timeStack, SlimefunItems.CARBONADO, timeStack,
                 SlimefunItems.PROGRAMMABLE_ANDROID_3_FISHERMAN,
@@ -630,7 +770,7 @@ final class SlimefunHook implements SlimefunAddon {
         // Potion Affix Enchanter
         String enchName = zh ? "§6§l药水词缀附魔机" : "§6§lPotion Affix Enchanter";
         SlimefunItemStack enchStack = new SlimefunItemStack(
-                "POTION_AFFIX_ENCHANTER", Material.JUKEBOX, enchName, machineLore);
+                "MAGICLOOT_POTION_AFFIX_ENCHANTER", Material.JUKEBOX, enchName, machineLore);
         ItemStack[] enchRecipe = {
                 timeStack, SlimefunItems.CARBONADO, timeStack,
                 SlimefunItems.PROGRAMMABLE_ANDROID_3_FISHERMAN,

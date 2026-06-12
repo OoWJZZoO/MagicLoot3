@@ -21,7 +21,7 @@ import org.bukkit.plugin.Plugin;
 
 public class MagicLootCommand implements CommandExecutor, TabCompleter {
 
-    private static final List<String> SUBCOMMANDS = List.of("version", "debug", "reload", "generate", "language", "add_effect", "sf_loot", "tools_loot", "set_sf_w");
+    private static final List<String> SUBCOMMANDS = List.of("version", "debug", "reload", "generate", "language", "add_effect", "sf_loot", "tools_loot", "set_sf_w", "browse");
 
     private final Plugin plugin;
     private String buildNumber;
@@ -42,7 +42,7 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
 
         String sub = args[0].toLowerCase();
 
-        if (!sub.equals("version") && !sender.hasPermission("magicloot3.admin")) {
+        if (!sub.equals("version") && !sub.equals("browse") && !sender.hasPermission("magicloot3.admin")) {
             sender.sendMessage(Messages.get("cmd.no_permission"));
             return true;
         }
@@ -182,6 +182,13 @@ public class MagicLootCommand implements CommandExecutor, TabCompleter {
                 cfg.save();
                 MagicLoot3.reload(plugin);
                 sender.sendMessage(Messages.get("cmd.set_sf_w_done", sfId, String.valueOf(weight)));
+            }
+            case "browse" -> {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(Messages.get("cmd.player_only"));
+                    return true;
+                }
+                LootViewerGUI.open(player, plugin);
             }
             default -> sender.sendMessage(Messages.get("log.unknown_command"));
         }

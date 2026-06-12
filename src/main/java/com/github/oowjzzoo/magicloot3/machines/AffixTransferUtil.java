@@ -24,6 +24,19 @@ public final class AffixTransferUtil {
 
     private AffixTransferUtil() {}
 
+    private static final String[] ROMAN = {
+        "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X",
+        "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX",
+        "XXI", "XXII", "XXIII", "XXIV", "XXV", "XXVI", "XXVII", "XXVIII", "XXIX", "XXX",
+        "XXXI", "XXXII", "XXXIII", "XXXIV", "XXXV", "XXXVI", "XXXVII", "XXXVIII", "XXXIX", "XL",
+        "XLI", "XLII", "XLIII", "XLIV", "XLV", "XLVI", "XLVII", "XLVIII", "XLIX", "L"
+    };
+
+    /** Format a level number as Roman numeral (≤50) or Arabic. */
+    public static String roman(int n) {
+        return n >= 1 && n <= ROMAN.length ? ROMAN[n - 1] : String.valueOf(n);
+    }
+
     public record EffectEntry(String effectKey, boolean positive, int level) {}
 
     /** Parse PDC effects string "speed:+:2,strength:-:1" into entries. */
@@ -134,7 +147,7 @@ public final class AffixTransferUtil {
             String color = ItemManager.colorCodes.isEmpty() ? "&e"
                     : ItemManager.colorCodes.get(r.nextInt(ItemManager.colorCodes.size()));
             lines.add(ChatColor.translateAlternateColorCodes('&',
-                    color + (e.positive ? "+" : "-") + " " + displayName + " " + (e.level + 1)));
+                    color + (e.positive ? "+" : "-") + " " + displayName + " " + roman(e.level + 1)));
         }
         return lines;
     }
@@ -310,11 +323,12 @@ public final class AffixTransferUtil {
     private static boolean endsWithNumber(String s) {
         int lastSpace = s.lastIndexOf(' ');
         if (lastSpace < 0) return false;
+        String suffix = s.substring(lastSpace + 1);
         try {
-            Integer.parseInt(s.substring(lastSpace + 1));
+            Integer.parseInt(suffix);
             return true;
         } catch (NumberFormatException e) {
-            return false;
+            return suffix.matches("[IVXLCDM]+");
         }
     }
 }

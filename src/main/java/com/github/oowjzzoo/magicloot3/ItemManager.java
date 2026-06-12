@@ -195,7 +195,7 @@ public class ItemManager {
                 effectData.add(entry.effectKey() + ":" + (entry.positive() ? "+" : "-") + ":" + entry.level());
                 String displayName = ItemManager.effectNames.getOrDefault(entry.effectKey(), entry.effectKey());
                 lore.add(ChatColor.translateAlternateColorCodes('&',
-                        colorCodes.get(random.nextInt(colorCodes.size())) + (entry.positive() ? "+" : "-") + " " + displayName + " " + (entry.level() + 1)));
+                        colorCodes.get(random.nextInt(colorCodes.size())) + (entry.positive() ? "+" : "-") + " " + displayName + " " + AffixTransferUtil.roman(entry.level() + 1)));
             }
         }
 

@@ -35,8 +35,20 @@ public final class LostLibrarian {
         }
 
         if (player.getLevel() >= cost) {
-            ItemStack item = player.getInventory().getItemInMainHand();
-            player.getInventory().setItemInMainHand(ItemManager.applyTier(item, actualTier));
+            ItemStack hand = player.getInventory().getItemInMainHand();
+            if (LootTier.get(hand) != LootTier.UNKNOWN) {
+                player.sendMessage(isDesk ? Messages.get("desk.cannot_examine") : Messages.get("npc.cannot_examine"));
+                return;
+            }
+            ItemStack single = hand.clone();
+            single.setAmount(1);
+            if (hand.getAmount() > 1) {
+                hand.setAmount(hand.getAmount() - 1);
+            } else {
+                player.getInventory().setItemInMainHand(null);
+            }
+            player.getInventory().addItem(ItemManager.applyTier(single, actualTier)).values()
+                    .forEach(drop -> player.getWorld().dropItemNaturally(player.getLocation(), drop));
             player.updateInventory();
             player.setLevel(player.getLevel() - cost);
             player.sendMessage(isDesk ? Messages.get("desk.success") : Messages.get("npc.success"));

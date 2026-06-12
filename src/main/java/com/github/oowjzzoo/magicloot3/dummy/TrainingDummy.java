@@ -62,7 +62,7 @@ public final class TrainingDummy {
         e.setAI(false);
         e.setImmuneToZombification(true);
         e.setAdult();
-        configureCommon(e, loc, defaultName(), "TRAINING_DUMMY");
+        configureCommon(e, loc, defaultName(), "MAGICLOOT_TRAINING_DUMMY");
         return e;
     }
 
@@ -70,7 +70,7 @@ public final class TrainingDummy {
         Skeleton e = (Skeleton) loc.getWorld().spawnEntity(loc, EntityType.SKELETON);
         e.setAI(false);
         e.setShouldBurnInDay(false);
-        configureCommon(e, loc, defaultName(), "TRAINING_DUMMY_UNDEAD");
+        configureCommon(e, loc, defaultName(), "MAGICLOOT_TRAINING_DUMMY_UNDEAD");
         return e;
     }
 
@@ -84,7 +84,7 @@ public final class TrainingDummy {
             equip.setHelmet(null); equip.setChestplate(null); equip.setLeggings(null);
             equip.setBoots(null); equip.setItemInMainHand(null); equip.setItemInOffHand(null);
         }
-        e.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(1024);
+        e.getAttribute(Attribute.MAX_HEALTH).setBaseValue(1024);
         e.setHealth(1024);
         UUID id = e.getUniqueId();
         dummies.put(id, e);
@@ -140,7 +140,7 @@ public final class TrainingDummy {
                 org.bukkit.entity.Entity e = Bukkit.getEntity(id);
                 if (e instanceof LivingEntity le && le.isValid()) {
                     dummy = le; dummies.put(id, le);
-                    dummyType.put(id, le instanceof Piglin ? "TRAINING_DUMMY" : "TRAINING_DUMMY_UNDEAD");
+                    dummyType.put(id, le instanceof Piglin ? "MAGICLOOT_TRAINING_DUMMY" : "MAGICLOOT_TRAINING_DUMMY_UNDEAD");
                 }
             }
             if (dummy == null || !dummy.isValid()) {
@@ -188,7 +188,7 @@ public final class TrainingDummy {
     public static String getDummyType(LivingEntity entity) {
         String type = dummyType.get(entity.getUniqueId());
         if (type != null) return type;
-        return entity instanceof Piglin ? "TRAINING_DUMMY" : "TRAINING_DUMMY_UNDEAD";
+        return entity instanceof Piglin ? "MAGICLOOT_TRAINING_DUMMY" : "MAGICLOOT_TRAINING_DUMMY_UNDEAD";
     }
 
     public static void cleanup() { stats.clear(); dummies.clear(); dummyAttackers.clear(); dummyType.clear(); }

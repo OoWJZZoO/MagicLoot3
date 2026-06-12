@@ -207,8 +207,8 @@ gui:
     title: "Loot Config"
     categories: "Categories"
     tools: "Tools"
-    back: "&7← Back to Categories"
-    enabled: "&a✔ Enabled (weight: {0}, probability: {1}‰)"
+    back: "Back to Categories"
+    enabled: "&a✔ Enabled (weight: {0}, probability: {1}%)"
     disabled: "&c✘ Disabled"
     multiblock: "&8🚫 Multi-block, cannot be looted"
     help: "&7Left: enable(100) | Right: disable(0) | Shift+click: custom"
@@ -221,6 +221,32 @@ gui:
     input_timeout: "&cInput timed out. Config saved. Pending item unchanged."
     saved: "&aLoot config saved and reloaded."
     set_weight: "&aSet {0} &ato {1}."
+  viewer:
+    browse_title: "Information Board"
+    sf_loot: "&aSlimefun Loot Chances"
+    tools_loot: "&6Equipment Loot Chances"
+    enchants: "&dEnchantment Level Limits"
+    effects: "&bPotion Effect Level Limits"
+    enchant_group: "&fHighest Available Enchantment Levels"
+    effect_group: "&fHighest Available Potion Effect Levels"
+    effect_row: "&7{0} {1}"
+  totem:
+    title: "&5Crystal Totem"
+    insert_title: "&fPick up a gem and click a slot to insert it"
+    insert_lore:
+      - ""
+      - "&cNote: Insertion is irreversible"
+      - "&cUse a chisel to remove"
+      - "&cbut the gem will be destroyed"
+    full_title: "&c&lSlot Full"
+    seal_button_title: "&d&lSeal Totem"
+    seal_button_lore:
+      - ""
+      - "&7Cost: &b{0} XP Levels"
+      - ""
+      - "&c&lWARNING: Irreversible!"
+      - "&cOnce sealed, you cannot"
+      - "&cremove or change gems."
 
 cmd:
   header: "&6MagicLoot3 &7v{0} (build #{1})"
@@ -293,8 +319,70 @@ machine:
     bell_title: "&fPlace Bottle o' Enchanting / Flask of Knowledge in input slot"
     bell_lore: "&fEach bottle equals one XP level"
     rank_button_title: "&bAppraisal Rank:"
-    rank_switch_hint: "&7Click to switch"
+    rank_switch_hint: "&aClick to switch"
+    rank_locked_hint: "&aCannot switch while machine is working"
     level_unit: " Level(s)"
+  totem:
+    title: "&5Crystal Totem"
+    insert_hint: "&7Insert"
+    full_hint: "&cFull"
+totem_slot:
+  attack_damage: "Attack Damage"
+  entity_interaction_range: "Interaction Range"
+  max_health: "Max Health"
+  block_break_speed: "Mining Speed"
+  safe_fall_distance: "Safe Fall Distance"
+  movement_speed: "Movement Speed"
+  jump_strength: "Jump Strength"
+  step_height: "Step Height"
+  special: "Special"
+totem_tier:
+  1: "&aCommon"
+  2: "&9Uncommon"
+  3: "&5Extraordinary"
+  4: "&e&lEpic"
+  5: "&6&lLegendary"
+totem:
+  sealed_title: "&d&lSealed Crystal Totem"
+  sealed_lore:
+    - "&7Sealed - gems are permanently fused"
+    - "&7Seal Cost: &f{cost}"
+    - "&7Forge Count: &b{forge}"
+    - ""
+    - "&aHold and die to revive"
+    - "&a(consumes 1 forge count)"
+  sealed_cannot_open: "&dCrystal Totem &8> &cThis totem has been sealed. The socket interface is no longer accessible."
+  seal:
+    no_gems: "&dCrystal Totem &8> &cNo gems embedded. Cannot seal."
+    no_xp: "&dCrystal Totem &8> &cNot enough XP. Need {0} levels, you have {1}."
+    success: "&dCrystal Totem &8> &aTotem sealed! Cost: {0} XP levels. Now ready for forging."
+  forge:
+    no_totem: "&fMedium Rune &8> &cNo sealed Crystal Totem nearby."
+    shortfall: "&fMedium Rune &8> &cInsufficient medium value. Provided: {0}, Required: {1}."
+    success: "&fMedium Rune &8> &aForging complete! Forge count: {0}. Used {1} rune(s)."
+    resurrect: "&dCrystal Totem &8> &aYou were saved! Forge count decreased to {0}."
+medium_rune:
+  basic:
+    name: "&fMedium Rune &8&l[&7&lBasic&8&l]"
+    lore:
+      - ""
+      - "&7Medium Value: &f1"
+      - "&7Drop on a sealed Crystal Totem"
+      - "&7to perform forging."
+  intermediate:
+    name: "&fMedium Rune &8&l[&a&lIntermediate&8&l]"
+    lore:
+      - ""
+      - "&7Medium Value: &f4"
+      - "&7Drop on a sealed Crystal Totem"
+      - "&7to perform forging."
+  advanced:
+    name: "&fMedium Rune &8&l[&d&lAdvanced&8&l]"
+    lore:
+      - ""
+      - "&7Medium Value: &f16"
+      - "&7Drop on a sealed Crystal Totem"
+      - "&7to perform forging."
 living_dropper:
   gui_title: "&fLiving Dropper"
   bind_button_title: "&bBound Player"

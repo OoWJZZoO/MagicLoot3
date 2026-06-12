@@ -200,7 +200,7 @@ public class LivingDropper extends SlimefunItem {
             if (loc == null) { locationKeys.remove(key); bindings.remove(key); purged++; continue; }
             Block block = loc.getBlock();
             if (block.getType() != Material.DROPPER
-                    || !BlockStorage.check(block, "LIVING_DROPPER")) {
+                    || !BlockStorage.check(block, "MAGICLOOT_LIVING_DROPPER")) {
                 locationKeys.remove(key);
                 bindings.remove(key);
                 purged++;

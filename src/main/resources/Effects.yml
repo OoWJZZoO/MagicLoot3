@@ -3,13 +3,13 @@
 speed:
   max-level: 10
 slowness:
-  max-level: 10
+  max-level: 3
 haste:
   max-level: 10
 mining_fatigue:
-  max-level: 10
+  max-level: 3
 strength:
-  max-level: 10
+  max-level: 15
 instant_health:
   max-level: 1
 instant_damage:
@@ -19,9 +19,9 @@ jump_boost:
 nausea:
   max-level: 10
 regeneration:
-  max-level: 5
-resistance:
   max-level: 3
+resistance:
+  max-level: 2
 fire_resistance:
   max-level: 10
 water_breathing:
@@ -29,13 +29,13 @@ water_breathing:
 invisibility:
   max-level: 10
 blindness:
-  max-level: 10
+  max-level: 3
 night_vision:
   max-level: 10
 hunger:
   max-level: 10
 weakness:
-  max-level: 5
+  max-level: 2
 poison:
   max-level: 10
 wither:
@@ -43,19 +43,19 @@ wither:
 health_boost:
   max-level: 10
 absorption:
-  max-level: 10
+  max-level: 1
 saturation:
-  max-level: 10
+  max-level: 1
 glowing:
   max-level: 10
 levitation:
-  max-level: 10
+  max-level: 5
 luck:
   max-level: 10
 unluck:
   max-level: 10
 slow_falling:
-  max-level: 10
+  max-level: 3
 conduit_power:
   max-level: 10
 dolphins_grace:
@@ -69,7 +69,7 @@ trial_omen:
 hero_of_the_village:
   max-level: 10
 darkness:
-  max-level: 10
+  max-level: 5
 infested:
   max-level: 10
 oozing:
@@ -77,6 +77,6 @@ oozing:
 weaving:
   max-level: 10
 wind_charged:
-  max-level: 1
+  max-level: 10
 breath_of_the_nautilus:
   max-level: 10
